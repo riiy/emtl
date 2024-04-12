@@ -43,7 +43,7 @@ default_context:
     release_date: "today"
     repo_hosting: "github.com"
     repo_hosting_domain: "github.com"
-    repo_main_branch: "main"
+    repo_main_branch: "master"
     repo_name: "emtl"
     repo_username: "riiy"
     scrutinizer: "no"
