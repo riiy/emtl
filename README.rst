@@ -21,7 +21,7 @@ Overview
     :alt: GitHub Actions Build Status
     :target: https://github.com/riiy/emtl/actions
 
-.. |codecov| image:: https://codecov.io/gh/riiy/emtl/branch/main/graphs/badge.svg?branch=main
+.. |codecov| image:: https://codecov.io/gh/riiy/emtl/branch/master/graphs/badge.svg?branch=master
     :alt: Coverage Status
     :target: https://app.codecov.io/github/riiy/emtl
 
@@ -43,7 +43,7 @@ Overview
 
 .. |commits-since| image:: https://img.shields.io/github/commits-since/riiy/emtl/v0.1.0.svg
     :alt: Commits since latest release
-    :target: https://github.com/riiy/emtl/compare/v0.1.0...main
+    :target: https://github.com/riiy/emtl/compare/v0.1.0...master
 
 
 
@@ -62,7 +62,7 @@ Installation
 
 You can also install the in-development version with::
 
-    pip install https://github.com/riiy/emtl/archive/main.zip
+    pip install https://github.com/riiy/emtl/archive/master.zip
 
 
 Documentation
