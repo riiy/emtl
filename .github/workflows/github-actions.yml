@@ -141,10 +141,11 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: codecov/codecov-action@v4.0.1
-        with:
-	  token: ${{ secrets.CODECOV_TOKEN }}
-	  slug: riiy/emtl
-          flags: smart-tests
-          verbose: true
-        env:
-          CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
+      with:
+        token: ${{ secrets.CODECOV_TOKEN }}
+        CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
+        slug: riiy/emtl
+        flags: smart-tests
+        verbose: true
+      env:
+        CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
