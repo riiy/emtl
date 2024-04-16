@@ -13,9 +13,13 @@ def read(*names, **kwargs):
 
 setup(
     name="emtl",
-    version="0.1.0",
+    use_scm_version={
+        "local_scheme": "dirty-tag",
+        "write_to": "src/emtl/_version.py",
+        "fallback_version": "0.1.0",
+    },
     license="MIT",
-    description="An example package. Generated with cookiecutter-pylibrary.",
+    description="东方财富交易系统",
     long_description="{}\n{}".format(
         re.compile("^.. start-badges.*^.. end-badges", re.M | re.S).sub("", read("README.rst")),
         re.sub(":[a-z]+:`~?(.*?)`", r"``\1``", read("CHANGELOG.rst")),
@@ -35,7 +39,7 @@ setup(
         "License :: OSI Approved :: MIT License",
         "Operating System :: Unix",
         "Operating System :: POSIX",
-        "Operating System :: Microsoft :: Windows",
+        # "Operating System :: Microsoft :: Windows",
         "Programming Language :: Python",
         "Programming Language :: Python :: 3",
         "Programming Language :: Python :: 3 :: Only",
@@ -58,7 +62,10 @@ setup(
         "Issue Tracker": "https://github.com/riiy/emtl/issues",
     },
     keywords=[
-        # eg: "keyword1", "keyword2", "keyword3",
+        "trade",
+        "东方财富",
+        "股票",
+        "交易",
     ],
     python_requires=">=3.8",
     install_requires=[
@@ -69,6 +76,9 @@ setup(
         #   "rst": ["docutils>=0.11"],
         #   ":python_version=='3.8'": ["backports.zoneinfo"],
     },
+    setup_requires=[
+        "setuptools_scm>=3.3.1",
+    ],
     entry_points={
         "console_scripts": [
             "emt = emtl.cli:run",

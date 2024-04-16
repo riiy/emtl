@@ -49,7 +49,7 @@ Overview
 
 .. end-badges
 
-An example package. Generated with cookiecutter-pylibrary.
+东方财富交易系统
 
 * Free software: MIT license
 

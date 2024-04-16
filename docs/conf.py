@@ -12,18 +12,27 @@ extensions = [
 source_suffix = ".rst"
 master_doc = "index"
 project = "emtl"
-year = "2024"
+year = "2024-2025"
 author = "Eastmoney Trade Library"
 copyright = f"{year}, {author}"
-version = release = "0.1.0"
+try:
+    from pkg_resources import get_distribution
+
+    version = release = get_distribution("emtl").version
+except Exception:
+    import traceback
+
+    traceback.print_exc()
+    version = release = "0.1.0"
 
 pygments_style = "trac"
 templates_path = ["."]
 extlinks = {
-    "issue": ("https://github.com/riiy/emtl/issues/%s", "#"),
-    "pr": ("https://github.com/riiy/emtl/pull/%s", "PR #"),
+    "issue": ("https://github.com/riiy/emtl/issues/%s", "#%s"),
+    "pr": ("https://github.com/riiy/emtl/pull/%s", "PR #%s"),
 }
 
+html_theme = "furo"
 html_theme_options = {
     "githuburl": "https://github.com/riiy/emtl/",
 }
@@ -31,9 +40,6 @@ html_theme_options = {
 html_use_smartypants = True
 html_last_updated_fmt = "%b %d, %Y"
 html_split_index = False
-html_sidebars = {
-    "**": ["searchbox.html", "globaltoc.html", "sourcelink.html"],
-}
 html_short_title = f"{project}-{version}"
 
 napoleon_use_ivar = True

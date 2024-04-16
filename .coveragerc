@@ -1,12 +1,10 @@
 [paths]
-source =
-   src
-   */site-packages
+source = src
 
 [run]
 branch = true
 source =
-    emtl
+    src
     tests
 parallel = true
 
