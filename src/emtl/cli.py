@@ -19,16 +19,12 @@ import argparse
 
 from .core import emt
 
-parser = argparse.ArgumentParser(description="Command description.")
-parser.add_argument(
-    "names",
-    metavar="NAME",
-    nargs=argparse.ZERO_OR_MORE,
-    help="A name of something.",
-)
+parser = argparse.ArgumentParser(prog="emt", description="东方财富交易系统", epilog="东方财富交易系统")
+parser.add_argument("-u", "--user", required=True)
+parser.add_argument("-p", "--password", required=True)
 
 
 def run(args=None):
     args = parser.parse_args(args=args)
-    print(emt(args.names))
+    print(emt(args.user, args.password))
     parser.exit(0)
