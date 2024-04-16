@@ -68,7 +68,27 @@ jobs:
     if: ${{ always() }}
     runs-on: ubuntu-latest
     steps:
-    - uses: codecov/codecov-action@v4.0.1
+    - uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+    - uses: actions/setup-python@v5
+      with:
+        python-version: 3.11
+        architecture: x64
+    - name: install dependencies
+      run: |
+        python -mpip install --progress-bar=off -r ci/requirements.txt
+        virtualenv --version
+        pip --version
+        tox --version
+        pip list --format=freeze
+    - name: test
+      env:
+        TOXPYTHON: 'python311'
+        PYTEST_ADDOPTS: '--cov-append'
+      run: >
+        PYTEST_ADDOPTS=--cov-append tox -e py310-cover -v
+    - uses: codecov/codecov-action@v3
       with:
         token: ${{ secrets.CODECOV_TOKEN }}
         CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
