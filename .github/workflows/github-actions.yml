@@ -144,7 +144,6 @@ jobs:
       with:
         token: ${{ secrets.CODECOV_TOKEN }}
         CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
-        flags: smart-tests
         verbose: true
       env:
         CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
