@@ -144,7 +144,6 @@ jobs:
       with:
         token: ${{ secrets.CODECOV_TOKEN }}
         CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
-        slug: riiy/emtl
         flags: smart-tests
         verbose: true
       env:
