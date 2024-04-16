@@ -140,13 +140,6 @@ jobs:
     if: ${{ always() }}
     runs-on: ubuntu-latest
     steps:
-    - name: install dependencies
-      run: |
-        python -mpip install --progress-bar=off -r ci/requirements.txt
-        virtualenv --version
-        pip --version
-        tox --version
-        pip list --format=freeze
     - name: test coverge
       env:
         TOXPYTHON: '3.10'
