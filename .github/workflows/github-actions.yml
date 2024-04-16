@@ -68,12 +68,6 @@ jobs:
     if: ${{ always() }}
     runs-on: ubuntu-latest
     steps:
-    - name: test coverge
-      env:
-        TOXPYTHON: '3.10'
-        PYTEST_ADDOPTS: '--cov-append'
-      run: >
-        PYTEST_ADDOPTS=--cov-append tox -e py310-cover -v
     - uses: codecov/codecov-action@v4.0.1
       with:
         token: ${{ secrets.CODECOV_TOKEN }}
