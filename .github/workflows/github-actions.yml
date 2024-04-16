@@ -140,6 +140,19 @@ jobs:
     if: ${{ always() }}
     runs-on: ubuntu-latest
     steps:
+    - name: install dependencies
+      run: |
+        python -mpip install --progress-bar=off -r ci/requirements.txt
+        virtualenv --version
+        pip --version
+        tox --version
+        pip list --format=freeze
+    - name: test coverge
+      env:
+        TOXPYTHON: '3.10'
+        PYTEST_ADDOPTS: '--cov-append'
+      run: >
+        PYTEST_ADDOPTS=--cov-append tox -e py310-cover -v
     - uses: codecov/codecov-action@v4.0.1
       with:
         token: ${{ secrets.CODECOV_TOKEN }}
