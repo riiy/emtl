@@ -49,7 +49,7 @@ Overview
 
 .. end-badges
 
-东方财富交易系统
+东方财富自动交易系统
 
 * Free software: MIT license
 
