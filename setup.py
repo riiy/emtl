@@ -70,9 +70,7 @@ setup(
         "交易机器人",
     ],
     python_requires=">=3.8",
-    install_requires=[
-        # eg: "aspectlib==1.1.1", "six>=1.7",
-    ],
+    install_requires=["rsa==4.9", "requests==2.31.0", "ddddocr==1.4.11", "cryptography==42.0.5"],
     extras_require={
         # eg:
         #   "rst": ["docutils>=0.11"],
