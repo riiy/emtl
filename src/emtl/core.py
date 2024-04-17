@@ -28,7 +28,6 @@ def _get_captcha_code() -> Optional[tuple[float, Any]]:
     random_num = cryptogen.random()
     resp = get(f"{_urls['yzm']}{random_num}", headers=_base_headers, timeout=60)
     if resp.status_code != 200:
-        logger.error(f"get captcha code fail, code={resp.status_code}, response={resp.text}")
         return None
     code = ocr.classification(resp.content)
     logger.debug(f"random_num={random_num}, code={code}")
@@ -47,11 +46,9 @@ def _get_em_validate_key():
     resp = session.get(url, headers=_base_headers)
     if resp.status_code != 200:
         logger.error(f"get em validatekey fail, code={resp.status_code}, response={resp.text}")
-    logger.info(resp.text)
     match_result = re.findall(r'id="em_validatekey" type="hidden" value="(.*?)"', resp.text)
     if match_result:
         _em_validatekey = match_result[0].strip()
-        logger.debug(f"success to get em_validatekey={_em_validatekey}")
         return _em_validatekey
     return ""
 
