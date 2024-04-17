@@ -19,7 +19,7 @@ setup(
         "fallback_version": "0.1.1",
     },
     license="MIT",
-    description="东方财富交易系统",
+    description="东方财富自动交易系统",
     long_description="{}\n{}".format(
         re.compile("^.. start-badges.*^.. end-badges", re.M | re.S).sub("", read("README.rst")),
         re.sub(":[a-z]+:`~?(.*?)`", r"``\1``", read("CHANGELOG.rst")),
@@ -62,10 +62,12 @@ setup(
         "Issue Tracker": "https://github.com/riiy/emtl/issues",
     },
     keywords=[
+        "autotrade",
         "trade",
         "东方财富",
         "股票",
         "交易",
+        "交易机器人",
     ],
     python_requires=">=3.8",
     install_requires=[
