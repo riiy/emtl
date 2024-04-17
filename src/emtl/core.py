@@ -26,7 +26,7 @@ def _get_captcha_code() -> Optional[tuple[float, Any]]:
     """get random number and captcha code."""
     cryptogen = SystemRandom()
     random_num = cryptogen.random()
-    resp = get(f"https://jywg.18.cn/Login/YZM?randNum={random_num}", headers=_base_headers, timeout=60)
+    resp = get(f"{_urls['yzm']}{random_num}", headers=_base_headers, timeout=60)
     if resp.status_code != 200:
         logger.error(f"get captcha code fail, code={resp.status_code}, response={resp.text}")
         return None
