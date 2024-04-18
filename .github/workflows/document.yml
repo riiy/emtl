@@ -31,6 +31,8 @@ jobs:
           tox -e docs -v
       - name: Publish
         uses: peaceiris/actions-gh-pages@v3
+        env:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           publish_dir: ./dist/docs
