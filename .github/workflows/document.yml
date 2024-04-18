@@ -1,0 +1,36 @@
+name: Documentation
+
+on:
+  push:
+    tags:
+      - "*"
+
+jobs:
+  build:
+    name: Publish documentation
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: 3.11
+          architecture: x64
+      - name: install dependencies
+        run: |
+          python -mpip install --progress-bar=off -r ci/requirements.txt
+          python -mpip install Sphinx==7.2.6
+          virtualenv --version
+          pip --version
+          tox --version
+          pip list --format=freeze
+      - name: Build
+        env:
+          TOXPYTHON: 'python311'
+        run: >
+          tox -e docs -v
+      - name: Publish
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./dist/docs
