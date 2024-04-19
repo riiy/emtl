@@ -8,3 +8,5 @@ To use the project:
 
     import emtl
     emtl.emt(...)
+    emtl.login(...)
+    emtl.query_asset_and_position(...)
