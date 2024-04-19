@@ -34,7 +34,7 @@ extlinks = {
     "pr": ("https://github.com/riiy/emtl/pull/%s", "PR #%s"),
 }
 
-html_theme = "furo"
+html_theme = "alabaster"
 html_theme_options = {
     "githuburl": "https://github.com/riiy/emtl/",
 }

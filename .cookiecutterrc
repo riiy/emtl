@@ -51,7 +51,7 @@ default_context:
     sphinx_docs: "yes"
     sphinx_docs_hosting: "https://emtl.readthedocs.io/"
     sphinx_doctest: "no"
-    sphinx_theme: "furo"
+    sphinx_theme: "alabaster"
     test_matrix_separate_coverage: "yes"
     tests_inside_package: "yes"
     version: "0.1.2"
