@@ -17,3 +17,8 @@ Changelog
 ------------------
 
 * add login && add asset position
+
+0.1.3 (2024-04-19)
+------------------
+
+* update docs theme
