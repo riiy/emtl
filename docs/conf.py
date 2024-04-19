@@ -1,3 +1,4 @@
+needs_sphinx = "7.2.6"
 extensions = [
     "sphinx.ext.autodoc",
     "sphinx.ext.autosummary",
