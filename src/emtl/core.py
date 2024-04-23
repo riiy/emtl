@@ -94,10 +94,12 @@ def _get_em_validate_key():
 
 
 def login(username: str, password: str, duration: int = 30) -> Optional[str]:
-    """Login.
-    :param username: 用户名
-    :param password: 密码(明文)
-    :param duration: 在线时长(分钟)
+    """登录接口.
+
+    :param str username: 用户名
+    :param str password: 密码(明文)
+    :param duration: 在线时长(分钟), defaults to 30
+    :type duration: int, optional
     :return:
     """
     if (ret := _get_captcha_code()) is None:
