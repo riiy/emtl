@@ -137,18 +137,18 @@ def query_trades():
 
 
 def query_history_orders(count, start_time, end_time):
-    resp = _query_something("query_his_orders", {'qqhs': count, 'dwc': '', 'st': start_time, 'et': end_time})
+    resp = _query_something("query_his_orders", {"qqhs": count, "dwc": "", "st": start_time, "et": end_time})
     if resp:
         return resp.json()
 
 
 def query_history_trades(count, start_time, end_time):
-    resp = _query_something("query_his_trades", {'qqhs': count, 'dwc': '', 'st': start_time, 'et': end_time})
+    resp = _query_something("query_his_trades", {"qqhs": count, "dwc": "", "st": start_time, "et": end_time})
     if resp:
         return resp.json()
 
 
 def query_funds_flow(count, start_time, end_time):
-    resp = _query_something("query_funds_flow", {'qqhs': count, 'dwc': '', 'st': start_time, 'et': end_time})
+    resp = _query_something("query_funds_flow", {"qqhs": count, "dwc": "", "st": start_time, "et": end_time})
     if resp:
         return resp.json()
