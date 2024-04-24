@@ -28,8 +28,7 @@ def emt(user, password):
 def _check_resp(resp: Response):
     if resp.status_code != 200:
         logger.error(f"request {resp.url} fail, code={resp.status_code}, response={resp.text}")
-        return False
-    return True
+        raise
 
 
 def _query_something(tag: str, count: int = 100, data: Optional[dict] = None) -> Optional[Response]:
@@ -44,10 +43,6 @@ def _query_something(tag: str, count: int = 100, data: Optional[dict] = None) ->
     assert tag in _urls, f"{tag} not in url list"
     url = _urls[tag] + _em_validate_key
     if data is None:
-        if count <= 0:
-            count = 100
-        elif count > 1000:
-            count = 1000
         data = {
             "qqhs": count,
             "dwc": "",
@@ -56,35 +51,32 @@ def _query_something(tag: str, count: int = 100, data: Optional[dict] = None) ->
     headers["X-Requested-With"] = "XMLHttpRequest"
     logger.debug(f"(tag={tag}), (data={data}), (url={url})")
     resp = session.post(url, headers=headers, data=data)
-    if not _check_resp(resp):
-        return None
-    logger.debug(resp.text)
+    _check_resp(resp)
     return resp
 
 
-def _get_captcha_code() -> Optional[tuple[float, Any]]:
+def _get_captcha_code() -> tuple[float, Any]:
     """get random number and captcha code."""
     cryptogen = SystemRandom()
     random_num = cryptogen.random()
     resp = get(f"{_urls['yzm']}{random_num}", headers=_base_headers, timeout=60)
-    if not _check_resp(resp):
-        return None
+    _check_resp(resp)
     code = ocr.classification(resp.content)
-    logger.debug(f"random_num={random_num}, code={code}")
     if code:
         try:
-            return random_num, int(code)
+            code = int(code)
         except Exception as e:
             logger.error(f"get_captcha_code found exception: {e}, ocr result={code}")
             return _get_captcha_code()
+
+    return random_num, code
 
 
 def _get_em_validate_key():
     """获取 em_validatekey"""
     url = "https://jywg.18.cn/Trade/Buy"
     resp = session.get(url, headers=_base_headers)
-    if not _check_resp(resp):
-        return None
+    _check_resp(resp)
     match_result = re.findall(r'id="em_validatekey" type="hidden" value="(.*?)"', resp.text)
     if match_result:
         _em_validatekey = match_result[0].strip()
@@ -102,10 +94,7 @@ def login(username: str, password: str, duration: int = 30) -> Optional[str]:
     :type duration: int, optional
     :return:
     """
-    if (ret := _get_captcha_code()) is None:
-        return ""
-    random_num, code = ret
-    logger.error(code)
+    random_num, code = _get_captcha_code()
     headers = _base_headers.copy()
     headers["X-Requested-With"] = "XMLHttpRequest"
     headers["Referer"] = "https://jywg.18.cn/Login?el=1&clear=&returl=%2fTrade%2fBuy"
@@ -122,8 +111,7 @@ def login(username: str, password: str, duration: int = 30) -> Optional[str]:
         "secInfo": "",
     }
     resp = session.post(url, headers=headers, data=data)
-    if not _check_resp(resp):
-        return None
+    _check_resp(resp)
     data = resp.json()
     try:
         resp = response_deserialize(data)
