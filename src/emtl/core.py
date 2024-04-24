@@ -10,10 +10,8 @@ from requests import get
 
 from .const import _base_headers
 from .const import _urls
-from .utils import Response as Resp
 from .utils import emt_trade_encrypt
 from .utils import get_logger
-from .utils import response_deserialize
 
 logger = get_logger(__name__)
 ocr = DdddOcr(show_ad=False)
@@ -31,7 +29,7 @@ def _check_resp(resp: Response):
         raise
 
 
-def _query_something(tag: str, count: int = 100, data: Optional[dict] = None) -> Optional[Response]:
+def _query_something(tag: str, data: Optional[dict] = None) -> Optional[Response]:
     """通用查询函数
 
     :param tag: 请求类型
@@ -44,7 +42,7 @@ def _query_something(tag: str, count: int = 100, data: Optional[dict] = None) ->
     url = _urls[tag] + _em_validate_key
     if data is None:
         data = {
-            "qqhs": count,
+            "qqhs": 100,
             "dwc": "",
         }
     headers = _base_headers.copy()
@@ -112,18 +110,45 @@ def login(username: str, password: str, duration: int = 30) -> Optional[str]:
     }
     resp = session.post(url, headers=headers, data=data)
     _check_resp(resp)
-    data = resp.json()
     try:
-        resp = response_deserialize(data)
-        if resp and resp.status == 0 and resp.message.strip() == "":
-            logger.info(f"login success for {resp.data[0]['khmc']}({username})")
-            return _get_em_validate_key()
+        logger.info(f"login success for {resp.json()}")
+        return _get_em_validate_key()
     except KeyError as e:
-        logger.error(f"param data found exception:[{e}], [data={data}]")
+        logger.error(f"param data found exception:[{e}], [data={resp}]")
 
 
-def query_asset_and_position() -> Optional[Resp]:
+def query_asset_and_position():
     """Get asset and position."""
     resp = _query_something("query_asset_and_pos")
     if resp:
-        return response_deserialize(resp.json())
+        return resp.json()
+
+
+def query_orders():
+    resp = _query_something("query_orders")
+    if resp:
+        return resp.json()
+
+
+def query_trades():
+    resp = _query_something("query_trades")
+    if resp:
+        return resp.json()
+
+
+def query_history_orders(count, start_time, end_time):
+    resp = _query_something("query_his_orders", {'qqhs': count, 'dwc': '', 'st': start_time, 'et': end_time})
+    if resp:
+        return resp.json()
+
+
+def query_history_trades(count, start_time, end_time):
+    resp = _query_something("query_his_trades", {'qqhs': count, 'dwc': '', 'st': start_time, 'et': end_time})
+    if resp:
+        return resp.json()
+
+
+def query_funds_flow(count, start_time, end_time):
+    resp = _query_something("query_funds_flow", {'qqhs': count, 'dwc': '', 'st': start_time, 'et': end_time})
+    if resp:
+        return resp.json()
