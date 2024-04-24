@@ -16,7 +16,7 @@ setup(
     use_scm_version={
         "local_scheme": "dirty-tag",
         "write_to": "src/emtl/_version.py",
-        "fallback_version": "0.1.4",
+        "fallback_version": "0.1.5",
     },
     license="MIT",
     description="东方财富自动交易系统",
