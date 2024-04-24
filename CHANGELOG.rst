@@ -22,3 +22,8 @@ Changelog
 ------------------
 
 * update docs theme
+
+0.1.5 (2024-04-24)
+------------------
+
+* update login refrence
