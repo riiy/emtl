@@ -69,8 +69,6 @@ Documentation
 =============
 
 
-https://riiy.github.io/emtl/
-
 https://emtl.readthedocs.io/
 
 
