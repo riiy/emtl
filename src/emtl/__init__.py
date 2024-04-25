@@ -13,9 +13,9 @@ __all__ = [
     "emt",
     "login",
     "query_asset_and_position",
-    "query_funds_flow",
-    "query_history_orders",
-    "query_history_trades",
     "query_orders",
+    "query_history_orders",
     "query_trades",
+    "query_history_trades",
+    "query_funds_flow",
 ]
