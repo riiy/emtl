@@ -4,10 +4,10 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>emtl.core &#8212; emtl 0.1.5 documentation</title>
+    <title>emtl.core &#8212; emtl 0.1.6 documentation</title>
     <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=d10597a4" />
     <link rel="stylesheet" type="text/css" href="../../_static/alabaster.css?v=12dfc556" />
-    <script src="../../_static/documentation_options.js?v=59fadc99"></script>
+    <script src="../../_static/documentation_options.js?v=6e0256f3"></script>
     <script src="../../_static/doctools.js?v=888ff710"></script>
     <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <link rel="index" title="Index" href="../../genindex.html" />
@@ -42,10 +42,8 @@
 
 <span class="kn">from</span> <span class="nn">.const</span> <span class="kn">import</span> <span class="n">_base_headers</span>
 <span class="kn">from</span> <span class="nn">.const</span> <span class="kn">import</span> <span class="n">_urls</span>
-<span class="kn">from</span> <span class="nn">.utils</span> <span class="kn">import</span> <span class="n">Response</span> <span class="k">as</span> <span class="n">Resp</span>
 <span class="kn">from</span> <span class="nn">.utils</span> <span class="kn">import</span> <span class="n">emt_trade_encrypt</span>
 <span class="kn">from</span> <span class="nn">.utils</span> <span class="kn">import</span> <span class="n">get_logger</span>
-<span class="kn">from</span> <span class="nn">.utils</span> <span class="kn">import</span> <span class="n">response_deserialize</span>
 
 <span class="n">logger</span> <span class="o">=</span> <span class="n">get_logger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
 <span class="n">ocr</span> <span class="o">=</span> <span class="n">DdddOcr</span><span class="p">(</span><span class="n">show_ad</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
@@ -63,63 +61,54 @@
 <span class="k">def</span> <span class="nf">_check_resp</span><span class="p">(</span><span class="n">resp</span><span class="p">:</span> <span class="n">Response</span><span class="p">):</span>
     <span class="k">if</span> <span class="n">resp</span><span class="o">.</span><span class="n">status_code</span> <span class="o">!=</span> <span class="mi">200</span><span class="p">:</span>
         <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;request </span><span class="si">{</span><span class="n">resp</span><span class="o">.</span><span class="n">url</span><span class="si">}</span><span class="s2"> fail, code=</span><span class="si">{</span><span class="n">resp</span><span class="o">.</span><span class="n">status_code</span><span class="si">}</span><span class="s2">, response=</span><span class="si">{</span><span class="n">resp</span><span class="o">.</span><span class="n">text</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-        <span class="k">return</span> <span class="kc">False</span>
-    <span class="k">return</span> <span class="kc">True</span>
+        <span class="k">raise</span>
 
 
-<span class="k">def</span> <span class="nf">_query_something</span><span class="p">(</span><span class="n">tag</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">count</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">100</span><span class="p">,</span> <span class="n">data</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">dict</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Response</span><span class="p">]:</span>
+<span class="k">def</span> <span class="nf">_query_something</span><span class="p">(</span><span class="n">tag</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">req_data</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">dict</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Response</span><span class="p">]:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;通用查询函数</span>
 
 <span class="sd">    :param tag: 请求类型</span>
-<span class="sd">    :param count: 查询数量,可选</span>
-<span class="sd">    :param data: 请求提交数据,可选</span>
+<span class="sd">    :param req_data: 请求提交数据,可选</span>
 <span class="sd">    :return:</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">assert</span> <span class="n">_em_validate_key</span><span class="p">,</span> <span class="s2">&quot;em_validatekey is empty&quot;</span>
     <span class="k">assert</span> <span class="n">tag</span> <span class="ow">in</span> <span class="n">_urls</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">tag</span><span class="si">}</span><span class="s2"> not in url list&quot;</span>
     <span class="n">url</span> <span class="o">=</span> <span class="n">_urls</span><span class="p">[</span><span class="n">tag</span><span class="p">]</span> <span class="o">+</span> <span class="n">_em_validate_key</span>
-    <span class="k">if</span> <span class="n">data</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="k">if</span> <span class="n">count</span> <span class="o">&lt;=</span> <span class="mi">0</span><span class="p">:</span>
-            <span class="n">count</span> <span class="o">=</span> <span class="mi">100</span>
-        <span class="k">elif</span> <span class="n">count</span> <span class="o">&gt;</span> <span class="mi">1000</span><span class="p">:</span>
-            <span class="n">count</span> <span class="o">=</span> <span class="mi">1000</span>
-        <span class="n">data</span> <span class="o">=</span> <span class="p">{</span>
-            <span class="s2">&quot;qqhs&quot;</span><span class="p">:</span> <span class="n">count</span><span class="p">,</span>
+    <span class="k">if</span> <span class="n">req_data</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">req_data</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s2">&quot;qqhs&quot;</span><span class="p">:</span> <span class="mi">100</span><span class="p">,</span>
             <span class="s2">&quot;dwc&quot;</span><span class="p">:</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
         <span class="p">}</span>
     <span class="n">headers</span> <span class="o">=</span> <span class="n">_base_headers</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
     <span class="n">headers</span><span class="p">[</span><span class="s2">&quot;X-Requested-With&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;XMLHttpRequest&quot;</span>
-    <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;(tag=</span><span class="si">{</span><span class="n">tag</span><span class="si">}</span><span class="s2">), (data=</span><span class="si">{</span><span class="n">data</span><span class="si">}</span><span class="s2">), (url=</span><span class="si">{</span><span class="n">url</span><span class="si">}</span><span class="s2">)&quot;</span><span class="p">)</span>
-    <span class="n">resp</span> <span class="o">=</span> <span class="n">session</span><span class="o">.</span><span class="n">post</span><span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="n">headers</span><span class="o">=</span><span class="n">headers</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="n">data</span><span class="p">)</span>
-    <span class="k">if</span> <span class="ow">not</span> <span class="n">_check_resp</span><span class="p">(</span><span class="n">resp</span><span class="p">):</span>
-        <span class="k">return</span> <span class="kc">None</span>
-    <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="n">resp</span><span class="o">.</span><span class="n">text</span><span class="p">)</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;(tag=</span><span class="si">{</span><span class="n">tag</span><span class="si">}</span><span class="s2">), (data=</span><span class="si">{</span><span class="n">req_data</span><span class="si">}</span><span class="s2">), (url=</span><span class="si">{</span><span class="n">url</span><span class="si">}</span><span class="s2">)&quot;</span><span class="p">)</span>
+    <span class="n">resp</span> <span class="o">=</span> <span class="n">session</span><span class="o">.</span><span class="n">post</span><span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="n">headers</span><span class="o">=</span><span class="n">headers</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="n">req_data</span><span class="p">)</span>
+    <span class="n">_check_resp</span><span class="p">(</span><span class="n">resp</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">resp</span>
 
 
-<span class="k">def</span> <span class="nf">_get_captcha_code</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="n">Any</span><span class="p">]]:</span>
+<span class="k">def</span> <span class="nf">_get_captcha_code</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;get random number and captcha code.&quot;&quot;&quot;</span>
     <span class="n">cryptogen</span> <span class="o">=</span> <span class="n">SystemRandom</span><span class="p">()</span>
     <span class="n">random_num</span> <span class="o">=</span> <span class="n">cryptogen</span><span class="o">.</span><span class="n">random</span><span class="p">()</span>
     <span class="n">resp</span> <span class="o">=</span> <span class="n">get</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">_urls</span><span class="p">[</span><span class="s1">&#39;yzm&#39;</span><span class="p">]</span><span class="si">}{</span><span class="n">random_num</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">headers</span><span class="o">=</span><span class="n">_base_headers</span><span class="p">,</span> <span class="n">timeout</span><span class="o">=</span><span class="mi">60</span><span class="p">)</span>
-    <span class="k">if</span> <span class="ow">not</span> <span class="n">_check_resp</span><span class="p">(</span><span class="n">resp</span><span class="p">):</span>
-        <span class="k">return</span> <span class="kc">None</span>
+    <span class="n">_check_resp</span><span class="p">(</span><span class="n">resp</span><span class="p">)</span>
     <span class="n">code</span> <span class="o">=</span> <span class="n">ocr</span><span class="o">.</span><span class="n">classification</span><span class="p">(</span><span class="n">resp</span><span class="o">.</span><span class="n">content</span><span class="p">)</span>
-    <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;random_num=</span><span class="si">{</span><span class="n">random_num</span><span class="si">}</span><span class="s2">, code=</span><span class="si">{</span><span class="n">code</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
     <span class="k">if</span> <span class="n">code</span><span class="p">:</span>
         <span class="k">try</span><span class="p">:</span>
-            <span class="k">return</span> <span class="n">random_num</span><span class="p">,</span> <span class="nb">int</span><span class="p">(</span><span class="n">code</span><span class="p">)</span>
+            <span class="n">code</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">code</span><span class="p">)</span>
         <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
             <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;get_captcha_code found exception: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">, ocr result=</span><span class="si">{</span><span class="n">code</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
             <span class="k">return</span> <span class="n">_get_captcha_code</span><span class="p">()</span>
+
+    <span class="k">return</span> <span class="n">random_num</span><span class="p">,</span> <span class="n">code</span>
 
 
 <span class="k">def</span> <span class="nf">_get_em_validate_key</span><span class="p">():</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;获取 em_validatekey&quot;&quot;&quot;</span>
     <span class="n">url</span> <span class="o">=</span> <span class="s2">&quot;https://jywg.18.cn/Trade/Buy&quot;</span>
     <span class="n">resp</span> <span class="o">=</span> <span class="n">session</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="n">headers</span><span class="o">=</span><span class="n">_base_headers</span><span class="p">)</span>
-    <span class="k">if</span> <span class="ow">not</span> <span class="n">_check_resp</span><span class="p">(</span><span class="n">resp</span><span class="p">):</span>
-        <span class="k">return</span> <span class="kc">None</span>
+    <span class="n">_check_resp</span><span class="p">(</span><span class="n">resp</span><span class="p">)</span>
     <span class="n">match_result</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">findall</span><span class="p">(</span><span class="sa">r</span><span class="s1">&#39;id=&quot;em_validatekey&quot; type=&quot;hidden&quot; value=&quot;(.*?)&quot;&#39;</span><span class="p">,</span> <span class="n">resp</span><span class="o">.</span><span class="n">text</span><span class="p">)</span>
     <span class="k">if</span> <span class="n">match_result</span><span class="p">:</span>
         <span class="n">_em_validatekey</span> <span class="o">=</span> <span class="n">match_result</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
@@ -139,10 +128,7 @@
 <span class="sd">    :type duration: int, optional</span>
 <span class="sd">    :return:</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="k">if</span> <span class="p">(</span><span class="n">ret</span> <span class="o">:=</span> <span class="n">_get_captcha_code</span><span class="p">())</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="k">return</span> <span class="s2">&quot;&quot;</span>
-    <span class="n">random_num</span><span class="p">,</span> <span class="n">code</span> <span class="o">=</span> <span class="n">ret</span>
-    <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="n">code</span><span class="p">)</span>
+    <span class="n">random_num</span><span class="p">,</span> <span class="n">code</span> <span class="o">=</span> <span class="n">_get_captcha_code</span><span class="p">()</span>
     <span class="n">headers</span> <span class="o">=</span> <span class="n">_base_headers</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
     <span class="n">headers</span><span class="p">[</span><span class="s2">&quot;X-Requested-With&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;XMLHttpRequest&quot;</span>
     <span class="n">headers</span><span class="p">[</span><span class="s2">&quot;Referer&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;https://jywg.18.cn/Login?el=1&amp;clear=&amp;returl=</span><span class="si">%2f</span><span class="s2">Trade</span><span class="si">%2f</span><span class="s2">Buy&quot;</span>
@@ -159,26 +145,90 @@
         <span class="s2">&quot;secInfo&quot;</span><span class="p">:</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
     <span class="p">}</span>
     <span class="n">resp</span> <span class="o">=</span> <span class="n">session</span><span class="o">.</span><span class="n">post</span><span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="n">headers</span><span class="o">=</span><span class="n">headers</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="n">data</span><span class="p">)</span>
-    <span class="k">if</span> <span class="ow">not</span> <span class="n">_check_resp</span><span class="p">(</span><span class="n">resp</span><span class="p">):</span>
-        <span class="k">return</span> <span class="kc">None</span>
-    <span class="n">data</span> <span class="o">=</span> <span class="n">resp</span><span class="o">.</span><span class="n">json</span><span class="p">()</span>
+    <span class="n">_check_resp</span><span class="p">(</span><span class="n">resp</span><span class="p">)</span>
     <span class="k">try</span><span class="p">:</span>
-        <span class="n">resp</span> <span class="o">=</span> <span class="n">response_deserialize</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
-        <span class="k">if</span> <span class="n">resp</span> <span class="ow">and</span> <span class="n">resp</span><span class="o">.</span><span class="n">status</span> <span class="o">==</span> <span class="mi">0</span> <span class="ow">and</span> <span class="n">resp</span><span class="o">.</span><span class="n">message</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span> <span class="o">==</span> <span class="s2">&quot;&quot;</span><span class="p">:</span>
-            <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;login success for </span><span class="si">{</span><span class="n">resp</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="s1">&#39;khmc&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2">(</span><span class="si">{</span><span class="n">username</span><span class="si">}</span><span class="s2">)&quot;</span><span class="p">)</span>
-            <span class="k">return</span> <span class="n">_get_em_validate_key</span><span class="p">()</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;login success for </span><span class="si">{</span><span class="n">resp</span><span class="o">.</span><span class="n">json</span><span class="p">()</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">_get_em_validate_key</span><span class="p">()</span>
     <span class="k">except</span> <span class="ne">KeyError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
-        <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;param data found exception:[</span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">], [data=</span><span class="si">{</span><span class="n">data</span><span class="si">}</span><span class="s2">]&quot;</span><span class="p">)</span></div>
+        <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;param data found exception:[</span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">], [data=</span><span class="si">{</span><span class="n">resp</span><span class="si">}</span><span class="s2">]&quot;</span><span class="p">)</span></div>
 
 
 
 <div class="viewcode-block" id="query_asset_and_position">
 <a class="viewcode-back" href="../../reference/emtl.html#emtl.query_asset_and_position">[docs]</a>
-<span class="k">def</span> <span class="nf">query_asset_and_position</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Resp</span><span class="p">]:</span>
+<span class="k">def</span> <span class="nf">query_asset_and_position</span><span class="p">():</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Get asset and position.&quot;&quot;&quot;</span>
     <span class="n">resp</span> <span class="o">=</span> <span class="n">_query_something</span><span class="p">(</span><span class="s2">&quot;query_asset_and_pos&quot;</span><span class="p">)</span>
     <span class="k">if</span> <span class="n">resp</span><span class="p">:</span>
-        <span class="k">return</span> <span class="n">response_deserialize</span><span class="p">(</span><span class="n">resp</span><span class="o">.</span><span class="n">json</span><span class="p">())</span></div>
+        <span class="k">return</span> <span class="n">resp</span><span class="o">.</span><span class="n">json</span><span class="p">()</span></div>
+
+
+
+<div class="viewcode-block" id="query_orders">
+<a class="viewcode-back" href="../../reference/emtl.html#emtl.query_orders">[docs]</a>
+<span class="k">def</span> <span class="nf">query_orders</span><span class="p">():</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;查询订单.&quot;&quot;&quot;</span>
+    <span class="n">resp</span> <span class="o">=</span> <span class="n">_query_something</span><span class="p">(</span><span class="s2">&quot;query_orders&quot;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">resp</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">resp</span><span class="o">.</span><span class="n">json</span><span class="p">()</span></div>
+
+
+
+<div class="viewcode-block" id="query_trades">
+<a class="viewcode-back" href="../../reference/emtl.html#emtl.query_trades">[docs]</a>
+<span class="k">def</span> <span class="nf">query_trades</span><span class="p">():</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;查询成交.&quot;&quot;&quot;</span>
+    <span class="n">resp</span> <span class="o">=</span> <span class="n">_query_something</span><span class="p">(</span><span class="s2">&quot;query_trades&quot;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">resp</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">resp</span><span class="o">.</span><span class="n">json</span><span class="p">()</span></div>
+
+
+
+<div class="viewcode-block" id="query_history_orders">
+<a class="viewcode-back" href="../../reference/emtl.html#emtl.query_history_orders">[docs]</a>
+<span class="k">def</span> <span class="nf">query_history_orders</span><span class="p">(</span><span class="n">size</span><span class="p">,</span> <span class="n">start_time</span><span class="p">,</span> <span class="n">end_time</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;查询历史订单.</span>
+
+<span class="sd">    :param int size: 请求的数据的条目数</span>
+<span class="sd">    :param str start_time: 起始时间, 格式&quot;%Y-%m-%d&quot;</span>
+<span class="sd">    :param str end_time: 起始时间, 格式&quot;%Y-%m-%d&quot;</span>
+<span class="sd">    :return dict:</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">resp</span> <span class="o">=</span> <span class="n">_query_something</span><span class="p">(</span><span class="s2">&quot;query_his_orders&quot;</span><span class="p">,</span> <span class="p">{</span><span class="s2">&quot;qqhs&quot;</span><span class="p">:</span> <span class="n">size</span><span class="p">,</span> <span class="s2">&quot;dwc&quot;</span><span class="p">:</span> <span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="s2">&quot;st&quot;</span><span class="p">:</span> <span class="n">start_time</span><span class="p">,</span> <span class="s2">&quot;et&quot;</span><span class="p">:</span> <span class="n">end_time</span><span class="p">})</span>
+    <span class="k">if</span> <span class="n">resp</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">resp</span><span class="o">.</span><span class="n">json</span><span class="p">()</span></div>
+
+
+
+<div class="viewcode-block" id="query_history_trades">
+<a class="viewcode-back" href="../../reference/emtl.html#emtl.query_history_trades">[docs]</a>
+<span class="k">def</span> <span class="nf">query_history_trades</span><span class="p">(</span><span class="n">size</span><span class="p">,</span> <span class="n">start_time</span><span class="p">,</span> <span class="n">end_time</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;查询历史成交.</span>
+
+<span class="sd">    :param int size: 请求的数据的条目数</span>
+<span class="sd">    :param str start_time: 起始时间, 格式&quot;%Y-%m-%d&quot;</span>
+<span class="sd">    :param str end_time: 起始时间, 格式&quot;%Y-%m-%d&quot;</span>
+<span class="sd">    :return dict:</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">resp</span> <span class="o">=</span> <span class="n">_query_something</span><span class="p">(</span><span class="s2">&quot;query_his_trades&quot;</span><span class="p">,</span> <span class="p">{</span><span class="s2">&quot;qqhs&quot;</span><span class="p">:</span> <span class="n">size</span><span class="p">,</span> <span class="s2">&quot;dwc&quot;</span><span class="p">:</span> <span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="s2">&quot;st&quot;</span><span class="p">:</span> <span class="n">start_time</span><span class="p">,</span> <span class="s2">&quot;et&quot;</span><span class="p">:</span> <span class="n">end_time</span><span class="p">})</span>
+    <span class="k">if</span> <span class="n">resp</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">resp</span><span class="o">.</span><span class="n">json</span><span class="p">()</span></div>
+
+
+
+<div class="viewcode-block" id="query_funds_flow">
+<a class="viewcode-back" href="../../reference/emtl.html#emtl.query_funds_flow">[docs]</a>
+<span class="k">def</span> <span class="nf">query_funds_flow</span><span class="p">(</span><span class="n">size</span><span class="p">,</span> <span class="n">start_time</span><span class="p">,</span> <span class="n">end_time</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;查询资金.</span>
+
+<span class="sd">    :param int size: 请求的数据的条目数</span>
+<span class="sd">    :param str start_time: 起始时间, 格式&quot;%Y-%m-%d&quot;</span>
+<span class="sd">    :param str end_time: 起始时间, 格式&quot;%Y-%m-%d&quot;</span>
+<span class="sd">    :return dict:</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">resp</span> <span class="o">=</span> <span class="n">_query_something</span><span class="p">(</span><span class="s2">&quot;query_funds_flow&quot;</span><span class="p">,</span> <span class="p">{</span><span class="s2">&quot;qqhs&quot;</span><span class="p">:</span> <span class="n">size</span><span class="p">,</span> <span class="s2">&quot;dwc&quot;</span><span class="p">:</span> <span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="s2">&quot;st&quot;</span><span class="p">:</span> <span class="n">start_time</span><span class="p">,</span> <span class="s2">&quot;et&quot;</span><span class="p">:</span> <span class="n">end_time</span><span class="p">})</span>
+    <span class="k">if</span> <span class="n">resp</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">resp</span><span class="o">.</span><span class="n">json</span><span class="p">()</span></div>
 
 </pre></div>
 
