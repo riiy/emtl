@@ -29,26 +29,25 @@ def _check_resp(resp: Response):
         raise
 
 
-def _query_something(tag: str, data: Optional[dict] = None) -> Optional[Response]:
+def _query_something(tag: str, req_data: Optional[dict] = None) -> Optional[Response]:
     """通用查询函数
 
     :param tag: 请求类型
-    :param count: 查询数量,可选
-    :param data: 请求提交数据,可选
+    :param req_data: 请求提交数据,可选
     :return:
     """
     assert _em_validate_key, "em_validatekey is empty"
     assert tag in _urls, f"{tag} not in url list"
     url = _urls[tag] + _em_validate_key
-    if data is None:
-        data = {
+    if req_data is None:
+        req_data = {
             "qqhs": 100,
             "dwc": "",
         }
     headers = _base_headers.copy()
     headers["X-Requested-With"] = "XMLHttpRequest"
-    logger.debug(f"(tag={tag}), (data={data}), (url={url})")
-    resp = session.post(url, headers=headers, data=data)
+    logger.debug(f"(tag={tag}), (data={req_data}), (url={url})")
+    resp = session.post(url, headers=headers, data=req_data)
     _check_resp(resp)
     return resp
 
@@ -125,30 +124,53 @@ def query_asset_and_position():
 
 
 def query_orders():
+    """查询订单."""
     resp = _query_something("query_orders")
     if resp:
         return resp.json()
 
 
 def query_trades():
+    """查询成交."""
     resp = _query_something("query_trades")
     if resp:
         return resp.json()
 
 
-def query_history_orders(count, start_time, end_time):
-    resp = _query_something("query_his_orders", {"qqhs": count, "dwc": "", "st": start_time, "et": end_time})
+def query_history_orders(size, start_time, end_time):
+    """查询历史订单.
+
+    :param int size: 请求的数据的条目数
+    :param str start_time: 起始时间, 格式"%Y-%m-%d"
+    :param str end_time: 起始时间, 格式"%Y-%m-%d"
+    :return dict:
+    """
+    resp = _query_something("query_his_orders", {"qqhs": size, "dwc": "", "st": start_time, "et": end_time})
     if resp:
         return resp.json()
 
 
-def query_history_trades(count, start_time, end_time):
-    resp = _query_something("query_his_trades", {"qqhs": count, "dwc": "", "st": start_time, "et": end_time})
+def query_history_trades(size, start_time, end_time):
+    """查询历史成交.
+
+    :param int size: 请求的数据的条目数
+    :param str start_time: 起始时间, 格式"%Y-%m-%d"
+    :param str end_time: 起始时间, 格式"%Y-%m-%d"
+    :return dict:
+    """
+    resp = _query_something("query_his_trades", {"qqhs": size, "dwc": "", "st": start_time, "et": end_time})
     if resp:
         return resp.json()
 
 
-def query_funds_flow(count, start_time, end_time):
-    resp = _query_something("query_funds_flow", {"qqhs": count, "dwc": "", "st": start_time, "et": end_time})
+def query_funds_flow(size, start_time, end_time):
+    """查询资金.
+
+    :param int size: 请求的数据的条目数
+    :param str start_time: 起始时间, 格式"%Y-%m-%d"
+    :param str end_time: 起始时间, 格式"%Y-%m-%d"
+    :return dict:
+    """
+    resp = _query_something("query_funds_flow", {"qqhs": size, "dwc": "", "st": start_time, "et": end_time})
     if resp:
         return resp.json()
