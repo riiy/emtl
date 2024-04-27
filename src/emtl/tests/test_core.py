@@ -1,6 +1,7 @@
 import datetime
 import os
 
+from emtl.core import insert_order
 from emtl.core import query_funds_flow
 from emtl.core import query_history_orders
 from emtl.core import query_history_trades
@@ -73,5 +74,11 @@ def test_query_funds_flow():
     et = end_date.strftime("%Y-%m-%d")
 
     resp = query_funds_flow(100, st, et)
+    assert resp
+    assert resp["Status"] == 0
+
+
+def test_insert_order():
+    resp = insert_order("000002", "B", "SA", 5.01, 1000)
     assert resp
     assert resp["Status"] == 0

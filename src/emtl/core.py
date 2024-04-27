@@ -174,3 +174,25 @@ def query_funds_flow(size, start_time, end_time):
     resp = _query_something("query_funds_flow", {"qqhs": size, "dwc": "", "st": start_time, "et": end_time})
     if resp:
         return resp.json()
+
+
+def insert_order(stock_code, trade_type, market: str, price: float, amount: int):
+    """交易接口, 买入或卖出.
+
+    :param str stock_code: 股票代码
+    :param str trade_type: 交易方向,B for buy, S for sell
+    :param str market: 股票市场,HA 上海, SA
+    :param float price: 股票价格
+    :param int amount: 买入/卖出数量
+    """
+    req_data = {
+        "stockCode": stock_code,
+        "tradeType": trade_type,
+        "zqmc": "",
+        "market": market,
+        "price": price,
+        "amount": amount,
+    }
+    resp = _query_something("insert_order", req_data=req_data)
+    if resp:
+        return resp.json()
