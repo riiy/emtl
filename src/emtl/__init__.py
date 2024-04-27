@@ -1,6 +1,7 @@
 __version__ = "0.1.7"
 
 from .core import emt
+from .core import insert_order
 from .core import login
 from .core import query_asset_and_position
 from .core import query_funds_flow
@@ -18,4 +19,5 @@ __all__ = [
     "query_trades",
     "query_history_trades",
     "query_funds_flow",
+    "insert_order",
 ]
