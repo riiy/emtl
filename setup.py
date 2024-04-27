@@ -19,7 +19,7 @@ setup(
         "fallback_version": "0.1.6",
     },
     license="MIT",
-    description="东方财富自动交易系统",
+    description="东方财富自动交易接口",
     long_description="{}\n{}".format(
         re.compile("^.. start-badges.*^.. end-badges", re.M | re.S).sub("", read("README.rst")),
         re.sub(":[a-z]+:`~?(.*?)`", r"``\1``", read("CHANGELOG.rst")),

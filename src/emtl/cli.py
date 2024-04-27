@@ -19,7 +19,7 @@ import argparse
 
 from .core import emt
 
-parser = argparse.ArgumentParser(prog="emt", description="东方财富交易系统", epilog="东方财富交易系统")
+parser = argparse.ArgumentParser(prog="emt", description="东方财富交易接口", epilog="东方财富交易接口")
 parser.add_argument("-u", "--user", required=True)
 parser.add_argument("-p", "--password", required=True)
 
