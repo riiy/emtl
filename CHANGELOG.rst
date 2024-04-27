@@ -27,3 +27,8 @@ Changelog
 ------------------
 
 * update login refrence
+
+0.1.7 (2024-04-27)
+------------------
+
+* add insert order api
