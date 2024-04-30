@@ -4,10 +4,10 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>emtl.core &#8212; emtl 0.1.7 documentation</title>
+    <title>emtl.core &#8212; emtl 0.1.8 documentation</title>
     <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=d10597a4" />
     <link rel="stylesheet" type="text/css" href="../../_static/alabaster.css?v=12dfc556" />
-    <script src="../../_static/documentation_options.js?v=ca7ad2ea"></script>
+    <script src="../../_static/documentation_options.js?v=22607128"></script>
     <script src="../../_static/doctools.js?v=888ff710"></script>
     <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <link rel="index" title="Index" href="../../genindex.html" />
@@ -232,6 +232,8 @@
 
 
 
+<div class="viewcode-block" id="insert_order">
+<a class="viewcode-back" href="../../reference/emtl.html#emtl.insert_order">[docs]</a>
 <span class="k">def</span> <span class="nf">insert_order</span><span class="p">(</span><span class="n">stock_code</span><span class="p">,</span> <span class="n">trade_type</span><span class="p">,</span> <span class="n">market</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">price</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">amount</span><span class="p">:</span> <span class="nb">int</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;交易接口, 买入或卖出.</span>
 
@@ -251,7 +253,8 @@
     <span class="p">}</span>
     <span class="n">resp</span> <span class="o">=</span> <span class="n">_query_something</span><span class="p">(</span><span class="s2">&quot;insert_order&quot;</span><span class="p">,</span> <span class="n">req_data</span><span class="o">=</span><span class="n">req_data</span><span class="p">)</span>
     <span class="k">if</span> <span class="n">resp</span><span class="p">:</span>
-        <span class="k">return</span> <span class="n">resp</span><span class="o">.</span><span class="n">json</span><span class="p">()</span>
+        <span class="k">return</span> <span class="n">resp</span><span class="o">.</span><span class="n">json</span><span class="p">()</span></div>
+
 </pre></div>
 
           </div>
