@@ -32,3 +32,9 @@ Changelog
 ------------------
 
 * add insert order api
+
+
+0.1.8 (2024-04-30)
+------------------
+
+* delete macos actions
