@@ -1,6 +1,7 @@
 import re
 from random import SystemRandom
 from typing import Any
+from typing import Dict
 from typing import Optional
 
 from ddddocr import DdddOcr
@@ -29,7 +30,7 @@ def _check_resp(resp: Response):
         raise
 
 
-def _query_something(tag: str, req_data: Optional[dict] = None) -> Optional[Response]:
+def _query_something(tag: str, req_data: Optional[dict] = None) -> Optional[Dict]:
     """通用查询函数
 
     :param tag: 请求类型
@@ -49,7 +50,7 @@ def _query_something(tag: str, req_data: Optional[dict] = None) -> Optional[Resp
     logger.debug(f"(tag={tag}), (data={req_data}), (url={url})")
     resp = session.post(url, headers=headers, data=req_data)
     _check_resp(resp)
-    return resp
+    return resp.json()
 
 
 def _get_captcha_code() -> tuple[float, Any]:
@@ -120,21 +121,21 @@ def query_asset_and_position():
     """Get asset and position."""
     resp = _query_something("query_asset_and_pos")
     if resp:
-        return resp.json()
+        return resp
 
 
 def query_orders():
     """查询订单."""
     resp = _query_something("query_orders")
     if resp:
-        return resp.json()
+        return resp
 
 
 def query_trades():
     """查询成交."""
     resp = _query_something("query_trades")
     if resp:
-        return resp.json()
+        return resp
 
 
 def query_history_orders(size, start_time, end_time):
@@ -147,7 +148,7 @@ def query_history_orders(size, start_time, end_time):
     """
     resp = _query_something("query_his_orders", {"qqhs": size, "dwc": "", "st": start_time, "et": end_time})
     if resp:
-        return resp.json()
+        return resp
 
 
 def query_history_trades(size, start_time, end_time):
@@ -160,7 +161,7 @@ def query_history_trades(size, start_time, end_time):
     """
     resp = _query_something("query_his_trades", {"qqhs": size, "dwc": "", "st": start_time, "et": end_time})
     if resp:
-        return resp.json()
+        return resp
 
 
 def query_funds_flow(size, start_time, end_time):
@@ -173,7 +174,7 @@ def query_funds_flow(size, start_time, end_time):
     """
     resp = _query_something("query_funds_flow", {"qqhs": size, "dwc": "", "st": start_time, "et": end_time})
     if resp:
-        return resp.json()
+        return resp
 
 
 def insert_order(stock_code, trade_type, market: str, price: float, amount: int):
@@ -194,5 +195,6 @@ def insert_order(stock_code, trade_type, market: str, price: float, amount: int)
         "amount": amount,
     }
     resp = _query_something("insert_order", req_data=req_data)
+    logger.info(resp)
     if resp:
-        return resp.json()
+        return resp
