@@ -1,6 +1,7 @@
 import datetime
 import os
 
+from emtl.core import cancel_order
 from emtl.core import insert_order
 from emtl.core import query_funds_flow
 from emtl.core import query_history_orders
@@ -80,5 +81,11 @@ def test_query_funds_flow():
 
 def test_insert_order():
     resp = insert_order("000002", "B", "SA", 5.01, 100)
+    assert resp
+    assert resp["Status"] in (0, -1)
+
+
+def test_cancel_order():
+    resp = cancel_order("000002")
     assert resp
     assert resp["Status"] in (0, -1)

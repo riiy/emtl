@@ -198,3 +198,10 @@ def insert_order(stock_code, trade_type, market: str, price: float, amount: int)
     logger.info(resp)
     if resp:
         return resp
+
+
+def cancel_order(code: str):
+    data = {"revokes": code.strip()}
+    resp = _query_something("cancel_order", req_data=data)
+    if resp:
+        return resp
