@@ -1,6 +1,5 @@
 import argparse
 
-from .core import login
 from .utils import get_logger
 
 logger = get_logger(__name__)
@@ -20,7 +19,7 @@ def run(args=None):
     logger.info(args)
     args = parser.parse_args(args=args)
     logger.info(args)
-    login(args.user, args.password)
+    print(args.user, args.password)
     parser.exit(0)
 
 
