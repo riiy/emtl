@@ -9,17 +9,8 @@ from emtl.core import query_history_trades
 from emtl.core import query_orders
 from emtl.core import query_trades
 
-from .. import emt
 from .. import login
 from .. import query_asset_and_position
-
-
-def test_emt():
-    assert emt("user", "pass") == ("user", "pass")
-
-
-def test_emt_empty():
-    assert emt("", "") == ("", "")
 
 
 def test_login():

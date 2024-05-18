@@ -20,10 +20,6 @@ session = Session()
 _em_validate_key = ""
 
 
-def emt(user, password):
-    return user, password
-
-
 def _check_resp(resp: Response):
     if resp.status_code != 200:
         logger.error(f"request {resp.url} fail, code={resp.status_code}, response={resp.text}")

@@ -1,7 +1,6 @@
 __version__ = "0.1.8"
 
 from .core import cancel_order
-from .core import emt
 from .core import insert_order
 from .core import login
 from .core import query_asset_and_position
@@ -12,7 +11,6 @@ from .core import query_orders
 from .core import query_trades
 
 __all__ = [
-    "emt",
     "login",
     "query_asset_and_position",
     "query_orders",
