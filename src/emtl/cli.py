@@ -1,30 +1,28 @@
-"""
-Module that contains the command line app.
-
-Why does this file exist, and why not put this in __main__?
-
-  You might be tempted to import things from __main__ later, but that will cause
-  problems: the code will get executed twice:
-
-  - When you run `python -memtl` python will execute
-    ``__main__.py`` as a script. That means there will not be any
-    ``emtl.__main__`` in ``sys.modules``.
-  - When you import __main__ it will get executed again (as a module) because
-    there"s no ``emtl.__main__`` in ``sys.modules``.
-
-  Also see (1) from http://click.pocoo.org/5/setuptools/#setuptools-integration
-"""
-
 import argparse
 
-from .core import emt
+from .core import login
+from .utils import get_logger
 
+logger = get_logger(__name__)
+
+
+logger.info("cli")
 parser = argparse.ArgumentParser(prog="emt", description="东方财富交易接口", epilog="东方财富交易接口")
-parser.add_argument("-u", "--user", required=True)
-parser.add_argument("-p", "--password", required=True)
+parser.add_argument("-u", "--user", required=False)
+parser.add_argument("-p", "--password", required=False)
+group = parser.add_mutually_exclusive_group()
+group.add_argument("-b", "--buy", help="买入股票，格式为：代码－价格－数量。例子买入一手平安银行：000001-10.21-100")
+group.add_argument("-s", "--sell", help="卖出股票，格式为：代码－价格－数量。卖一手平安银行：000001-10.21-100")
+group.add_argument("-q", "--query", type=str, choices=["asset", "order", "trade"], help="查询账户的资产、挂单、成交")
 
 
 def run(args=None):
+    logger.info(args)
     args = parser.parse_args(args=args)
-    print(emt(args.user, args.password))
+    logger.info(args)
+    login(args.user, args.password)
     parser.exit(0)
+
+
+if __name__ == "__main__":
+    run()
