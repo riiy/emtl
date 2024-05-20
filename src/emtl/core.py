@@ -1,3 +1,4 @@
+import os
 import re
 from random import SystemRandom
 from typing import Any
@@ -12,12 +13,30 @@ from requests import get
 from .const import _base_headers
 from .const import _urls
 from .utils import emt_trade_encrypt
+from .utils import get_float
 from .utils import get_logger
 
 logger = get_logger(__name__)
 ocr = DdddOcr(show_ad=False)
 session = Session()
 _em_validate_key = ""
+
+
+def _query_snapshot(symbol_code: str, market: str) -> Optional[dict]:
+    url = "https://emhsmarketwg.eastmoneysec.com/api/SHSZQuoteSnapshot"
+    params = {"id": symbol_code.strip(), "market": market}
+    headers = _base_headers.copy()
+    resp = session.get(url, params=params, headers=headers)
+    _check_resp(resp)
+    return resp.json()
+
+
+def get_last_price(symbol_code: str, market: str) -> float:
+    ret = _query_snapshot(symbol_code, market)
+    if ret is None or "status" not in ret or ret["status"] != 0:
+        return float("nan")
+
+    return get_float(ret["realtimequote"], "currentPrice")
 
 
 def _check_resp(resp: Response):
@@ -33,9 +52,13 @@ def _query_something(tag: str, req_data: Optional[dict] = None) -> Optional[Dict
     :param req_data: 请求提交数据,可选
     :return:
     """
-    assert _em_validate_key, "em_validatekey is empty"
+    if not _em_validate_key:
+        validate_key = login()
+    else:
+        validate_key = _em_validate_key
+    logger.info(validate_key)
     assert tag in _urls, f"{tag} not in url list"
-    url = _urls[tag] + _em_validate_key
+    url = _urls[tag] + validate_key
     if req_data is None:
         req_data = {
             "qqhs": 100,
@@ -46,6 +69,7 @@ def _query_something(tag: str, req_data: Optional[dict] = None) -> Optional[Dict
     logger.debug(f"(tag={tag}), (data={req_data}), (url={url})")
     resp = session.post(url, headers=headers, data=req_data)
     _check_resp(resp)
+    logger.info(resp.text)
     return resp.json()
 
 
@@ -79,7 +103,7 @@ def _get_em_validate_key():
         return _em_validatekey
 
 
-def login(username: str, password: str, duration: int = 30) -> Optional[str]:
+def login(username: str = "", password: str = "", duration: int = 30) -> Optional[str]:
     """登录接口.
 
     :param str username: 用户名
@@ -88,6 +112,10 @@ def login(username: str, password: str, duration: int = 30) -> Optional[str]:
     :type duration: int, optional
     :return:
     """
+    if not username:
+        username = os.getenv("EM_USERNAME", "")
+    if not password:
+        password = os.getenv("EM_PASSWORD", "")
     random_num, code = _get_captcha_code()
     headers = _base_headers.copy()
     headers["X-Requested-With"] = "XMLHttpRequest"
@@ -199,5 +227,6 @@ def insert_order(stock_code, trade_type, market: str, price: float, amount: int)
 def cancel_order(code: str):
     data = {"revokes": code.strip()}
     resp = _query_something("cancel_order", req_data=data)
+    logger.info(resp)
     if resp:
         return resp

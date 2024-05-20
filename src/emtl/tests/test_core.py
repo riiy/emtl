@@ -1,7 +1,9 @@
 import datetime
+import math
 import os
 
 from emtl.core import cancel_order
+from emtl.core import get_last_price
 from emtl.core import insert_order
 from emtl.core import query_funds_flow
 from emtl.core import query_history_orders
@@ -80,3 +82,7 @@ def test_cancel_order():
     resp = cancel_order("000002")
     assert resp
     assert resp["Status"] in (0, -1)
+
+
+def test_last_price():
+    assert math.isnan(get_last_price("000001", "SH"))

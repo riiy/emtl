@@ -1,5 +1,6 @@
 import base64
 import logging
+import math
 
 from cryptography.hazmat.primitives import serialization
 from cryptography.hazmat.primitives.asymmetric import padding
@@ -27,3 +28,19 @@ def emt_trade_encrypt(content: str) -> str:
     _pub_key: rsa.RSAPublicKey = serialization.load_pem_public_key(rsa_public_key.encode("utf-8"))  # type:ignore
     encrypt_text = _pub_key.encrypt(content.encode(), padding.PKCS1v15())
     return base64.b64encode(encrypt_text).decode("utf-8")
+
+
+def double_equal(a, b) -> bool:
+    return math.fabs(a - b) < 1e-6
+
+
+def get_float(data: dict, key: str) -> float:
+    if v := data[key].strip():
+        return float(v)
+    return 0.0
+
+
+def get_int(data: dict, key: str) -> int:
+    if v := data[key].strip():
+        return int(v)
+    return 0
