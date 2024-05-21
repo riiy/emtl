@@ -79,10 +79,9 @@ def test_insert_order():
 
 
 def test_cancel_order():
-    resp = cancel_order("000002")
-    assert resp
-    assert resp["Status"] in (0, -1)
+    resp = cancel_order("20240520_130662")
+    assert resp == "130662: 该笔委托无需撤单，若有股份或资金冻结，将于清算完成后可用。"
 
 
 def test_last_price():
-    assert math.isnan(get_last_price("000001", "SH"))
+    assert math.isnan(get_last_price("000001", "SZ"))

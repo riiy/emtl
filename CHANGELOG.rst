@@ -38,3 +38,9 @@ Changelog
 ------------------
 
 * delete macos actions
+
+
+0.2.0 (2024-05-21)
+------------------
+
+* complete all method

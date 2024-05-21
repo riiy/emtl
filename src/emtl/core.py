@@ -2,7 +2,6 @@ import os
 import re
 from random import SystemRandom
 from typing import Any
-from typing import Dict
 from typing import Optional
 
 from ddddocr import DdddOcr
@@ -33,6 +32,7 @@ def _query_snapshot(symbol_code: str, market: str) -> Optional[dict]:
 
 def get_last_price(symbol_code: str, market: str) -> float:
     ret = _query_snapshot(symbol_code, market)
+    logger.info(ret)
     if ret is None or "status" not in ret or ret["status"] != 0:
         return float("nan")
 
@@ -45,7 +45,7 @@ def _check_resp(resp: Response):
         raise
 
 
-def _query_something(tag: str, req_data: Optional[dict] = None) -> Optional[Dict]:
+def _query_something(tag: str, req_data: Optional[dict] = None) -> Optional[Response]:
     """通用查询函数
 
     :param tag: 请求类型
@@ -69,8 +69,7 @@ def _query_something(tag: str, req_data: Optional[dict] = None) -> Optional[Dict
     logger.debug(f"(tag={tag}), (data={req_data}), (url={url})")
     resp = session.post(url, headers=headers, data=req_data)
     _check_resp(resp)
-    logger.info(resp.text)
-    return resp.json()
+    return resp
 
 
 def _get_captcha_code() -> tuple[float, Any]:
@@ -145,21 +144,21 @@ def query_asset_and_position():
     """Get asset and position."""
     resp = _query_something("query_asset_and_pos")
     if resp:
-        return resp
+        return resp.json()
 
 
 def query_orders():
     """查询订单."""
     resp = _query_something("query_orders")
     if resp:
-        return resp
+        return resp.json()
 
 
 def query_trades():
     """查询成交."""
     resp = _query_something("query_trades")
     if resp:
-        return resp
+        return resp.json()
 
 
 def query_history_orders(size, start_time, end_time):
@@ -172,7 +171,7 @@ def query_history_orders(size, start_time, end_time):
     """
     resp = _query_something("query_his_orders", {"qqhs": size, "dwc": "", "st": start_time, "et": end_time})
     if resp:
-        return resp
+        return resp.json()
 
 
 def query_history_trades(size, start_time, end_time):
@@ -185,7 +184,7 @@ def query_history_trades(size, start_time, end_time):
     """
     resp = _query_something("query_his_trades", {"qqhs": size, "dwc": "", "st": start_time, "et": end_time})
     if resp:
-        return resp
+        return resp.json()
 
 
 def query_funds_flow(size, start_time, end_time):
@@ -198,7 +197,7 @@ def query_funds_flow(size, start_time, end_time):
     """
     resp = _query_something("query_funds_flow", {"qqhs": size, "dwc": "", "st": start_time, "et": end_time})
     if resp:
-        return resp
+        return resp.json()
 
 
 def insert_order(stock_code, trade_type, market: str, price: float, amount: int):
@@ -221,12 +220,15 @@ def insert_order(stock_code, trade_type, market: str, price: float, amount: int)
     resp = _query_something("insert_order", req_data=req_data)
     logger.info(resp)
     if resp:
-        return resp
+        return resp.json()
 
 
-def cancel_order(code: str):
-    data = {"revokes": code.strip()}
+def cancel_order(order_str: str):
+    """取消交易接口.
+
+    :param str order_str: 订单字符串, 由成交日期+成交编号组成. 在insert_order和query_order接口, Wtrq的值是成交日期, Wtbh的值是成交编号, 格式为: 20240520_130662
+    """
+    data = {"revokes": order_str.strip()}
     resp = _query_something("cancel_order", req_data=data)
-    logger.info(resp)
     if resp:
-        return resp
+        return resp.text.strip()
