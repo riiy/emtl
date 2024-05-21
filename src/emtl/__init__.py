@@ -1,4 +1,4 @@
-__version__ = "0.1.8"
+__version__ = "0.2.0"
 
 from .core import cancel_order
 from .core import insert_order

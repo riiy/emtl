@@ -41,9 +41,9 @@ Overview
     :alt: Supported implementations
     :target: https://pypi.org/project/emtl
 
-.. |commits-since| image:: https://img.shields.io/github/commits-since/riiy/emtl/v0.1.8.svg
+.. |commits-since| image:: https://img.shields.io/github/commits-since/riiy/emtl/v0.2.0.svg
     :alt: Commits since latest release
-    :target: https://github.com/riiy/emtl/compare/v0.1.8...master
+    :target: https://github.com/riiy/emtl/compare/v0.2.0...master
 
 
 
