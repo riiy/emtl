@@ -4,10 +4,10 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>emtl.core &#8212; emtl 0.1.8 documentation</title>
+    <title>emtl.core &#8212; emtl 0.2.0 documentation</title>
     <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=d10597a4" />
     <link rel="stylesheet" type="text/css" href="../../_static/alabaster.css?v=12dfc556" />
-    <script src="../../_static/documentation_options.js?v=22607128"></script>
+    <script src="../../_static/documentation_options.js?v=938c9ccc"></script>
     <script src="../../_static/doctools.js?v=888ff710"></script>
     <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <link rel="index" title="Index" href="../../genindex.html" />
@@ -30,7 +30,8 @@
           <div class="body" role="main">
             
   <h1>Source code for emtl.core</h1><div class="highlight"><pre>
-<span></span><span class="kn">import</span> <span class="nn">re</span>
+<span></span><span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">re</span>
 <span class="kn">from</span> <span class="nn">random</span> <span class="kn">import</span> <span class="n">SystemRandom</span>
 <span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Any</span>
 <span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Optional</span>
@@ -43,6 +44,7 @@
 <span class="kn">from</span> <span class="nn">.const</span> <span class="kn">import</span> <span class="n">_base_headers</span>
 <span class="kn">from</span> <span class="nn">.const</span> <span class="kn">import</span> <span class="n">_urls</span>
 <span class="kn">from</span> <span class="nn">.utils</span> <span class="kn">import</span> <span class="n">emt_trade_encrypt</span>
+<span class="kn">from</span> <span class="nn">.utils</span> <span class="kn">import</span> <span class="n">get_float</span>
 <span class="kn">from</span> <span class="nn">.utils</span> <span class="kn">import</span> <span class="n">get_logger</span>
 
 <span class="n">logger</span> <span class="o">=</span> <span class="n">get_logger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
@@ -51,11 +53,22 @@
 <span class="n">_em_validate_key</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
 
 
-<div class="viewcode-block" id="emt">
-<a class="viewcode-back" href="../../reference/emtl.html#emtl.emt">[docs]</a>
-<span class="k">def</span> <span class="nf">emt</span><span class="p">(</span><span class="n">user</span><span class="p">,</span> <span class="n">password</span><span class="p">):</span>
-    <span class="k">return</span> <span class="n">user</span><span class="p">,</span> <span class="n">password</span></div>
+<span class="k">def</span> <span class="nf">_query_snapshot</span><span class="p">(</span><span class="n">symbol_code</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">market</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">dict</span><span class="p">]:</span>
+    <span class="n">url</span> <span class="o">=</span> <span class="s2">&quot;https://emhsmarketwg.eastmoneysec.com/api/SHSZQuoteSnapshot&quot;</span>
+    <span class="n">params</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="n">symbol_code</span><span class="o">.</span><span class="n">strip</span><span class="p">(),</span> <span class="s2">&quot;market&quot;</span><span class="p">:</span> <span class="n">market</span><span class="p">}</span>
+    <span class="n">headers</span> <span class="o">=</span> <span class="n">_base_headers</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+    <span class="n">resp</span> <span class="o">=</span> <span class="n">session</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="n">params</span><span class="o">=</span><span class="n">params</span><span class="p">,</span> <span class="n">headers</span><span class="o">=</span><span class="n">headers</span><span class="p">)</span>
+    <span class="n">_check_resp</span><span class="p">(</span><span class="n">resp</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">resp</span><span class="o">.</span><span class="n">json</span><span class="p">()</span>
 
+
+<span class="k">def</span> <span class="nf">get_last_price</span><span class="p">(</span><span class="n">symbol_code</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">market</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+    <span class="n">ret</span> <span class="o">=</span> <span class="n">_query_snapshot</span><span class="p">(</span><span class="n">symbol_code</span><span class="p">,</span> <span class="n">market</span><span class="p">)</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="n">ret</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">ret</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="s2">&quot;status&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">ret</span> <span class="ow">or</span> <span class="n">ret</span><span class="p">[</span><span class="s2">&quot;status&quot;</span><span class="p">]</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="k">return</span> <span class="nb">float</span><span class="p">(</span><span class="s2">&quot;nan&quot;</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">get_float</span><span class="p">(</span><span class="n">ret</span><span class="p">[</span><span class="s2">&quot;realtimequote&quot;</span><span class="p">],</span> <span class="s2">&quot;currentPrice&quot;</span><span class="p">)</span>
 
 
 <span class="k">def</span> <span class="nf">_check_resp</span><span class="p">(</span><span class="n">resp</span><span class="p">:</span> <span class="n">Response</span><span class="p">):</span>
@@ -71,9 +84,13 @@
 <span class="sd">    :param req_data: 请求提交数据,可选</span>
 <span class="sd">    :return:</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="k">assert</span> <span class="n">_em_validate_key</span><span class="p">,</span> <span class="s2">&quot;em_validatekey is empty&quot;</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">_em_validate_key</span><span class="p">:</span>
+        <span class="n">validate_key</span> <span class="o">=</span> <span class="n">login</span><span class="p">()</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">validate_key</span> <span class="o">=</span> <span class="n">_em_validate_key</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="n">validate_key</span><span class="p">)</span>
     <span class="k">assert</span> <span class="n">tag</span> <span class="ow">in</span> <span class="n">_urls</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">tag</span><span class="si">}</span><span class="s2"> not in url list&quot;</span>
-    <span class="n">url</span> <span class="o">=</span> <span class="n">_urls</span><span class="p">[</span><span class="n">tag</span><span class="p">]</span> <span class="o">+</span> <span class="n">_em_validate_key</span>
+    <span class="n">url</span> <span class="o">=</span> <span class="n">_urls</span><span class="p">[</span><span class="n">tag</span><span class="p">]</span> <span class="o">+</span> <span class="n">validate_key</span>
     <span class="k">if</span> <span class="n">req_data</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
         <span class="n">req_data</span> <span class="o">=</span> <span class="p">{</span>
             <span class="s2">&quot;qqhs&quot;</span><span class="p">:</span> <span class="mi">100</span><span class="p">,</span>
@@ -119,7 +136,7 @@
 
 <div class="viewcode-block" id="login">
 <a class="viewcode-back" href="../../reference/emtl.html#emtl.login">[docs]</a>
-<span class="k">def</span> <span class="nf">login</span><span class="p">(</span><span class="n">username</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">password</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">duration</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">30</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
+<span class="k">def</span> <span class="nf">login</span><span class="p">(</span><span class="n">username</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="n">password</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="n">duration</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">30</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;登录接口.</span>
 
 <span class="sd">    :param str username: 用户名</span>
@@ -128,6 +145,10 @@
 <span class="sd">    :type duration: int, optional</span>
 <span class="sd">    :return:</span>
 <span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">username</span><span class="p">:</span>
+        <span class="n">username</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">getenv</span><span class="p">(</span><span class="s2">&quot;EM_USERNAME&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">password</span><span class="p">:</span>
+        <span class="n">password</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">getenv</span><span class="p">(</span><span class="s2">&quot;EM_PASSWORD&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">)</span>
     <span class="n">random_num</span><span class="p">,</span> <span class="n">code</span> <span class="o">=</span> <span class="n">_get_captcha_code</span><span class="p">()</span>
     <span class="n">headers</span> <span class="o">=</span> <span class="n">_base_headers</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
     <span class="n">headers</span><span class="p">[</span><span class="s2">&quot;X-Requested-With&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;XMLHttpRequest&quot;</span>
@@ -252,8 +273,23 @@
         <span class="s2">&quot;amount&quot;</span><span class="p">:</span> <span class="n">amount</span><span class="p">,</span>
     <span class="p">}</span>
     <span class="n">resp</span> <span class="o">=</span> <span class="n">_query_something</span><span class="p">(</span><span class="s2">&quot;insert_order&quot;</span><span class="p">,</span> <span class="n">req_data</span><span class="o">=</span><span class="n">req_data</span><span class="p">)</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="n">resp</span><span class="p">)</span>
     <span class="k">if</span> <span class="n">resp</span><span class="p">:</span>
         <span class="k">return</span> <span class="n">resp</span><span class="o">.</span><span class="n">json</span><span class="p">()</span></div>
+
+
+
+<div class="viewcode-block" id="cancel_order">
+<a class="viewcode-back" href="../../reference/emtl.html#emtl.cancel_order">[docs]</a>
+<span class="k">def</span> <span class="nf">cancel_order</span><span class="p">(</span><span class="n">order_str</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;取消交易接口.</span>
+
+<span class="sd">    :param str order_str: 订单字符串, 由成交日期+成交编号组成. 在insert_order和query_order接口, Wtrq的值是成交日期, Wtbh的值是成交编号, 格式为: 20240520_130662</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">data</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;revokes&quot;</span><span class="p">:</span> <span class="n">order_str</span><span class="o">.</span><span class="n">strip</span><span class="p">()}</span>
+    <span class="n">resp</span> <span class="o">=</span> <span class="n">_query_something</span><span class="p">(</span><span class="s2">&quot;cancel_order&quot;</span><span class="p">,</span> <span class="n">req_data</span><span class="o">=</span><span class="n">data</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">resp</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">resp</span><span class="o">.</span><span class="n">text</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span></div>
 
 </pre></div>
 
