@@ -84,4 +84,4 @@ def test_cancel_order():
 
 
 def test_last_price():
-    assert math.isnan(get_last_price("000001", "SZ"))
+    assert math.isnan(get_last_price("000001", "SA"))

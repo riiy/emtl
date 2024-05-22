@@ -32,7 +32,6 @@ def _query_snapshot(symbol_code: str, market: str) -> Optional[dict]:
 
 def get_last_price(symbol_code: str, market: str) -> float:
     ret = _query_snapshot(symbol_code, market)
-    logger.info(ret)
     if ret is None or "status" not in ret or ret["status"] != 0:
         return float("nan")
 
