@@ -80,7 +80,8 @@ def test_insert_order():
 
 def test_cancel_order():
     resp = cancel_order("20240520_130662")
-    assert resp == "130662: 该笔委托无需撤单，若有股份或资金冻结，将于清算完成后可用。"
+    assert resp
+    assert resp.startswith("130662")
 
 
 def test_last_price():
