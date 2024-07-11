@@ -44,3 +44,15 @@ Changelog
 ------------------
 
 * complete all method
+
+
+0.2.1 (2024-05-29)
+------------------
+
+* add auto deploy to pypi
+
+
+0.2.2 (2024-07-11)
+------------------
+
+* replace insert_order with create_order
