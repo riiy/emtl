@@ -199,7 +199,7 @@ def query_funds_flow(size, start_time, end_time):
         return resp.json()
 
 
-def insert_order(stock_code, trade_type, market: str, price: float, amount: int):
+def create_order(stock_code, trade_type, market: str, price: float, amount: int):
     """交易接口, 买入或卖出.
 
     :param str stock_code: 股票代码
@@ -216,16 +216,16 @@ def insert_order(stock_code, trade_type, market: str, price: float, amount: int)
         "price": price,
         "amount": amount,
     }
-    resp = _query_something("insert_order", req_data=req_data)
-    logger.info(resp)
+    resp = _query_something("create_order", req_data=req_data)
     if resp:
+        logger.info(resp.json())
         return resp.json()
 
 
 def cancel_order(order_str: str):
     """取消交易接口.
 
-    :param str order_str: 订单字符串, 由成交日期+成交编号组成. 在insert_order和query_order接口, Wtrq的值是成交日期, Wtbh的值是成交编号, 格式为: 20240520_130662
+    :param str order_str: 订单字符串, 由成交日期+成交编号组成. 在create_order和query_order接口, Wtrq的值是成交日期, Wtbh的值是成交编号, 格式为: 20240520_130662
     """
     data = {"revokes": order_str.strip()}
     resp = _query_something("cancel_order", req_data=data)

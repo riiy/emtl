@@ -8,7 +8,7 @@ _urls: dict = {
     "query_his_trades": "https://jywg.18.cn/Search/GetHisDealData?validatekey=",
     "query_funds_flow": "https://jywg.18.cn/Search/GetFundsFlow?validatekey=",
     "query_positions": "https://jywg.18.cn/Search/GetStockList?validatekey=",
-    "insert_order": "https://jywg.18.cn/Trade/SubmitTradeV2?validatekey=",
+    "create_order": "https://jywg.18.cn/Trade/SubmitTradeV2?validatekey=",
     "cancel_order": "https://jywg.18.cn/Trade/RevokeOrders?validatekey=",
 }
 _base_headers: dict = {

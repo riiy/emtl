@@ -3,8 +3,8 @@ import math
 import os
 
 from emtl.core import cancel_order
+from emtl.core import create_order
 from emtl.core import get_last_price
-from emtl.core import insert_order
 from emtl.core import query_funds_flow
 from emtl.core import query_history_orders
 from emtl.core import query_history_trades
@@ -72,8 +72,8 @@ def test_query_funds_flow():
     assert resp["Status"] == 0
 
 
-def test_insert_order():
-    resp = insert_order("000002", "B", "SA", 5.01, 100)
+def test_create_order():
+    resp = create_order("000002", "B", "SA", 5.01, 100)
     assert resp
     assert resp["Status"] in (0, -1)
 
