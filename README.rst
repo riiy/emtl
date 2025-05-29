@@ -75,8 +75,10 @@ https://emtl.readthedocs.io/
 Development
 ===========
 
-To run all the tests run::
+建议使用python3.11
 
+To run all the tests run::
+    pip install -r ci/requirements.txt
     tox
 
 Note, to combine the coverage data from all the tox environments run:
