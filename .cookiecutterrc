@@ -54,7 +54,7 @@ default_context:
     sphinx_theme: "alabaster"
     test_matrix_separate_coverage: "yes"
     tests_inside_package: "yes"
-    version: "0.2.2"
+    version: "0.2.3"
     version_manager: "bump2version"
     website: "riiy.gihub.io/emtl"
     year_from: "2024"
