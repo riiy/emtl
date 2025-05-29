@@ -1,2 +1,2 @@
-readme.rst:11: [redirected temporarily] https://readthedocs.org/projects/emtl/badge/?style=flat to https://app.readthedocs.org/projects/emtl/badge/?style=flat
 readme.rst:11: [redirected temporarily] https://readthedocs.org/projects/emtl/ to https://app.readthedocs.org/projects/emtl/
+readme.rst:11: [redirected temporarily] https://readthedocs.org/projects/emtl/badge/?style=flat to https://app.readthedocs.org/projects/emtl/badge/?style=flat
