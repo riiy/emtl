@@ -26,12 +26,6 @@ jobs:
             toxpython: 'python3.11'
             tox_env: 'docs'
             os: 'ubuntu-latest'
-          - name: 'py310-cover (ubuntu)'
-            python: '3.10'
-            toxpython: 'python3.10'
-            python_arch: 'x64'
-            tox_env: 'py310-cover'
-            os: 'ubuntu-latest'
           - name: 'py311-cover (ubuntu)'
             python: '3.11'
             toxpython: 'python3.11'
@@ -86,7 +80,7 @@ jobs:
         EM_USERNAME: ${{ secrets.EM_USERNAME }}
         EM_PASSWORD: ${{ secrets.EM_PASSWORD }}
       run: >
-        PYTEST_ADDOPTS=--cov-append tox -e py310-cover -v
+        PYTEST_ADDOPTS=--cov-append tox -e py311-cover -v
     - uses: codecov/codecov-action@v4
       with:
         token: ${{ secrets.CODECOV_TOKEN }}
