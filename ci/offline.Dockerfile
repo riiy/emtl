@@ -14,4 +14,3 @@ RUN python -m pip install 'tox>=4.67' && \
 
 ENV PIP_NO_INDEX=1 PIP_DISABLE_PIP_VERSION_CHECK=1
 CMD ["python", "ci/run_offline_tests.py"]
-
