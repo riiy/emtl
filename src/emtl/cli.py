@@ -16,10 +16,7 @@ group.add_argument("-q", "--query", type=str, choices=["asset", "order", "trade"
 
 
 def run(args=None):
-    logger.info(args)
-    args = parser.parse_args(args=args)
-    logger.info(args)
-    print(args.user, args.password)
+    parser.parse_args(args=args)
     parser.exit(0)
 
 

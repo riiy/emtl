@@ -8,8 +8,11 @@ To use the project:
 .. code-block:: python
 
     import emtl
-    emtl.login("2020123456789", "123456")
+    emtl.login("P0_FAKE_USER", "P0_FAKE_PASSWORD")
     asset = emtl.query_asset_and_position()
     print(asset)
-    resp = create_order("000002", "B", "SA", 5.01, 100)
-    resp = cancel_order("20240520_130662")
+    resp = emtl.create_order("FAKE_STOCK", "B", "SA", 5.01, 100)
+    resp = emtl.cancel_order("P0_FAKE_ORDER")
+
+以上仅为人工调用示例，参数为虚构值；实际调用可能产生真实交易，切勿在自动测试中运行。
+自动测试使用离线替身，不连接券商。CLI 安全修复已取消凭证回显，参数和正常退出码保持不变；CLI 仍只解析参数，不执行登录或交易。

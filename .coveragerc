@@ -4,8 +4,7 @@ source = src
 [run]
 branch = true
 source =
-    src
-    tests
+    src/emtl
 parallel = true
 
 [report]
