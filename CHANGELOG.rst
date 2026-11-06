@@ -58,7 +58,7 @@ Changelog
 * replace insert_order with create_order
 
 P0 security baseline (unreleased)
---------------------------------
+---------------------------------
 
 * Remove sensitive log output and stop configuring the host application's root logger.
 * Replace live trading tests with isolated offline tests and remove CI account credential injection.
