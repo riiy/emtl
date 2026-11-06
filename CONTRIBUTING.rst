@@ -45,6 +45,13 @@ human approval. Tests live in the checkout's ``tests/`` directory, not in the
 installed package. From elsewhere, pass the absolute checkout ``tests/`` path
 to pytest. The old ``pytest --pyargs emtl`` entry point is no longer supported.
 
+The separate ``Offline tests (network namespace)`` CI workflow prepares its
+dependencies before running the full suite in a Docker container with external
+networking disabled. Its artifacts include tox, coverage and isolation evidence.
+This does not make the docs environment's online linkcheck an offline test.
+For local reproduction, build ``ci/offline.Dockerfile`` and run the resulting
+image with ``--network none``; inspect the network mode and container exit code.
+
 To set up `emtl` for local development:
 
 1. Fork `emtl <https://github.com/riiy/emtl>`_

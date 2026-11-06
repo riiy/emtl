@@ -6,7 +6,7 @@ from pathlib import Path
 
 import pytest
 
-HELPER = Path(__file__).with_name("_offline.py")
+from tests.helpers import OFFLINE_HELPER as HELPER
 
 
 def run_cli(*args):

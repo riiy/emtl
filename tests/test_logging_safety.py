@@ -3,15 +3,18 @@ import os
 import subprocess
 import sys
 from unittest.mock import Mock
+from unittest.mock import PropertyMock
 
 import pytest
+import requests
 
 from emtl import core
 from emtl.cli import run
 from emtl.const import _base_headers
 from emtl.const import _urls
-from tests.test_cli import HELPER
-from tests.test_core import response
+from tests.helpers import OFFLINE_HELPER as HELPER
+from tests.helpers import assert_no_sensitive_logs
+from tests.helpers import response
 
 
 def test_no_sensitive_log_records(monkeypatch, caplog):
@@ -139,3 +142,53 @@ def test_url_cookie_and_response_secrets_are_not_logged(monkeypatch, caplog, sta
             assert secret not in str(record.msg)
             assert secret not in str(record.args)
         assert not record.exc_info
+
+
+@pytest.mark.parametrize("operation", ["query", "create", "cancel"])
+def test_transport_exception_secret_is_not_logged(monkeypatch, caplog, operation):
+    caplog.set_level(logging.DEBUG)
+    secret = "P1_FAKE_EXCEPTION_" + "SECRET"
+    error = requests.Timeout(secret)
+    session = Mock(post=Mock(side_effect=error))
+    monkeypatch.setattr(core, "session", session)
+    monkeypatch.setattr(core, "_em_validate_key", "P1_FAKE_TOKEN")
+    calls = {
+        "query": lambda: core.query_orders(),
+        "create": lambda: core.create_order("P1_FAKE", "B", "SA", 1, 100),
+        "cancel": lambda: core.cancel_order("P1_FAKE"),
+    }
+    with pytest.raises(requests.Timeout) as caught:
+        calls[operation]()
+    assert caught.value is error
+    session.post.assert_called_once()
+    for record in caplog.records:
+        if record.name.startswith("emtl"):
+            for field in (record.msg, record.args, record.getMessage(), record.exc_info, record.exc_text, record.stack_info):
+                assert secret not in str(field)
+
+
+@pytest.mark.parametrize("operation", ["create", "cancel"])
+def test_response_processing_failure_does_not_log_secrets(monkeypatch, caplog, operation):
+    caplog.set_level(logging.DEBUG)
+    sentinels = ["P1_FAKE_REQUEST_BODY", "P1_FAKE_REPLY_BODY", "P1_FAKE_PROCESSING_EXCEPTION", "P1_FAKE_VALIDATEKEY"]
+    error = ValueError(sentinels[2])
+    reply = response({"echo": sentinels[1]})
+    reply.url = "https://example.invalid/?validatekey=" + sentinels[3]
+    if operation == "create":
+        reply.json = Mock(side_effect=[{"echo": sentinels[1]}, error])
+    else:
+        monkeypatch.setattr(type(reply), "text", PropertyMock(side_effect=error))
+
+    def invoke():
+        if operation == "create":
+            return core.create_order(sentinels[0], "S", "SA", 1.0, 100)
+        return core.cancel_order(sentinels[0])
+
+    session = Mock(post=Mock(return_value=reply))
+    monkeypatch.setattr(core, "session", session)
+    monkeypatch.setattr(core, "_em_validate_key", sentinels[3])
+    with pytest.raises(ValueError, match="P1_FAKE_PROCESSING_EXCEPTION") as caught:
+        invoke()
+    assert caught.value is error
+    session.post.assert_called_once()
+    assert_no_sensitive_logs(caplog.records, sentinels)
