@@ -14,7 +14,13 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Prepare image and dependencies (network permitted)
-        run: docker build -f ci/offline.Dockerfile -t emtl-p1-offline .
+        shell: bash
+        run: |
+          set -o pipefail
+          mkdir -p dist/p1-offline
+          docker build -f ci/offline.Dockerfile \
+            -t emtl-p1-offline . \
+            2>&1 | tee dist/p1-offline/docker-build.log
       - name: Run complete tests without external network
         shell: bash
         run: |
