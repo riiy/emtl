@@ -35,6 +35,16 @@ If you are proposing a feature:
 Development
 ===========
 
+Tests must run offline with synthetic account data only. Never run the old
+live-trading tests or put real credentials in tests or CI. Prepare Python 3.11
+and the project, pytest and pytest-cov dependencies separately; from the
+repository root run ``python -m pytest`` or ``tox -e py311-cover`` with the
+test network guard enabled. The tox docs environment includes an online
+linkcheck and is not an offline test command. Do not push or publish without
+human approval. Tests live in the checkout's ``tests/`` directory, not in the
+installed package. From elsewhere, pass the absolute checkout ``tests/`` path
+to pytest. The old ``pytest --pyargs emtl`` entry point is no longer supported.
+
 To set up `emtl` for local development:
 
 1. Fork `emtl <https://github.com/riiy/emtl>`_

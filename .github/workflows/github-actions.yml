@@ -50,8 +50,6 @@ jobs:
     - name: test
       env:
         TOXPYTHON: '${{ matrix.toxpython }}'
-        EM_USERNAME: ${{ secrets.EM_USERNAME }}
-        EM_PASSWORD: ${{ secrets.EM_PASSWORD }}
       run: >
         tox -e ${{ matrix.tox_env }} -v
   finish:
@@ -77,8 +75,6 @@ jobs:
       env:
         TOXPYTHON: 'python311'
         PYTEST_ADDOPTS: '--cov-append'
-        EM_USERNAME: ${{ secrets.EM_USERNAME }}
-        EM_PASSWORD: ${{ secrets.EM_PASSWORD }}
       run: >
         PYTEST_ADDOPTS=--cov-append tox -e py311-cover -v
     - uses: codecov/codecov-action@v4
@@ -88,5 +84,3 @@ jobs:
         verbose: true
       env:
         CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
-        EM_USERNAME: ${{ secrets.EM_USERNAME }}
-        EM_PASSWORD: ${{ secrets.EM_PASSWORD }}

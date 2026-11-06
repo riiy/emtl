@@ -40,7 +40,7 @@ def get_last_price(symbol_code: str, market: str) -> float:
 
 def _check_resp(resp: Response):
     if resp.status_code != 200:
-        logger.error(f"request {resp.url} fail, code={resp.status_code}, response={resp.text}")
+        logger.error("request failed, code=%s", resp.status_code)
         raise
 
 
@@ -55,7 +55,6 @@ def _query_something(tag: str, req_data: Optional[dict] = None) -> Optional[Resp
         validate_key = login()
     else:
         validate_key = _em_validate_key
-    logger.info(validate_key)
     assert tag in _urls, f"{tag} not in url list"
     url = _urls[tag] + validate_key
     if req_data is None:
@@ -65,7 +64,6 @@ def _query_something(tag: str, req_data: Optional[dict] = None) -> Optional[Resp
         }
     headers = _base_headers.copy()
     headers["X-Requested-With"] = "XMLHttpRequest"
-    logger.debug(f"(tag={tag}), (data={req_data}), (url={url})")
     resp = session.post(url, headers=headers, data=req_data)
     _check_resp(resp)
     return resp
@@ -81,8 +79,8 @@ def _get_captcha_code() -> tuple[float, Any]:
     if code:
         try:
             code = int(code)
-        except Exception as e:
-            logger.error(f"get_captcha_code found exception: {e}, ocr result={code}")
+        except Exception:
+            logger.error("captcha recognition failed")
             return _get_captcha_code()
 
     return random_num, code
@@ -133,10 +131,11 @@ def login(username: str = "", password: str = "", duration: int = 30) -> Optiona
     resp = session.post(url, headers=headers, data=data)
     _check_resp(resp)
     try:
-        logger.info(f"login success for {resp.json()}")
+        _ = f"{resp.json()}"  # Preserve the original response parsing and formatting behavior.
+        logger.info("authentication response received")
         return _get_em_validate_key()
-    except KeyError as e:
-        logger.error(f"param data found exception:[{e}], [data={resp}]")
+    except KeyError:
+        logger.error("authentication response processing failed")
 
 
 def query_asset_and_position():
@@ -218,7 +217,8 @@ def create_order(stock_code, trade_type, market: str, price: float, amount: int)
     }
     resp = _query_something("create_order", req_data=req_data)
     if resp:
-        logger.info(resp.json())
+        resp.json()  # Preserve the original first JSON parse.
+        logger.info("order response received")
         return resp.json()
 
 

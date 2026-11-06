@@ -18,10 +18,7 @@ c0AT4qIJ/xtbBcHkFPK77upnsfDTJiVEuQDH+MiMeb+XhCLNKZGp0yaUU6GlxZdp
 
 def get_logger(name):
     """Logger."""
-    formater = "%(asctime)s %(name)-20s %(funcName)s %(lineno)d: %(levelname)-8s: %(message)s"
-    logging.basicConfig(format=formater, force=True, level=logging.INFO)
-    logger = logging.getLogger(name)
-    return logger
+    return logging.getLogger(name)
 
 
 def emt_trade_encrypt(content: str) -> str:
