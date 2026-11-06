@@ -1,0 +1,10 @@
+{
+  "login_accepted": {"Status": 0},
+  "login_rejected": {"Status": -1},
+  "asset_response": {"Status": 0, "Data": []},
+  "order_response": {"Status": 0, "Data": [{"Wtrq": "P1_FAKE_DATE", "Wtbh": "P1_FAKE_ID"}]},
+  "order_rejected": {"Status": -1, "Data": []},
+  "cancel_input": "P1_FAKE_DATE_P1_FAKE_ID",
+  "cancel_response": " P1_FAKE_RESULT \n",
+  "token_html": "id=\"em_validatekey\" type=\"hidden\" value=\"P1_FAKE_TOKEN\""
+}

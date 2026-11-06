@@ -1,0 +1,13 @@
+.git
+.venv
+.tox
+__pycache__
+*.pyc
+.env*
+.coverage
+.coverage.*
+.pytest_cache
+.ruff_cache
+dist
+build
+src/*/_version.py

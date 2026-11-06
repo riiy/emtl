@@ -1,19 +1,14 @@
-import json
 import math
 from unittest.mock import Mock
 
 import pytest
-from requests import Response
+import requests
 
 from emtl import core
+from emtl.const import _base_headers
 from emtl.const import _urls
-
-
-def response(value=None, text=None, status=200):
-    result = Response()
-    result.status_code = status
-    result._content = (json.dumps(value) if text is None else text).encode()
-    return result
+from tests.helpers import QUERY_CALLS
+from tests.helpers import response
 
 
 def test_login(monkeypatch, fake_captcha):
@@ -67,6 +62,7 @@ def test_queries(monkeypatch, name, tag, args):
     assert sent_args == (_urls[tag] + "P0_FAKE_TOKEN",)
     assert sent_kwargs["data"] == ({"qqhs": 10, "dwc": "", "st": "start", "et": "end"} if args else {"qqhs": 100, "dwc": ""})
     assert sent_kwargs["headers"]["X-Requested-With"] == "XMLHttpRequest"
+    session.post.assert_called_once()
     login.assert_not_called()
 
 
@@ -163,3 +159,96 @@ def test_login_malformed_json_propagates(monkeypatch, fake_captcha):
     with pytest.raises(ValueError, match="Expecting value"):
         core.login("P0_FAKE_USER", "P0_FAKE_PASSWORD")
     session.get.assert_not_called()
+
+
+@pytest.mark.parametrize(("name", "args"), QUERY_CALLS)
+@pytest.mark.parametrize("error", [requests.Timeout("P1_FAKE"), requests.ConnectionError("P1_FAKE")])
+def test_query_transport_error_propagates(monkeypatch, error, name, args):
+    session = Mock(post=Mock(side_effect=error))
+    monkeypatch.setattr(core, "session", session)
+    monkeypatch.setattr(core, "_em_validate_key", "P1_FAKE_TOKEN")
+    with pytest.raises(type(error)) as caught:
+        getattr(core, name)(*args)
+    assert caught.value is error
+    session.post.assert_called_once()
+
+
+@pytest.mark.parametrize(
+    ("reply", "error"), [(None, AttributeError), (response(status=500), RuntimeError), (response(text="invalid"), ValueError)]
+)
+@pytest.mark.parametrize(("name", "args"), QUERY_CALLS)
+def test_query_invalid_response(monkeypatch, reply, error, name, args):
+    session = Mock(post=Mock(return_value=reply))
+    monkeypatch.setattr(core, "session", session)
+    monkeypatch.setattr(core, "_em_validate_key", "P1_FAKE_TOKEN")
+    with pytest.raises(error):
+        getattr(core, name)(*args)
+    session.post.assert_called_once()
+
+
+def test_explicit_empty_query_form(monkeypatch):
+    session = Mock(post=Mock(return_value=response([])))
+    monkeypatch.setattr(core, "session", session)
+    monkeypatch.setattr(core, "_em_validate_key", "P1_FAKE_TOKEN")
+    before = _base_headers.copy()
+    assert core._query_something("query_orders", {}).json() == []
+    assert session.post.call_args.kwargs["data"] == {}
+    session.post.assert_called_once()
+    assert _base_headers == before
+    assert session.post.call_args.kwargs["headers"] == dict(before, **{"X-Requested-With": "XMLHttpRequest"})
+
+
+@pytest.mark.parametrize(
+    ("value", "error"),
+    [
+        ({"status": 0}, KeyError),
+        ({"status": 0, "realtimequote": {}}, KeyError),
+        ({"status": 0, "realtimequote": {"currentPrice": "invalid"}}, ValueError),
+        ({"status": 0, "realtimequote": {"currentPrice": None}}, AttributeError),
+    ],
+)
+def test_price_invalid_data(monkeypatch, value, error):
+    session = Mock(get=Mock(return_value=response(value)))
+    monkeypatch.setattr(core, "session", session)
+    with pytest.raises(error):
+        core.get_last_price(" FAKE ", "SA")
+    session.get.assert_called_once()
+    assert session.get.call_args.kwargs["params"] == {"id": "FAKE", "market": "SA"}
+
+
+@pytest.mark.parametrize("error_type", [requests.Timeout, requests.ConnectionError])
+def test_price_transport_error_is_not_nan(monkeypatch, error_type):
+    """Regression for the reviewed mutation that swallowed transport failures."""
+    error = error_type("P1_FAKE_PRICE_ERROR")
+    session = Mock(get=Mock(side_effect=error))
+    monkeypatch.setattr(core, "session", session)
+    with pytest.raises(error_type) as caught:
+        core.get_last_price(" FAKE ", "SA")
+    assert caught.value is error
+    session.get.assert_called_once_with(
+        "https://emhsmarketwg.eastmoneysec.com/api/SHSZQuoteSnapshot",
+        params={"id": "FAKE", "market": "SA"},
+        headers=_base_headers,
+    )
+
+
+@pytest.mark.parametrize(
+    ("status", "text", "error", "message"),
+    [
+        (503, "P1_FAKE_BODY", RuntimeError, "No active exception"),
+        (200, "P1_FAKE_INVALID_JSON", requests.exceptions.JSONDecodeError, "Expecting value"),
+    ],
+)
+def test_price_response_error_is_not_nan(monkeypatch, status, text, error, message):
+    reply = response(text=text, status=status)
+    reply.json = Mock(wraps=reply.json)
+    session = Mock(get=Mock(return_value=reply))
+    monkeypatch.setattr(core, "session", session)
+    with pytest.raises(error, match=message):
+        core.get_last_price(" FAKE ", "SA")
+    session.get.assert_called_once_with(
+        "https://emhsmarketwg.eastmoneysec.com/api/SHSZQuoteSnapshot",
+        params={"id": "FAKE", "market": "SA"},
+        headers=_base_headers,
+    )
+    assert reply.json.call_count == (1 if status == 200 else 0)

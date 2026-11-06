@@ -1,0 +1,68 @@
+name: Offline tests (network namespace)
+on:
+  push:
+    branches: [master]
+  pull_request:
+    branches: [master]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  offline:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - name: Prepare image and dependencies (network permitted)
+        run: docker build -f ci/offline.Dockerfile -t emtl-p1-offline .
+      - name: Run complete tests without external network
+        shell: bash
+        run: |
+          set -euo pipefail
+          name="emtl-p1-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}"
+          mkdir -p dist/p1-offline
+          collect_and_cleanup() {
+            original_status=$?
+            trap - EXIT
+            set +e
+            docker logs "$name" > dist/p1-offline/docker.log 2>&1
+            logs_status=$?
+            docker inspect --format '{{.State.ExitCode}}' "$name" > dist/p1-offline/container-exit-code.txt
+            inspect_status=$?
+            docker cp "$name:/workspace/dist/p1-offline/." dist/p1-offline/
+            copy_status=$?
+            docker rm -f "$name" > /dev/null
+            cleanup_status=$?
+            evidence_status=0
+            for report in junit.xml coverage.xml coverage.json tox-result.json versions.json commands.json; do
+              test -s "dist/p1-offline/$report" || evidence_status=1
+            done
+            printf 'original=%s logs=%s inspect=%s copy=%s cleanup=%s evidence=%s\n' \
+              "$original_status" "$logs_status" "$inspect_status" "$copy_status" "$cleanup_status" "$evidence_status" \
+              > dist/p1-offline/host-status.txt
+            if [ "$original_status" -ne 0 ]; then exit "$original_status"; fi
+            for status in "$logs_status" "$inspect_status" "$copy_status" "$cleanup_status" "$evidence_status"; do
+              if [ "$status" -ne 0 ]; then exit "$status"; fi
+            done
+          }
+          trap collect_and_cleanup EXIT
+          docker image inspect emtl-p1-offline > dist/p1-offline/image.json
+          docker create --name "$name" --network none emtl-p1-offline > /dev/null
+          mode=$(docker inspect --format '{{.HostConfig.NetworkMode}}' "$name")
+          printf 'NetworkMode=%s\n' "$mode" | tee dist/p1-offline/network-mode.txt
+          if [ "$mode" != none ]; then exit 1; fi
+          set +e
+          docker start -a "$name" 2>&1 | tee dist/p1-offline/container.log
+          pipeline_status=("${PIPESTATUS[@]}")
+          set -e
+          if [ "${pipeline_status[0]}" -ne 0 ]; then exit "${pipeline_status[0]}"; fi
+          if [ "${pipeline_status[1]}" -ne 0 ]; then exit "${pipeline_status[1]}"; fi
+          exit_code=$(docker inspect --format '{{.State.ExitCode}}' "$name")
+          [[ "$exit_code" =~ ^[0-9]+$ ]] || exit 1
+          exit "$exit_code"
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: offline-test-evidence
+          path: dist/p1-offline/
+          if-no-files-found: error

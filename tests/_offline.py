@@ -28,7 +28,7 @@ def install():
     global _installed, _original_ocr
     if _installed:
         return
-    for owner, name in (
+    targets = [
         (requests.sessions.Session, "request"),
         (requests.sessions.Session, "send"),
         (socket.socket, "connect"),
@@ -38,7 +38,10 @@ def install():
         (socket, "gethostbyname"),
         (socket, "gethostbyname_ex"),
         (socket, "gethostbyaddr"),
-    ):
+        (socket, "getnameinfo"),
+    ]
+    targets.extend((socket.socket, name) for name in ("send", "sendall", "sendto", "sendmsg") if hasattr(socket.socket, name))
+    for owner, name in targets:
         _originals.append((owner, name, getattr(owner, name)))
         setattr(owner, name, blocked)
     _original_ocr = sys.modules.get("ddddocr")
