@@ -608,3 +608,46 @@ Review结论：确定的状态交叉/重复发送/兼容性/挂起缺陷为FAIL�
 - S0–S6已完成本地实施与验证；最终macOS系统禁网tox342项通过。最终Linux镜像与工作区34个Python文件哈希一致，`--network none` 下默认tox、仓库外不同顺序、显式tests三轮各342项通过，旧168个节点全部保留。
 - 最终Linux镜像为 `sha256:18917d38237a8c8511de77052e272723450fcf7a94a2e6eb85cdf6707c4631e4`；完整参数、失败/重跑、网络证据、实际版本和原始报告导出路径见 `docs/refactor/reports/P2-acceptance.md` 第6节。
 - S7远端CI及独立Review尚未执行，P2总体验收为NEEDS EVIDENCE；不自行代签PASS。没有commit、push、tag或发布，没有真实请求。
+
+## 23. S7 最终验收与计划关闭（2026-11-07）
+
+### 23.1 最终交付身份
+
+- PR #5 已合并至 master。
+- 最终受测提交：
+  `6e2078f7dce9f255d60ce89699d405efc09e0e2f`
+- 合并提交：
+  `d46a83ac97e9a5c17839bbf514a616484dbb9225`
+- Git Tree SHA：
+  `eaf1866ae6fff6c754179feec2626b759e6e38c6`
+
+受测提交与合并提交的文件树一致。
+
+### 23.2 S7 验收完成
+
+- Offline CI：42349163949，success。
+- Build CI：42349163936，success。
+- Offline Artifact：13563959800。
+- Linux 系统级禁网验证通过。
+- 三种测试入口各 350 passed。
+- Cookie 失败清理新增 8 项测试，
+  no-op 变异均被检出。
+- 原 P0/P1 契约及资金安全断言保留。
+- 最终独立 Review：PASS。
+
+完整证据、链接和适用范围见：
+`docs/refactor/reports/P2-acceptance.md` 第 8 节。
+
+### 23.3 最终状态
+
+**P2 已完成，停止继续扩展本阶段实施范围。**
+
+原计划第 1–22 节是设计与实施阶段的历史记录，
+不追溯覆盖原批准内容和实际执行结果。
+
+本阶段 PASS 不代表真实券商协议已获验证，
+也不保证跨进程、跨设备账户串行化。
+
+剩余旧接口认证语义、异常处理、
+超时策略及其他遗留风险，
+由后续独立批准的阶段处理。
