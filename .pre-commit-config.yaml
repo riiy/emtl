@@ -19,4 +19,5 @@ repos:
     hooks:
       - id: trailing-whitespace
       - id: end-of-file-fixer
+        exclude: ^docs/refactor/reports/evidence/P1-local-linux/docker-build-result\.json$
       - id: debug-statements

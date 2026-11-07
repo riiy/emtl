@@ -1,0 +1,146 @@
+DEPRECATED: The legacy builder is deprecated and will be removed in a future release.
+            Install the buildx component to build images with BuildKit:
+            https://docs.docker.com/go/buildx/
+
+Sending build context to Docker daemon  678.9kB
+Step 1/11 : FROM python:3.11-bookworm
+3.11-bookworm: Pulling from library/python
+6bf0df67895d: Pulling fs layer
+69245854ad58: Pulling fs layer
+9bab93d346cd: Pulling fs layer
+338554e9113f: Pulling fs layer
+d6c30932f8d3: Pulling fs layer
+be828f51e8d9: Pulling fs layer
+2f6c569d35ff: Pulling fs layer
+9bd9dbe32712: Download complete
+6bf0df67895d: Download complete
+d0f650ec5412: Download complete
+2f6c569d35ff: Download complete
+69245854ad58: Download complete
+69245854ad58: Pull complete
+338554e9113f: Download complete
+338554e9113f: Pull complete
+be828f51e8d9: Download complete
+d6c30932f8d3: Download complete
+d6c30932f8d3: Pull complete
+9bab93d346cd: Download complete
+9bab93d346cd: Pull complete
+2f6c569d35ff: Pull complete
+be828f51e8d9: Pull complete
+6bf0df67895d: Pull complete
+Digest: sha256:a78ac56989e704fadc8e9be30b3fe78e7bf8a52572a726911e525c30468604f8
+Status: Downloaded newer image for python:3.11-bookworm
+ ---> a78ac56989e7
+Step 2/11 : WORKDIR /workspace
+ ---> Running in 1ab60a60964c
+ ---> Removed intermediate container 1ab60a60964c
+ ---> 94b41720e116
+Step 3/11 : COPY setup.py pyproject.toml README.rst CHANGELOG.rst LICENSE tox.ini pytest.ini .coveragerc .dockerignore conftest.py ./
+ ---> d2172446b7f4
+Step 4/11 : COPY src/ src/
+ ---> dc6449742f1b
+Step 5/11 : COPY tests/ tests/
+ ---> 421e0f88fbd3
+Step 6/11 : COPY ci/ ci/
+ ---> fa997e40dd0d
+Step 7/11 : COPY docs/ docs/
+ ---> a8a17a9b128b
+Step 8/11 : COPY .github/workflows/ .github/workflows/
+ ---> 2876a1d00aa6
+Step 9/11 : RUN python -m pip install 'tox>=4.67' && python -m tox -e py311-cover --notest -v
+ ---> Running in 62b816c95746
+Collecting tox>=4.67
+  Downloading tox-4.67.12-py3-none-any.whl.metadata (4.0 kB)
+Collecting cachetools>=7.0.3 (from tox>=4.67)
+  Downloading cachetools-7.3.0-py3-none-any.whl.metadata (5.5 kB)
+Collecting colorama>=0.4.6 (from tox>=4.67)
+  Downloading colorama-0.4.6-py2.py3-none-any.whl.metadata (17 kB)
+Collecting filelock>=3.25 (from tox>=4.67)
+  Downloading filelock-4.2.9-py3-none-any.whl.metadata (2.3 kB)
+Requirement already satisfied: packaging>=26 in /usr/local/lib/python3.11/site-packages (from tox>=4.67) (26.3)
+Collecting platformdirs>=4.9.4 (from tox>=4.67)
+  Downloading platformdirs-4.14.5-py3-none-any.whl.metadata (5.7 kB)
+Collecting pluggy>=1.6 (from tox>=4.67)
+  Downloading pluggy-1.7.0-py3-none-any.whl.metadata (5.0 kB)
+Collecting pyproject-api>=1.10 (from tox>=4.67)
+  Downloading pyproject_api-1.12.4-py3-none-any.whl.metadata (2.3 kB)
+Collecting python-discovery>=1.9 (from tox>=4.67)
+  Downloading python_discovery-1.9.4-py3-none-any.whl.metadata (4.2 kB)
+Collecting tomli-w>=1.2 (from tox>=4.67)
+  Downloading tomli_w-1.2.0-py3-none-any.whl.metadata (5.7 kB)
+Collecting typing-extensions>=4.15 (from tox>=4.67)
+  Downloading typing_extensions-4.16.0-py3-none-any.whl.metadata (3.3 kB)
+Collecting virtualenv>=21.1 (from tox>=4.67)
+  Downloading virtualenv-21.15.5-py3-none-any.whl.metadata (4.1 kB)
+Collecting distlib<1,>=0.4.3 (from virtualenv>=21.1->tox>=4.67)
+  Downloading distlib-0.4.4-py2.py3-none-any.whl.metadata (5.3 kB)
+Downloading tox-4.67.12-py3-none-any.whl (263 kB)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 263.3/263.3 kB 178.8 kB/s eta 0:00:00
+Downloading cachetools-7.3.0-py3-none-any.whl (19 kB)
+Downloading colorama-0.4.6-py2.py3-none-any.whl (25 kB)
+Downloading filelock-4.2.9-py3-none-any.whl (164 kB)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 164.7/164.7 kB 204.4 kB/s eta 0:00:00
+Downloading platformdirs-4.14.5-py3-none-any.whl (35 kB)
+Downloading pluggy-1.7.0-py3-none-any.whl (27 kB)
+Downloading pyproject_api-1.12.4-py3-none-any.whl (14 kB)
+Downloading python_discovery-1.9.4-py3-none-any.whl (44 kB)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 44.2/44.2 kB 756.7 kB/s eta 0:00:00
+Downloading tomli_w-1.2.0-py3-none-any.whl (6.7 kB)
+Downloading typing_extensions-4.16.0-py3-none-any.whl (45 kB)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 45.6/45.6 kB 1.0 MB/s eta 0:00:00
+Downloading virtualenv-21.15.5-py3-none-any.whl (5.7 MB)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 5.7/5.7 MB 998.6 kB/s eta 0:00:00
+Downloading distlib-0.4.4-py2.py3-none-any.whl (472 kB)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 472.1/472.1 kB 2.7 MB/s eta 0:00:00
+Installing collected packages: distlib, typing-extensions, tomli-w, pyproject-api, pluggy, platformdirs, filelock, colorama, cachetools, python-discovery, virtualenv, tox
+Successfully installed cachetools-7.3.0 colorama-0.4.6 distlib-0.4.4 filelock-4.2.9 platformdirs-4.14.5 pluggy-1.7.0 pyproject-api-1.12.4 python-discovery-1.9.4 tomli-w-1.2.0 tox-4.67.12 typing-extensions-4.16.0 virtualenv-21.15.5
+[91mWARNING: Running pip as the 'root' user can result in broken permissions and conflicting behaviour with the system package manager. It is recommended to use a virtual environment instead: https://pip.pypa.io/warnings/venv
+[0m[91m
+[notice] A new release of pip is available: 24.0 -> 26.3
+[notice] To update, run: pip install --upgrade pip
+[0m.pkg: find interpreter for spec PythonSpec(major=3, minor=11, free_threaded=False)
+.pkg: proposed PythonInfo(spec=CPython3.11.18.final.0-64-x86_64, exe=/usr/local/bin/python, platform=linux, version='3.11.18 (main, Nov  5 2026, 09:41:24) [GCC 12.2.0]', encoding_fs_io=utf-8-utf-8)
+.pkg: find interpreter for spec PythonSpec(path=/usr/local/bin/python)
+.pkg: proposed PythonInfo(spec=CPython3.11.18.final.0-64-x86_64, exe=/usr/local/bin/python, platform=linux, version='3.11.18 (main, Nov  5 2026, 09:41:24) [GCC 12.2.0]', encoding_fs_io=utf-8-utf-8)
+.pkg: find interpreter for spec PythonSpec(major=3, free_threaded=False)
+.pkg: proposed PythonInfo(spec=CPython3.11.18.final.0-64-x86_64, exe=/usr/local/bin/python, platform=linux, version='3.11.18 (main, Nov  5 2026, 09:41:24) [GCC 12.2.0]', encoding_fs_io=utf-8-utf-8)
+py311-cover: create virtual environment via CPython3Posix(dest=/workspace/.tox/py311-cover, clear=False, no_vcs_ignore=False, venv_redirect=False, global=False)
+py311-cover: add seed packages via FromAppData(download=False, pip=bundle, setuptools=bundle, via=copy, app_data_dir=/root/.cache/virtualenv)
+py311-cover: add activators for Bash, CShell, Fish, Nushell, PowerShell, Python, Xonsh
+py311-cover: install_deps> python -I -m pip install pytest pytest-cov
+py311-cover: exit 0 (26.95 seconds) /workspace> python -I -m pip install pytest pytest-cov pid=25
+.pkg: create virtual environment via CPython3Posix(dest=/workspace/.tox/.pkg, clear=False, no_vcs_ignore=False, venv_redirect=False, global=False)
+.pkg: add seed packages via FromAppData(download=False, pip=bundle, setuptools=bundle, via=copy, app_data_dir=/root/.cache/virtualenv)
+.pkg: add activators for Bash, CShell, Fish, Nushell, PowerShell, Python, Xonsh
+.pkg: install_requires> python -I -m pip install 'setuptools>=30.3.0' 'setuptools_scm>=3.3.1'
+.pkg: exit 0 (11.03 seconds) /workspace> python -I -m pip install 'setuptools>=30.3.0' 'setuptools_scm>=3.3.1' pid=36
+.pkg: _optional_hooks> python /usr/local/lib/python3.11/site-packages/pyproject_api/_backend.py True setuptools.build_meta __legacy__
+.pkg: exit None (0.39 seconds) /workspace> python /usr/local/lib/python3.11/site-packages/pyproject_api/_backend.py True setuptools.build_meta __legacy__ pid=42
+.pkg: get_requires_for_build_sdist> python /usr/local/lib/python3.11/site-packages/pyproject_api/_backend.py True setuptools.build_meta __legacy__
+.pkg: exit None (0.21 seconds) /workspace> python /usr/local/lib/python3.11/site-packages/pyproject_api/_backend.py True setuptools.build_meta __legacy__ pid=45
+.pkg: install_requires_for_build_sdist> python -I -m pip install 'setuptools_scm>=3.3.1'
+.pkg: exit 0 (0.59 seconds) /workspace> python -I -m pip install 'setuptools_scm>=3.3.1' pid=48
+.pkg: get_requires_for_build_editable> python /usr/local/lib/python3.11/site-packages/pyproject_api/_backend.py True setuptools.build_meta __legacy__
+.pkg: exit None (0.21 seconds) /workspace> python /usr/local/lib/python3.11/site-packages/pyproject_api/_backend.py True setuptools.build_meta __legacy__ pid=53
+.pkg: install_requires_for_build_editable> python -I -m pip install 'setuptools_scm>=3.3.1'
+.pkg: exit 0 (0.67 seconds) /workspace> python -I -m pip install 'setuptools_scm>=3.3.1' pid=56
+.pkg: build_editable> python /usr/local/lib/python3.11/site-packages/pyproject_api/_backend.py True setuptools.build_meta __legacy__
+.pkg: exit None (0.99 seconds) /workspace> python /usr/local/lib/python3.11/site-packages/pyproject_api/_backend.py True setuptools.build_meta __legacy__ pid=61
+py311-cover: install_package_deps> python -I -m pip install cryptography==42.0.5 ddddocr==1.4.11 requests==2.31.0 rsa==4.9
+py311-cover: exit 0 (224.03 seconds) /workspace> python -I -m pip install cryptography==42.0.5 ddddocr==1.4.11 requests==2.31.0 rsa==4.9 pid=66
+py311-cover: install_package> python -I -m pip install --force-reinstall --no-deps /workspace/.tox/.tmp/package/1/emtl-0.2.6-0.editable-py3-none-any.whl
+py311-cover: exit 0 (1.63 seconds) /workspace> python -I -m pip install --force-reinstall --no-deps /workspace/.tox/.tmp/package/1/emtl-0.2.6-0.editable-py3-none-any.whl pid=78
+  py311-cover: OK (269.01 seconds)
+  congratulations :) (269.18 seconds)
+ ---> Removed intermediate container 62b816c95746
+ ---> 5541272504fd
+Step 10/11 : ENV PIP_NO_INDEX=1 PIP_DISABLE_PIP_VERSION_CHECK=1
+ ---> Running in 31c5134e4424
+ ---> Removed intermediate container 31c5134e4424
+ ---> 321bd8554d90
+Step 11/11 : CMD ["python", "ci/run_offline_tests.py"]
+ ---> Running in 86e763e96723
+ ---> Removed intermediate container 86e763e96723
+ ---> 09508f8f6fc8
+Successfully built 09508f8f6fc8
+Successfully tagged emtl-p1-offline:repair
