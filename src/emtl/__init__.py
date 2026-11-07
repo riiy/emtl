@@ -1,5 +1,6 @@
 __version__ = "0.2.6"
 
+from .client import TradingClient
 from .core import cancel_order
 from .core import create_order
 from .core import login
@@ -20,4 +21,5 @@ __all__ = [
     "query_funds_flow",
     "create_order",
     "cancel_order",
+    "TradingClient",
 ]

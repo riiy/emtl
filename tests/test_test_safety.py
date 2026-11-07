@@ -102,3 +102,20 @@ def test_contract_download_target_exists():
     target = page.parent / "../refactor/contracts/P0-public-api.md"
     assert target.is_file()
     assert "../refactor/contracts/P0-public-api.md" in page.read_text()
+
+
+def test_new_client_unconfigured_http_is_guarded():
+    from emtl import TradingClient
+
+    client = TradingClient("P2_FAKE_USER", "P2_FAKE_PASSWORD")
+    try:
+        for operation in (client.login, lambda: client.get_last_price("FAKE", "SA")):
+            with pytest.raises(RuntimeError, match="^network disabled in tests$"):
+                operation()
+        assert client._state == "FAILED"
+        assert client._token == ""
+        assert client._ocr is None
+        assert requests.sessions.Session.request.__name__ == "blocked"
+        assert requests.sessions.Session.send.__name__ == "blocked"
+    finally:
+        client.close()
