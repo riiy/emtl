@@ -34,3 +34,23 @@ def fake_captcha(monkeypatch):
     monkeypatch.setattr(core, "get", Mock(return_value=image))
     monkeypatch.setattr(core, "ocr", Mock(classification=Mock(return_value="1234")))
     return core.ocr
+
+
+@pytest.fixture
+def client_factory():
+    from emtl.client import TradingClient
+    from tests.client_helpers import fake_session
+
+    clients = []
+    synthetic = "P2_FAKE_PASSWORD"
+
+    def create(username="P2_FAKE_A", password=synthetic, *, session=None, ocr=None):
+        session = fake_session() if session is None else session
+        ocr = Mock(classification=Mock(return_value="1234")) if ocr is None else ocr
+        client = TradingClient(username, password, session_factory=lambda: session, ocr_factory=lambda: ocr)
+        clients.append(client)
+        return client
+
+    yield create
+    for client in clients:
+        client.close()

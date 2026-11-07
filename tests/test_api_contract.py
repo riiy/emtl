@@ -17,7 +17,7 @@ def test_exports_and_signatures():
         "create_order",
         "cancel_order",
     ]
-    assert emtl.__all__ == names
+    assert emtl.__all__ == [*names, "TradingClient"]
     for name in names:
         assert getattr(emtl, name) is getattr(core, name)
     signatures = {
@@ -39,3 +39,24 @@ def test_exports_and_signatures():
     assert str(inspect.signature(utils.double_equal)) == "(a, b) -> bool"
     assert str(inspect.signature(utils.get_float)) == "(data: dict, key: str) -> float"
     assert str(inspect.signature(utils.get_int)) == "(data: dict, key: str) -> int"
+
+
+def test_client_public_interface():
+    from emtl.client import TradingClient
+
+    assert emtl.TradingClient is TradingClient
+    assert (
+        str(inspect.signature(TradingClient))
+        == "(username: str, password: Optional[str] = None, *, session_factory=None, ocr_factory=None)"
+    )
+    assert str(inspect.signature(TradingClient.login)) == "(self, duration: int = 30) -> Optional[str]"
+    assert str(inspect.signature(TradingClient.close)) == "(self) -> None"
+    for name in emtl.__all__[:-1]:
+        if name == "login":
+            continue
+        old = inspect.signature(getattr(core, name))
+        new = inspect.signature(getattr(TradingClient, name))
+        assert next(iter(new.parameters)) == "self"
+        assert list(new.parameters.values())[1:] == list(old.parameters.values())
+        assert new.return_annotation == old.return_annotation
+    assert str(inspect.signature(TradingClient.get_last_price)) == "(self, symbol_code: str, market: str) -> float"
