@@ -1,5 +1,7 @@
 # P1 限定修复验收记录
 
+> 最新远端验收与合并信息见第 9 节，文档归档核验与交付清单见第 10 节。第 1–8 节保留本地实施及历史验收记录；其中“远端尚未运行”“NEEDS EVIDENCE”等属于当时状态。受测提交与合并提交的完整 Git Tree 一致性已在本地核实，远端 CI 和 artifact 数据由维护者独立核实提供；本次完成证据补记，不倒改历史 Review，也不代签最终独立 Review PASS。
+
 ## 1. 基线、范围与结论
 
 - 日期：2026-11-06。
@@ -276,12 +278,153 @@ docker image inspect --format '{{.Id}} {{.Os}}/{{.Architecture}}' emtl-p1-offlin
 
 原容器由 `--rm` 自动删除；其 `/workspace/dist/p1-offline/` 中 Linux JUnit、coverage XML/JSON、tox-result、versions/commands JSON **未导出到宿主，现无原始文件可归档**。不能仅凭控制台的“生成文件”文本声称已保存这些原始报告，也不重建/伪造报告补缺。宿主 `dist/p1-repair/` 的同名 XML/JSON 是既有 macOS 结果。
 
-### 8.5 远端验收：待完成
+### 8.5 远端验收：证据已补充，最终 Review 待确认
 
-- [ ] 对最终提交在干净 GitHub Actions runner 上完成镜像构建及整套系统禁网运行。
-- [ ] 保存 runner 实际 `docker inspect` 的 `NetworkMode=none` 证据；本次历史 `docker run --rm --network none` 没有留下已删除容器的 inspect 文件，不冒称已完成该 runner 步骤。
-- [ ] 核验远端实际报告复制、失败状态保留、容器清理和 artifacts 上传。
-- [ ] 保存 Linux 原始 JUnit、coverage、tox、版本/命令/环境和日志 artifacts，并追加真实 run/artifact URL（当前无链接）。
-- [ ] 将最终提交的远端结果交独立 Review；当前 Review 结论仍为 **NEEDS EVIDENCE**，不是 PASS。
+以下远端验收项依据维护者实际核验结果更新，链接和范围见第 9 节；不改变此前本地容器未导出原始报告的历史事实。
+
+- [x] 提供 GitHub Actions Offline workflow 的实际运行链接和系统禁网完整测试结果。
+- [x] 维护者核实 artifact 中 `NetworkMode=none`、独立 OS 网络探针通过、container exit code=0。
+- [x] 维护者核实 `host-status` 全部状态为 0，且报告与日志 artifact 存在。
+- [x] 提供三份各 168 passed 的 JUnit、coverage、`versions.json`、`commands.json`、`tox-result.json` 及构建/容器日志的 artifact 链接。
+- [x] 补齐两个 Run 的 `event`、`head_sha`、`conclusion`，本地核实受测提交与 merge commit 的完整 Git Tree 相同，详见第 9 节。
+- [x] 依据维护者提供的远端 `coverage.json` 原始字段，区分行、分支及综合覆盖率，详见 §9.3。
+- [ ] 最终独立 Review PASS 的实际结论尚未提供；不得将合并或 CI 证据自动转换为 Review PASS。
 
 本次仅补记历史验证，不 commit、push、merge，不执行发布或触发远端 CI。
+
+## 9. PR #3 合并与远端验收证据
+
+### 9.1 合并身份及信息来源
+
+- 维护者确认 [P1 PR #3](https://github.com/riiy/emtl/pull/3) 已合并到 `master`。
+- **受测提交：`8d0a2303d13a2f9d0c9aafae2f1bbe26bd2ade5d`**（[提交链接](https://github.com/riiy/emtl/commit/8d0a2303d13a2f9d0c9aafae2f1bbe26bd2ade5d)）。
+- 最终 **Merge commit：`318fb45a5a279d103049c5adc1974e714847df4e`**（[提交链接](https://github.com/riiy/emtl/commit/318fb45a5a279d103049c5adc1974e714847df4e)）。
+- **两提交的 Git Tree SHA 均为 `55f8640c1cb3711ce7ac8d31865752fb242eda0a`**。维护者已独立核实；本次文档收口又用本地 Git 对两个对象实查，完整树 diff 为空，因此受测提交与合并提交的全部已跟踪文件树相同。
+- 远端 Run 元数据、artifact 内容及远端 coverage 原始字段来自维护者本次独立核实后提供的信息。本次没有重新查询 GitHub API、下载 artifact 或重新触发 CI；不将维护者核验冒称为本轮工具下载验证。
+- 历史边界：上一轮文档更新时 `git show` 曾退出 128（`bad object`）。本次对象已在本地可读；本次开始时 HEAD 为受测提交、分支为 `refactor/p1-offline-tests`。最终复核时分支已为 `docs/p1-acceptance-closure`（跟踪 `origin/master`），HEAD 为上述 merge commit，Tree SHA 不变。本次工具未执行分支切换、fetch 或历史改写；分别保留开始/结束快照，不抹去此前对象不可用的记录。
+
+本次在 `/Users/lld/emtl` 实际执行（均退出 0）：
+
+```bash
+git show -s --format='%H%n%T%n%P%n%s' 318fb45a5a279d103049c5adc1974e714847df4e 8d0a2303d13a2f9d0c9aafae2f1bbe26bd2ade5d
+git diff --stat 8d0a2303d13a2f9d0c9aafae2f1bbe26bd2ade5d 318fb45a5a279d103049c5adc1974e714847df4e
+```
+
+第一条两次输出上述相同 Tree SHA，且 merge commit 的第二父提交就是受测提交；第二条无输出。这里证明的是已提交文件树一致，不声称提交身份、SCM 派生版本或构建产物逐字节相同，也不把本次未提交的文档补记算进该 Tree。
+
+### 9.2 真实 Workflow Run 与 Artifact 链接
+
+| Workflow / Run ID | 事件 | head_sha | conclusion | 运行链接 |
+| --- | --- | --- | --- | --- |
+| Offline / `42199620264` | `pull_request` | `8d0a2303d13a2f9d0c9aafae2f1bbe26bd2ade5d` | `success` | https://github.com/riiy/emtl/actions/runs/42199620264 |
+| Build / `42199620359` | `pull_request` | `8d0a2303d13a2f9d0c9aafae2f1bbe26bd2ade5d` | `success` | https://github.com/riiy/emtl/actions/runs/42199620359 |
+
+- Offline **Artifact ID：`13493921728`**，所属 Run ID：`42199620264`。
+- Artifact URL：https://github.com/riiy/emtl/actions/runs/42199620264/artifacts/13493921728 。
+- 两个运行均为 PR 事件，不是 merge commit 上重新触发的运行。通过 §9.1 的完整 Git Tree 一致性，已将受测文件树与最终合并文件树对应起来；不再把 Run 对应关系列为未补充证据。
+
+### 9.3 维护者已核实的 Artifact 内容
+
+| 验收项 | 已核实结果 |
+| --- | --- |
+| NetworkMode | `none` |
+| 独立 OS 网络探针 | 通过 |
+| Container exit code | `0` |
+| host-status | `original=0 logs=0 inspect=0 copy=0 cleanup=0 evidence=0` |
+| 默认入口 `junit.xml` | 168 tests，0 failures，0 errors |
+| 仓库外不同顺序 `outside-junit.xml` | 168 tests，0 failures，0 errors |
+| 显式目录入口 `explicit-junit.xml` | 168 tests，0 failures，0 errors |
+| Coverage 行覆盖率 | **88.48%**（169/191） |
+| Coverage 分支覆盖率 | **87.50%**（35/40） |
+| Coverage 综合覆盖率 | **88.31%**（行/分支合并计分） |
+| 工具版本与命令 | `versions.json`、`commands.json` 存在 |
+| tox 结果 | `tox-result.json` 存在 |
+| 日志 | Docker 构建日志和容器日志存在 |
+
+远端 `coverage.json` 原始字段由维护者核实并提供，摘录如下；这是人工核实数据的文档摘录，不是本次下载的原始 JSON 文件：
+
+```json
+{
+  "covered_lines": 169,
+  "num_statements": 191,
+  "percent_statements_covered": 88.48167539267016,
+  "covered_branches": 35,
+  "num_branches": 40,
+  "percent_branches_covered": 87.5,
+  "percent_covered": 88.31168831168831
+}
+```
+
+口径：行覆盖率为 `169/191*100`，分支覆盖率为 `35/40*100`，综合覆盖率为 `(169+35)/(191+40)*100`，保留两位小数分别为 **88.48% / 87.50% / 88.31%**。此前 §9.3 将 88.31% 称为“行覆盖率”的表述现予更正；第 5、8 节历史统计不覆盖、不挪作远端原件。工具版本继续以远端 artifact 的 `versions.json` 为准，未从历史本地日志推定远端版本。
+
+### 9.4 当前结论与边界
+
+- PR #3 已合并到 `master`；两次 PR CI 均成功，受测提交与 merge commit 的完整 Git Tree 一致，远端结果与合并文件树的证据链已补齐。
+- 禁网、退出码、三轮 JUnit、coverage 字段、工具版本/命令/结果和日志的 artifact 索引已补齐；行/分支/综合覆盖率口径已纠正。
+- 第 8 节本地镜像仍仅是本地历史验证快照，不冒充最终提交或远端运行镜像。
+- 批准计划及四个历史证据文件的来源、哈希、链接和待交付清单已核对，见第 10 节。它们尚未暂存/提交，不能把“交付清单已确认”写成“版本控制已交付”。
+- **最近一次独立 Review 的 NEEDS EVIDENCE 保留为历史结论；本次为文档收口，不代签最终 Review PASS。** 没有新的代码/CI 修复项，最终 Review 签认及文档归档提交由维护者完成。
+- 本次仅整理计划、验收报告及历史证据说明，不修改生产代码、测试、tox、Docker 或 GitHub Actions，不自动暂存、commit、push、merge，不触发发布或新一轮 CI。
+
+## 10. 文档归档核验与交付清单
+
+### 10.1 计划、历史证据及来源检查
+
+- [批准计划及实际状态](../plans/P1-plan.md#15-批准实施与最终文档归档状态追加记录)：原始第 1–14 节保留，仅在第 15 节追加批准来源、实施/合并状态及本次文档收口计划；批准日期和审批签名未获可核查记录，不倒填。
+- 历史证据索引：[README.md](evidence/P1-local-linux/README.md)；构建日志：[build-output.txt](evidence/P1-local-linux/build-output.txt)；构建命令/退出码：[docker-build-result.json](evidence/P1-local-linux/docker-build-result.json)；Linux 运行日志：[linux-run-output.txt](evidence/P1-local-linux/linux-run-output.txt)。四个文件均实际读取，非仅检查文件名。
+- 三个原始日志/JSON 的 SHA256 与原归档索引相符，本次不改其字节。构建日志与 `dist/p1-repair/docker-build.log` 按原先声明移除唯一 `\r\r\n` 序列中的两个 `\r` 后完全一致；构建 result JSON 与其 `dist/` 来源逐字节一致。
+- Linux 控制台归档 SHA256 仍为 `9c3e03e0b5cd79674fef34032012d7d181029424a0d01b98d24907a57366c839`。原 OpenCode 临时 shell 输出路径现已不存在，因此此次不能重新与该临时源逐字节比较；来源沿用历史归档记录，不能声称重新取得了源文件。稳定归档副本仍完整，含三轮各 168 passed 和五个 `EXIT 0`。
+- 敏感信息检查：逐份阅读四个文件，未发现真实账户、凭证、Cookie/Authorization 值或完整交易响应；日志中的 `first`/`second`/`OLD` 等 token 是合成测试参数，工具摘要、镜像 digest 和宿主/容器路径不作为交易秘密。未读取真实凭证环境，不打印完整环境。
+- README 的“远端待完成”保留为历史说明并追加当前索引，避免与 §9 混淆。相对文件链接核对存在；外部 Run/Artifact URL 按维护者已核实身份核对，未冒称本轮在线可用性或有效期检查。
+
+四文件本次 `shasum -a 256` 实测结果（退出 0；README 为本次更新后的说明，其他三项为未改的历史归档）：
+
+| 文件 | SHA256 |
+| --- | --- |
+| `README.md` | `245a4785f2ffd4d8ae051d5837dfa29a1f261f49137d22f8b2c4de713beafb6a` |
+| `build-output.txt` | `6d762b9d756cab10c5205b06b027ea65b90570564bc698b685dda1b78fa17b23` |
+| `docker-build-result.json` | `b1e9a4a5a155853134e4b9876400ab473d5c1ed3c260427947b48bf4f12269a0` |
+| `linux-run-output.txt` | `9c3e03e0b5cd79674fef34032012d7d181029424a0d01b98d24907a57366c839` |
+
+### 10.2 需要纳入版本控制的文件
+
+以下 **6 个文件应一起交付**：
+
+1. `docs/refactor/reports/P1-acceptance.md`（已有 tracked 修改，含此前更新及本次收口）。
+2. `docs/refactor/plans/P1-plan.md`（未跟踪的批准计划及追加状态）。
+3. `docs/refactor/reports/evidence/P1-local-linux/README.md`（未跟踪的来源/哈希/限制索引，本次更新说明）。
+4. `docs/refactor/reports/evidence/P1-local-linux/build-output.txt`（未跟踪，本次内容未改）。
+5. `docs/refactor/reports/evidence/P1-local-linux/docker-build-result.json`（未跟踪，本次内容未改）。
+6. `docs/refactor/reports/evidence/P1-local-linux/linux-run-output.txt`（未跟踪，本次内容未改）。
+
+本次未暂存；merge commit 的 `git ls-tree` 也未列出计划及历史证据目录，因此这些文档属于合并后的补交，不在 §9.1 的受测/合并 Tree 中。不要把 ignored 的 `dist/`、临时文件、真实配置或凭证一并加入版本控制。
+
+维护者审阅后可手动执行以下建议（本次未执行）：
+
+```bash
+git add -- docs/refactor/reports/P1-acceptance.md docs/refactor/plans/P1-plan.md docs/refactor/reports/evidence/P1-local-linux/README.md docs/refactor/reports/evidence/P1-local-linux/build-output.txt docs/refactor/reports/evidence/P1-local-linux/docker-build-result.json docs/refactor/reports/evidence/P1-local-linux/linux-run-output.txt
+git diff --cached --check
+git diff --cached --stat
+git diff --cached --name-only
+```
+
+### 10.3 本次实际检查结果
+
+工作目录 `/Users/lld/emtl`，以下是本次执行结果，不覆盖历史运行记录：
+
+- 计划第 1–14 节字节保留校验通过，原文 SHA256 仍为 `0173f31223f25090766f8ab5ea13cc5f3098514a5c320eab70de6e0438310539`。
+- 修改前后对 `src/`、`tests/`、`ci/`、`.github/` 下 Git tracked/untracked 非 ignored 文件及 `tox.ini`、`.dockerignore` 共 36 个文件的 SHA256 清单比较一致；未修改生产、测试或 CI 配置。
+- 历史日志/JSON 哈希、构建源文件对应、coverage 算术和两位小数、15 个相对文件链接目标存在性、全部六个待交付文件空白检查均通过；校验脚本退出 0。`git diff --check` 退出 0。
+- 六个交付文件的 `git check-ignore -v` 无输出、退出 1，表示没有被 ignore；不是校验失败。`git diff --no-index --check /dev/null <文件>` 的退出 1 表示存在新增内容，检查同时要求没有任何空白诊断。
+- 本次另运行完整本地系统禁网测试，退出 **0**，**168 passed in 8.31s**，不是远端 CI 重跑：
+
+```bash
+PYTHONDONTWRITEBYTECODE=1 sandbox-exec -p '(version 1)(allow default)(deny network*)' .venv/bin/python -B -m pytest -p no:cacheprovider -q
+```
+
+### 10.4 剩余事项与边界
+
+- 待维护者按上述清单暂存、复核并提交文档；本次没有 commit、push、merge 授权，不代为执行。
+- 最终独立 Review 的正式 PASS 签认尚未提供，本次不伪造；提交树对应关系和覆盖率原始字段不再是缺证据项。
+- 历史批准的具体时间/审批标识未提供；原临时 Linux 控制台源已清理，原本地 Linux JUnit/coverage 文件未导出。这些历史限制如实保留，不重建文件；远端原始报告另由 §9 artifact 索引定位。
+- 既有认证/并发/真实协议未知项沿用第 6 节，不是本次新引入的代码问题，也不据此扩展 P1 或自动进入 P2。

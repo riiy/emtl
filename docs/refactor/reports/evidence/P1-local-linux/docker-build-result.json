@@ -1,0 +1,13 @@
+{
+  "args": [
+    "docker",
+    "build",
+    "--file",
+    "ci/offline.Dockerfile",
+    "--tag",
+    "emtl-p1-offline:repair",
+    "."
+  ],
+  "cwd": "/Users/lld/emtl",
+  "exit_code": 0
+}
