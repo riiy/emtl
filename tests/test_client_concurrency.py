@@ -8,6 +8,7 @@ import pytest
 from emtl import core
 from emtl.client import TradingClient
 from emtl.const import _urls
+from emtl.errors import TradeOutcomeUnknown
 from tests.client_helpers import WAIT
 from tests.client_helpers import ObservedLock
 from tests.client_helpers import Workers
@@ -264,3 +265,76 @@ def test_failed_operation_releases_lock_without_corrupting_another_instance(clie
     expected = "P2_FAKE_OTHER_TOKEN"
     assert other._token == expected
     assert other._session.cookies.get("other") == "P2_FAKE_OTHER_COOKIE"
+
+
+@pytest.mark.parametrize("stage", ["json2", "text"])
+def test_unknown_trade_keeps_decode_locked_then_releases_other_instance(client_factory, monkeypatch, stage):
+    from unittest.mock import Mock
+    from unittest.mock import PropertyMock
+
+    entered, release, second_sent = Event(), Event(), Event()
+    first, second = ready(client_factory()), ready(client_factory())
+    assert first._account is second._account
+    observed = ObservedLock(first._account.lock)
+    monkeypatch.setattr(first._account, "lock", observed)
+    reply = response({})
+
+    def block_and_fail():
+        entered.set()
+        assert release.wait(WAIT)
+        raise ValueError("P3_FAKE_DECODE")
+
+    if stage == "json2":
+        reply.json = Mock()
+
+        def decode():
+            if reply.json.call_count == 1:
+                return {}
+            return block_and_fail()
+
+        reply.json.side_effect = decode
+    else:
+
+        class LocalResponse(type(reply)):
+            pass
+
+        reply.__class__ = LocalResponse
+        monkeypatch.setattr(type(reply), "text", PropertyMock(side_effect=block_and_fail))
+    first._session.post.return_value = reply
+
+    def second_post(*args, **kwargs):
+        second_sent.set()
+        return response(["P3_FAKE_SECOND"])
+
+    second._session.post.side_effect = second_post
+
+    def trade():
+        def invoke():
+            if stage == "json2":
+                return first.create_order("FAKE", "B", "SA", 1, 100)
+            return first.cancel_order("FAKE")
+
+        with pytest.raises(TradeOutcomeUnknown) as caught:
+            invoke()
+        assert type(caught.value) is TradeOutcomeUnknown
+        assert caught.value.reason == "response_error"
+        return "unknown"
+
+    workers = Workers()
+    try:
+        workers.start(trade)
+        assert entered.wait(WAIT)
+        workers.start(second.query_orders)
+        assert observed.contended.wait(WAIT)
+        assert not second_sent.is_set()
+    finally:
+        release.set()
+        results = workers.finish()
+    assert "unknown" in results
+    assert ["P3_FAKE_SECOND"] in results
+    assert second_sent.is_set()
+    first._session.post.assert_called_once()
+    first._session.get.assert_not_called()
+    second._session.post.assert_called_once()
+    if stage == "json2":
+        assert reply.json.call_count == 2

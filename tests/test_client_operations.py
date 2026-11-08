@@ -8,6 +8,8 @@ import requests
 from emtl import core
 from emtl.const import _base_headers
 from emtl.const import _urls
+from emtl.errors import BrokerHTTPError
+from emtl.errors import TradeOutcomeUnknown
 from tests.client_helpers import SYNTHETIC
 from tests.client_helpers import memory_session
 from tests.client_helpers import ready
@@ -69,8 +71,11 @@ def test_query_transport_failure_propagates_once(client_factory, name, args, err
 def test_query_invalid_response_preserves_exception(client_factory, name, args, kind, error):
     client = ready(client_factory())
     client._session.post.return_value = {"none": None, "http": response(status=503), "json": response(text="invalid")}[kind]
-    with pytest.raises(error):
+    with pytest.raises(BrokerHTTPError if kind == "http" else error) as caught:
         getattr(client, name)(*args)
+    if kind == "http":
+        assert type(caught.value) is BrokerHTTPError
+        assert caught.value.status_code == 503
     client._session.post.assert_called_once()
 
 
@@ -104,9 +109,11 @@ def test_uncertain_submission_never_replays_or_compensates(client_factory, name,
         raise error
 
     client._session.post.side_effect = post
-    with pytest.raises(error_type) as caught:
+    with pytest.raises(TradeOutcomeUnknown) as caught:
         getattr(client, name)(*args)
-    assert caught.value is error
+    assert type(caught.value) is TradeOutcomeUnknown
+    assert caught.value is not error
+    assert (caught.value.operation, caught.value.reason, caught.value.status_code) == (name, "exchange_error", None)
     assert events == ["P2_FAKE_ACCEPTED"]
     client._session.post.assert_called_once()
     client._session.get.assert_not_called()
@@ -119,8 +126,14 @@ def test_uncertain_submission_never_replays_or_compensates(client_factory, name,
 def test_order_bad_response_never_retries(client_factory, name, args, kind, error):
     client = ready(client_factory())
     client._session.post.return_value = None if kind == "none" else response(status=500)
-    with pytest.raises(error):
+    with pytest.raises(TradeOutcomeUnknown) as caught:
         getattr(client, name)(*args)
+    assert type(caught.value) is TradeOutcomeUnknown
+    assert (caught.value.operation, caught.value.reason, caught.value.status_code) == (
+        name,
+        "exchange_error" if kind == "none" else "http_status",
+        None if kind == "none" else 500,
+    )
     client._session.post.assert_called_once()
     client._session.get.assert_not_called()
 
@@ -132,9 +145,10 @@ def test_order_each_json_failure_propagates_without_retry(client_factory, index)
     reply = response({})
     reply.json = Mock(side_effect=[error] if index == 1 else [{}, error])
     client._session.post.return_value = reply
-    with pytest.raises(ValueError, match="P2_FAKE_JSON") as caught:
+    with pytest.raises(TradeOutcomeUnknown) as caught:
         client.create_order("FAKE", "S", "SA", 1, 100)
-    assert caught.value is error
+    assert type(caught.value) is TradeOutcomeUnknown
+    assert (caught.value.operation, caught.value.reason, caught.value.status_code) == ("create_order", "response_error", None)
     assert reply.json.call_count == index
     client._session.post.assert_called_once()
 
@@ -159,9 +173,10 @@ def test_cancel_text_failure_propagates_once(client_factory, monkeypatch):
     text = PropertyMock(side_effect=error)
     monkeypatch.setattr(type(reply), "text", text)
     client._session.post.return_value = reply
-    with pytest.raises(type(error)) as caught:
+    with pytest.raises(TradeOutcomeUnknown) as caught:
         client.cancel_order(" P2_FAKE_ORDER ")
-    assert caught.value is error
+    assert type(caught.value) is TradeOutcomeUnknown
+    assert (caught.value.operation, caught.value.reason, caught.value.status_code) == ("cancel_order", "response_error", None)
     client._session.post.assert_called_once()
     text.assert_called_once_with()
 
@@ -170,14 +185,18 @@ def test_cancel_text_failure_propagates_once(client_factory, monkeypatch):
 @pytest.mark.parametrize("status", [307, 308])
 def test_redirect_cannot_resend_order_at_adapter_level(client_factory, name, args, status):
     def redirect(request):
+        if request.url == "https://example.invalid/P2_FAKE_REDIRECT":
+            return response({})
         reply = response(status=status)
         reply.headers["Location"] = "https://example.invalid/P2_FAKE_REDIRECT"
         return reply
 
     session, adapter = memory_session(redirect)
     client = ready(client_factory(session=session))
-    with pytest.raises(RuntimeError, match="No active exception"):
+    with pytest.raises(TradeOutcomeUnknown) as caught:
         getattr(client, name)(*args)
+    assert type(caught.value) is TradeOutcomeUnknown
+    assert (caught.value.operation, caught.value.reason, caught.value.status_code) == (name, "http_status", status)
     assert len(adapter.requests) == 1
     assert adapter.requests[0].method == "POST"
     assert adapter.requests[0].url == _urls[name] + "P2_FAKE_TOKEN"
@@ -258,11 +277,14 @@ def test_market_price_transport_and_decode_errors_are_not_nan(client_factory, ki
         expected = type(error)
     else:
         client._session.get.return_value = response(text="invalid", status=503 if kind == "http" else 200)
-        expected = RuntimeError if kind == "http" else ValueError
+        expected = BrokerHTTPError if kind == "http" else ValueError
     with pytest.raises(expected) as caught:
         client.get_last_price("FAKE", "SA")
     if error is not None:
         assert caught.value is error
+    elif kind == "http":
+        assert type(caught.value) is BrokerHTTPError
+        assert caught.value.status_code == 503
     client._session.get.assert_called_once()
 
 
@@ -303,3 +325,36 @@ def test_legacy_bare_raise_still_reraises_an_active_exception():
         with pytest.raises(ValueError, match="P2_FAKE_ACTIVE_EXCEPTION") as caught:
             core._check_resp(response(status=500))
     assert caught.value is error
+
+
+@pytest.mark.parametrize(("name", "args"), OPERATIONS[-2:])
+def test_adapter_timeout_is_one_send_without_hooks_or_reauthentication(client_factory, name, args):
+    error = requests.Timeout("P3_FAKE_ADAPTER")
+
+    def handler(request):
+        raise error
+
+    session, adapter = memory_session(handler)
+    client = ready(client_factory(session=session))
+    with pytest.raises(TradeOutcomeUnknown) as caught:
+        getattr(client, name)(*args)
+    assert type(caught.value) is TradeOutcomeUnknown
+    assert caught.value.reason == "exchange_error"
+    assert len(adapter.requests) == 1
+    assert adapter.requests[0].method == "POST"
+    assert adapter.requests[0].url == _urls[name] + SYNTHETIC
+    assert (client._state, client._token) == ("READY", SYNTHETIC)
+
+
+def test_default_session_has_no_retry_or_resend_hooks(client_factory):
+    # Construct and inspect only; the P1 class guards remain in place.
+    client = client_factory(session=requests.Session())
+    session = client._session
+    assert session.auth is None
+    assert session.hooks == {"response": []}
+    assert set(session.adapters) == {"https://", "http://"}
+    for adapter in session.adapters.values():
+        assert type(adapter) is requests.adapters.HTTPAdapter
+        assert adapter.max_retries.total == 0
+        assert adapter.max_retries.read is False
+        assert adapter.max_retries.connect in {None, 0}

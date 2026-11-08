@@ -14,6 +14,8 @@ from ._coordination import claim
 from ._coordination import release
 from .const import _base_headers
 from .const import _urls
+from .errors import BrokerHTTPError
+from .errors import TradeOutcomeUnknown
 from .utils import emt_trade_encrypt
 from .utils import get_logger
 
@@ -92,8 +94,19 @@ class TradingClient:
             self._ocr = ocr
         return self._ocr
 
-    def _check_resp(self, resp):
-        return _protocol.check_response(resp, logger)
+    def _check_resp(self, resp, *, on_http_status=None):
+        status = resp.status_code
+        if type(status) is not int:  # noqa: E721 - exclude bool and untrusted subclasses.
+            raise TypeError("invalid HTTP status") from None
+        if status != 200:
+            error = BrokerHTTPError(status)
+            if on_http_status is not None:
+                on_http_status(status)
+            try:
+                logger.error("request failed, code=%s", status)
+            except Exception:  # noqa: S110 - preserve the safe HTTP error; never log handler exceptions.
+                pass
+            raise error from None
 
     def _get_captcha_code(self):
         return _protocol.captcha(
@@ -144,14 +157,28 @@ class TradingClient:
                     self._state = "FAILED"
                     self._clear_cookies(preserve_error=sys.exc_info()[0] is not None)
 
-    def _query_something(self, tag, req_data=None):
+    def _query_something(self, tag, req_data=None, *, on_post_start=None, on_http_status=None):
         with self._account.lock:
             self._ensure_open()
             if self._state == "NEW":
                 self.login()
             if self._state != "READY" or not self._token:
                 raise RuntimeError("authentication required")
-            return _protocol.query(self._session, self._token, tag, req_data, self._check_resp, disable_order_redirects=True)
+            check = self._check_resp
+            if tag in {"create_order", "cancel_order"} and on_http_status is not None:
+
+                def check(resp):
+                    return self._check_resp(resp, on_http_status=on_http_status)
+
+            return _protocol.query(
+                self._session,
+                self._token,
+                tag,
+                req_data,
+                check,
+                disable_order_redirects=True,
+                on_post_start=on_post_start if tag in {"create_order", "cancel_order"} else None,
+            )
 
     def query_asset_and_position(self):
         with self._account.lock:
@@ -177,17 +204,54 @@ class TradingClient:
         with self._account.lock:
             return _protocol.json_result(self._query_something("query_funds_flow", _protocol.history_form(size, start_time, end_time)))
 
+    def _execute_trade(self, operation, data):
+        attempted = False
+        http_status = None
+
+        def on_post_start():
+            nonlocal attempted
+            attempted = True
+
+        def on_http_status(status):
+            nonlocal http_status
+            http_status = status
+
+        try:
+            resp = self._query_something(operation, req_data=data, on_post_start=on_post_start, on_http_status=on_http_status)
+        except Exception:
+            if not attempted:
+                raise
+            if http_status is not None:
+                raise TradeOutcomeUnknown(operation, "http_status", http_status) from None
+            raise TradeOutcomeUnknown(operation, "exchange_error") from None
+
+        try:
+            if operation == "create_order":
+                return _protocol.order_result(resp, logger)
+            return _protocol.cancel_result(resp)
+        except Exception:
+            if not attempted:
+                raise
+            raise TradeOutcomeUnknown(operation, "response_error") from None
+
     def create_order(self, stock_code, trade_type, market: str, price: float, amount: int):
-        """Attempt one submission; an exception can mean the result is unknown."""
+        """Attempt one POST; ordinary post-boundary failures raise TradeOutcomeUnknown.
+
+        This is not acceptance/execution evidence or permission to resubmit.
+        Authentication and other pre-boundary failures are not trade unknowns.
+        """
         with self._account.lock:
             data = _protocol.order_form(stock_code, trade_type, market, price, amount)
-            return _protocol.order_result(self._query_something("create_order", req_data=data), logger)
+            return self._execute_trade("create_order", data)
 
     def cancel_order(self, order_str: str):
-        """Attempt one revocation, without retrying or interpreting its text."""
+        """Attempt one revocation; post-boundary failures raise TradeOutcomeUnknown.
+
+        Never automatically retry or interpret the returned text as execution.
+        """
         with self._account.lock:
             self._ensure_open()
-            return _protocol.cancel_result(self._query_something("cancel_order", req_data=_protocol.cancel_form(order_str)))
+            return self._execute_trade("cancel_order", _protocol.cancel_form(order_str))
 
     def get_last_price(self, symbol_code: str, market: str) -> float:
         with self._account.lock:

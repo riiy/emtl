@@ -13,7 +13,7 @@ def check_response(resp, logger):
         raise
 
 
-def query(session, token, tag, req_data, check, *, disable_order_redirects=False):
+def query(session, token, tag, req_data, check, *, disable_order_redirects=False, on_post_start=None):
     assert tag in _urls, f"{tag} not in url list"
     url = _urls[tag] + token
     if req_data is None:
@@ -21,7 +21,10 @@ def query(session, token, tag, req_data, check, *, disable_order_redirects=False
     headers = _base_headers.copy()
     headers["X-Requested-With"] = "XMLHttpRequest"
     options = {"allow_redirects": False} if disable_order_redirects and tag in {"create_order", "cancel_order"} else {}
-    resp = session.post(url, headers=headers, data=req_data, **options)
+    post = session.post
+    if on_post_start is not None:
+        on_post_start()
+    resp = post(url, headers=headers, data=req_data, **options)
     check(resp)
     return resp
 

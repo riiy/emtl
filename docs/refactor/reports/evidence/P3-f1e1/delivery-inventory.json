@@ -1,0 +1,155 @@
+{
+  "head": "ea81a07f3b54cb7255ba0ae55a7bf5a8dbc55884",
+  "branch": "refactor/p3-trade-errors",
+  "staged_empty": true,
+  "proposed_count": 29,
+  "files": [
+    {
+      "path": "docs/refactor/contracts/P2-client-api.md",
+      "state": "modified tracked",
+      "sha256": "8a6493f65d2ada3218767cee04235e2fb2966a55bc6906f71f01b297bb825556"
+    },
+    {
+      "path": "docs/refactor/contracts/P3-trade-errors.md",
+      "state": "untracked new",
+      "sha256": "27bc6bd20d14335ce2185cdb7baa093d6d1e5f935ff90ccc44b53c46cceaecc9"
+    },
+    {
+      "path": "docs/refactor/plans/P3-plan.md",
+      "state": "untracked new",
+      "sha256": "f88384a2570043fe3b1e7ae37f436fb8cf854ca2f64296d1526228634213c614"
+    },
+    {
+      "path": "docs/refactor/reports/P3-acceptance.md",
+      "state": "untracked new",
+      "sha256": "7eddbde46509b60787d4c9c574bd6bfb03801b5cfca4c8aa83d49102e7ba033e"
+    },
+    {
+      "path": "docs/refactor/reports/P3-review-R1-followup.md",
+      "state": "untracked new",
+      "sha256": "2326de5c30d0a1488e96ccad12653092ce64a25d537ef6ed5ee70ed3da749536"
+    },
+    {
+      "path": "docs/refactor/reports/P3-review-R1.md",
+      "state": "untracked new",
+      "sha256": "1a52d995b12794b5f6f2534568da6ff1e956ea4d416118b313fa3fbddafa5930"
+    },
+    {
+      "path": "docs/refactor/reports/evidence/P3-f1e1/README.md",
+      "state": "untracked new",
+      "sha256": "9f628c8f345dd33d70721e8aaa10ba5d6b09420d2e4e09fb7376c140d70630bc"
+    },
+    {
+      "path": "docs/refactor/reports/evidence/P3-f1e1/SHA256SUMS",
+      "state": "untracked new",
+      "sha256": "3a3fec9e7781df15bb2573c68e177db0e311db4d8b92ecb91446aca6ee14a516"
+    },
+    {
+      "path": "docs/refactor/reports/evidence/P3-f1e1/delivery-checks.tar.gz",
+      "state": "untracked new",
+      "sha256": "b223afa37287a31fc3c514756e2442a2803cd0dc458ab902a04d6fe75bf6f47a"
+    },
+    {
+      "path": "docs/refactor/reports/evidence/P3-f1e1/delivery-inventory.json",
+      "state": "untracked new",
+      "sha256": null
+    },
+    {
+      "path": "docs/refactor/reports/evidence/P3-f1e1/raw-evidence.tar.gz",
+      "state": "untracked new",
+      "sha256": "a80b1269efee76e0c955a724eebbd1a2424a902dc2f95b7fdb91d7e394061f19"
+    },
+    {
+      "path": "docs/refactor/reports/evidence/P3-f1e1/raw-files-sha256.json",
+      "state": "untracked new",
+      "sha256": "df1947815f292896a7e653c659b5f33f1f63381a41b4287170476038739a97e4"
+    },
+    {
+      "path": "docs/refactor/reports/evidence/P3-final-linux/README.md",
+      "state": "untracked new",
+      "sha256": "9062444098aa057256a76ba523b34a6104905b1d6fee43c3526e1a79de6052c7"
+    },
+    {
+      "path": "docs/refactor/reports/evidence/P3-final-linux/history-before-f1.tar.gz",
+      "state": "untracked new",
+      "sha256": "9edd76e4ad65c43dff2cb5e6dcca389e957436dc3d4104d8a97489b8a492db8f"
+    },
+    {
+      "path": "docs/refactor/reports/evidence/P3-final-linux/history-files-sha256.json",
+      "state": "untracked new",
+      "sha256": "ecb866f3fb8538fabf9ae36131b1a43b66e6ba96447094302b936a582d3bf082"
+    },
+    {
+      "path": "docs/refactor/reports/evidence/P3-final-linux/plan.md",
+      "state": "untracked new",
+      "sha256": "be2607c49d120b5f4c146ae7c72c90d9fa67516e4d7a962634cfd625077cf487"
+    },
+    {
+      "path": "docs/refactor/reports/evidence/P3-final-linux/script-relocation.json",
+      "state": "untracked new",
+      "sha256": "f464b7e96ba9f7f29f91a35de7dabf4a915a7dcd3dbd500ca8786935c2dfc285"
+    },
+    {
+      "path": "docs/refactor/reports/evidence/P3-local/mutations.py",
+      "state": "untracked new",
+      "sha256": "95d4d963ddd366fac94ac0f31879d46ba3493e9a3fbbbc4627462c9a86f7b004"
+    },
+    {
+      "path": "docs/refactor/reports/evidence/P3-r2/http_source_mutations.py",
+      "state": "untracked new",
+      "sha256": "fbe0b41ad6af2ef383367ab07b2685b81f3d348445b1b5197da629dc9a0ec4a0"
+    },
+    {
+      "path": "docs/refactor/reports/evidence/P3-r3/http_logging_mutations.py",
+      "state": "untracked new",
+      "sha256": "e1e05c584282784af61560c05a91ce5bf1e25dc433e9f820726b170b7c65af2d"
+    },
+    {
+      "path": "docs/reference/emtl.rst",
+      "state": "modified tracked",
+      "sha256": "568d4727d20c0eee33e34d087b0e0c93aa8092163195a798276d48269b2f6ab2"
+    },
+    {
+      "path": "src/emtl/_protocol.py",
+      "state": "modified tracked",
+      "sha256": "3caf1d40d1016e22871cdc5e728e16d32f32de3c64e822a4fa55115bcad638f3"
+    },
+    {
+      "path": "src/emtl/client.py",
+      "state": "modified tracked",
+      "sha256": "801b31b4a9fb10a3092a1bb35820b2693e6445f46a590b4235ca751712ad41fc"
+    },
+    {
+      "path": "src/emtl/errors.py",
+      "state": "untracked new",
+      "sha256": "9d81c85ca2905f6790cef84537419a449db06c0c00f56ad1b6ad692dc24b1fc9"
+    },
+    {
+      "path": "tests/test_client_auth.py",
+      "state": "modified tracked",
+      "sha256": "1431a81f3bf6372ab5323714260f4f5e32a6fdd56fd67522e3baac0387200eb1"
+    },
+    {
+      "path": "tests/test_client_concurrency.py",
+      "state": "modified tracked",
+      "sha256": "a32ef9ce7452e9831780a41501df3dfef6c2cb6386344d7e44c78e880eced5d4"
+    },
+    {
+      "path": "tests/test_client_logging.py",
+      "state": "modified tracked",
+      "sha256": "ecbe02c3900d24a1c74d68711784e0bb0491e30ebe8a17812b63cf42670a1d72"
+    },
+    {
+      "path": "tests/test_client_operations.py",
+      "state": "modified tracked",
+      "sha256": "365a26f40bcecaef0c29e51e27b1b93196ed03d632e797f61562daf817bd2a3d"
+    },
+    {
+      "path": "tests/test_trade_errors.py",
+      "state": "untracked new",
+      "sha256": "4f2e5723392ad716b2940594b51a0ad3af93c3841e1ea0be8f28a57f3db95f3e"
+    }
+  ],
+  "self_hash": "null only for this inventory to avoid self-reference; all other proposed files hashed",
+  "scope": "Exact proposed commit set includes approved preexisting P3 implementation; F1/E1 did not alter production/tests/CI/config. No staging/commit/push performed."
+}
