@@ -8,6 +8,7 @@ import requests
 from emtl import client as client_module
 from emtl.const import _base_headers
 from emtl.const import _urls
+from emtl.errors import BrokerHTTPError
 from tests.client_helpers import SYNTHETIC
 from tests.client_helpers import ready
 from tests.client_helpers import token_reply
@@ -132,7 +133,7 @@ def test_authentication_failure_invalidates_state_and_preserves_exception(client
     session.get.side_effect = [captcha, token]
     session.post.return_value = login
     error = None
-    expected = RuntimeError
+    expected = BrokerHTTPError
     if stage.endswith("http"):
         {"captcha_http": captcha, "login_http": login, "token_http": token}[stage].status_code = 503
     elif stage in {"captcha_timeout", "login_timeout", "login_connection", "token_timeout"}:
@@ -159,6 +160,9 @@ def test_authentication_failure_invalidates_state_and_preserves_exception(client
         client.login()
     if error is not None:
         assert caught.value is error
+    else:
+        assert type(caught.value) is BrokerHTTPError
+        assert caught.value.status_code == 503
     assert client._token == ""
     assert client._state == "FAILED"
     assert not session.cookies

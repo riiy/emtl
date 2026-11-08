@@ -1,0 +1,66 @@
+{
+  "scripts": [
+    {
+      "original_path": "docs/refactor/reports/evidence/P3-final-linux/verify_host.py",
+      "relocated_path": "dist/p3-f1e1/tools/original/verify_host.py",
+      "sha256": "802b71faf014fa45e22da41fe6369c2a468a151f3e0d1af5ed48b2c56fef0bf1",
+      "kind": "one-off evidence script",
+      "required_by_approved_plan": false,
+      "git_ignore_verified": true,
+      "ignore_rule": ".gitignore:26:dist\tdist/p3-f1e1/tools/original/verify_host.py"
+    },
+    {
+      "original_path": "docs/refactor/reports/evidence/P3-final-linux/observe.py",
+      "relocated_path": "dist/p3-f1e1/tools/original/observe.py",
+      "sha256": "414cad33ca5bd60bb661fcc8892408c4fcdd365a0635ade44bcd66fa5ba28a3b",
+      "kind": "one-off evidence script",
+      "required_by_approved_plan": false,
+      "git_ignore_verified": true,
+      "ignore_rule": ".gitignore:26:dist\tdist/p3-f1e1/tools/original/observe.py"
+    }
+  ],
+  "execution_records": "history-before-f1.tar.gz contains original host-commands.json, failed CLI logs, partial build log and original manifests",
+  "old_build_stop": {
+    "authorization": "user selected \u505c\u6b62\u65e7\u6784\u5efa\u5e76\u7ee7\u7eed",
+    "actions": [
+      {
+        "pid": 51900,
+        "verified_command": "docker build --no-cache --file ci/offline.Dockerfile --tag emtl-p3-final-linux:6ac21d877879 --iidfile /Users/lld/emtl/docs/refactor/reports/evidence/P3-final-linux/image-id.txt .",
+        "signal": "SIGTERM"
+      },
+      {
+        "pid": 51899,
+        "verified_command": ".venv/bin/python -B docs/refactor/reports/evidence/P3-final-linux/verify_host.py build",
+        "signal": "SIGTERM"
+      },
+      {
+        "command": [
+          "docker",
+          "stop",
+          "--time",
+          "10",
+          "6728deac779d"
+        ],
+        "exit_code": 0
+      },
+      {
+        "container": "6728deac779d",
+        "state": {
+          "Status": "removing",
+          "Running": false,
+          "Paused": false,
+          "Restarting": false,
+          "OOMKilled": false,
+          "Dead": true,
+          "Pid": 0,
+          "ExitCode": 137,
+          "Error": "",
+          "StartedAt": "2026-11-07T13:41:33.004059Z",
+          "FinishedAt": "2026-11-07T14:12:08.956687Z"
+        }
+      }
+    ],
+    "old_writer_processes_inactive": true
+  },
+  "scripts_not_formal_tools": true
+}

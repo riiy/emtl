@@ -1,0 +1,32 @@
+{
+  "kind": "immutable snapshot of incomplete pre-F1 attempt; not Linux PASS",
+  "archive": "history-before-f1.tar.gz",
+  "archive_sha256": "9edd76e4ad65c43dff2cb5e6dcca389e957436dc3d4104d8a97489b8a492db8f",
+  "files": {
+    "README.md": "38586409a2cf90d618acf0e2ab0c616541f3456130b49d86f2b8f158389d40e2",
+    "baseline-final-pytest-junit.xml": "e01f1cf27b7d5aa95b8e90e9958c699861da40e411408217ed8a595247ef2806",
+    "baseline-final-tox-junit.xml": "3baf1492540c234102b5f504516294bd4026e1677b0be06e656c2113a16f84ed",
+    "baseline-source-sha256.json": "6b48e2f5f7f7a70e18bf3ab99299a1666ce0103cf6e680be325c060cceb122d1",
+    "build-context-audit.json": "355a493b2a36ac2472ed370cb8add8ef0c8aaffe7c1025036eedc179563f7ef2",
+    "copy-inputs-sha256.json": "dd4586fb200558f0e5f72b3ee8a60dea434e42b886855a6281f1a18f06bb7a4d",
+    "docker-build-final.log": "d573cea01ce5c654fdc540afbc58709fd6894b26720fce31f6e178ba9d0b24f0",
+    "docker-build.log": "0a0033a83aaf69fddd35047b16a66734164121ebedf2ca91c57fe16fee286518",
+    "docker-version.log": "3d0cee6c83e50570aa95abdf8bf6d667d79144338802b100a7cba995e19fe23e",
+    "expected-nodes.json": "b090659c3fe93a58ace3a9a3ab1f9b7247a839d4f1f8fcee3b171d04f911ee9d",
+    "failure-build.txt": "4d4c354e3b0a369dd730aef5dc11b43e42c4b9ecb6d89dc0813de666a4e7b469",
+    "git-branch.log": "5614f788242d89cca1caa44deb5cebdf0e2be88b8405fec2733f5eca4031ac8a",
+    "git-diff-before.log": "15e2071464120d62142ae05f46b37e2cc1a3f8f5f7c7d90b2480e647203c236a",
+    "git-head.log": "0c7dbbfbc19a62ba9ed4cead1fa5389ab75d3b9d0aa8b91a28d25d9b901d97e0",
+    "git-staged-before.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "git-status-before.log": "00c248ca3ac5439192ebaa407939fe6cc372bf42d405464a4a1f3abd8ad306d0",
+    "git-tracked-before.log": "20929f6868c0fbbae3ac7f5b99f596476ab92e89bb5ef4f17b5f619d4ec25357",
+    "git-untracked-before.log": "add12f913e9ea3cca0064e103a38589b98c82a845df325582eda6098f65d0035",
+    "host-commands.json": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "original-workspace-sha256.json": "329c395061678de79dc0e863636f2801e9bf9908aa977713336a3488b4749b48",
+    "plan.md": "be2607c49d120b5f4c146ae7c72c90d9fa67516e4d7a962634cfd625077cf487",
+    "run.json": "c2c1b165e423709d145b6be517ec698db8c218669ca2a97561fe92e07faa2d09",
+    "source-sha256.json": "e88969e287c308840ef18af5e1c0db1bd7230c9956b4409c2fcee1f33dbaabe4",
+    "source-tests-sha256.json": "56705d8ac1f30c1a3970342323910a983294670de7ab9a4c07454daec0419c05",
+    "workspace-before.json": "41d93887a85e53f8fc56f42e754cc293723fd8b0e080a87663d65a090f6e2f97"
+  }
+}
