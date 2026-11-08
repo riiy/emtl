@@ -18,9 +18,9 @@ year = "2024-2025"
 author = "Eastmoney Trade Library"
 copyright = f"{year}, {author}"
 try:
-    from pkg_resources import get_distribution
+    from importlib.metadata import version as distribution_version
 
-    version = release = get_distribution("emtl").version
+    version = release = distribution_version("emtl")
 except Exception:
     import traceback
 
