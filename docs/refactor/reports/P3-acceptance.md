@@ -1,5 +1,9 @@
 # P3 实施与阶段验收记录
 
+> **最终状态（2026-11-08）：PASS — 已完成并合并至 master。** 最终远端验收与阶段关闭依据见§14。
+>
+> §1–§13按当时事实保留；其中的FAIL、NEEDS EVIDENCE、待交付/待复审和未提交状态均为历史记录，不代表§14签认后的最终状态。
+
 ## 1. 结论与授权
 
 - 日期：2026-11-07；分支 `refactor/p3-trade-errors`；开始 HEAD `ea81a07f3b54cb7255ba0ae55a7bf5a8dbc55884`。本次为未提交实现，HEAD 不包含本次代码。
@@ -527,3 +531,72 @@ F1检查的verify_host.py/observe.py实际绑定本机ROOT、/workspace、单次
 本轮停止条件已取得实际依据：F1关闭；原Dockerfile新Linux镜像三入口均467通过；源码/镜像前后哈希/原始报告/归档SHA256链路成立；建议提交清单明确且无dist临时产物。尚缺的是维护者控制的最终Git提交/PR、匹配head_sha的双远端CI、Artifact和Tree证据，以及人工独立签认；这些不由本地结果或本实施者签认替代。没有自动commit/push/merge/tag，没有进入P4或改变交易行为。
 
 收尾实测：dist/p3-f1e1/f1/final-closure/result.json为PASS，完整109文件候选树及真实工作区pre-commit通过、11个交付Python Ruff/Black与diff通过，真实index/候选字节未变化。补充归档后静态扫描覆盖109文件、173归档成员，零命中。最终建议提交29文件（8个tracked修改、21个untracked新增，包含本清单自身）；清单涵盖原有P3实现，不表示本轮重新修改了这些源码。本段记录及inventory哈希刷新后再运行相同质量门槛，实际日志保存在dist/p3-f1e1/f1/final-recorded，不会为了追加自身检查日志而改变已封存的原始Linux归档。
+
+## 14. 最终远端验收与 P3 阶段关闭
+
+### 14.1 归档范围与独立签认来源
+
+日期：2026-11-08。本次仅归档已完成的最终验收结论：在文首增加最终状态指引、追加本节，再检查文档diff及受保护文件不变；不重写§1–§13，不修改生产代码、测试、CI、依赖、Requirements、Plan或原始Linux证据，不自动commit或push。
+
+原独立Reviewer在此前源码审查PASS的基础上，仅针对唯一未关闭项E-REMOTE完成了独立复核，明确输出：**E-REMOTE PASS；E-REMOTE可以关闭，P3的NEEDS EVIDENCE可以更新为最终P3 PASS。** 本节记录该实际签认，不把实施者自评或本次文档归档当作新的独立代码审查。
+
+复核优先使用GitHub公开API确认PR、Run、Job、Artifact归属和Git Tree；因gh未登录，实际Artifact ZIP经nightly.link公共代理读取，并重新计算SHA256，与GitHub官方API返回的digest及下列记录完全一致。ZIP在内存中核验，未修改原始证据。本次归档未重新运行测试，也未触发远端CI。
+
+### 14.2 最终受测版本与远端工作流
+
+| 项目 | 已核验记录 |
+| --- | --- |
+| PR | [#7：Refactor/p3 trade errors](https://github.com/riiy/emtl/pull/7)，MERGED，base为master |
+| 最终受测Head SHA | [`576d0bc339c1adc75c2dfac05d65b271c2bb764e`](https://github.com/riiy/emtl/commit/576d0bc339c1adc75c2dfac05d65b271c2bb764e) |
+| Merge Commit | [`307d1c95feb571e65434a18de0b9c317fdf390a6`](https://github.com/riiy/emtl/commit/307d1c95feb571e65434a18de0b9c317fdf390a6) |
+| Build Run | [42433386429](https://github.com/riiy/emtl/actions/runs/42433386429)，completed / success |
+| Build Jobs | check、docs、py311-cover (ubuntu)、finish全部success |
+| Offline Run | [42433386452](https://github.com/riiy/emtl/actions/runs/42433386452)，completed / success；offline Job为success |
+| 两个Run的事件与版本 | event均为pull_request，head_sha均为上述最终受测Head SHA |
+| Artifact | [13598567933：offline-test-evidence](https://github.com/riiy/emtl/actions/runs/42433386452/artifacts/13598567933)，属于上述Offline Run，复核时未过期 |
+
+GitHub官方Artifact digest与实际ZIP重新计算的SHA256均为：
+
+```text
+f3e60032ea58e8b282523e7e84aa07237a37c56baead0e6b963cb286784012d3
+```
+
+### 14.3 远端Artifact实际核验结果
+
+实际读取的ZIP包含docker-build.log、docker.log、container.log、commands.json、image.json、network-mode.txt、container-exit-code.txt、host-status.txt、三份完整JUnit、coverage.json/xml、tox-result.json、versions.json、synthetic-environment.json及逐命令日志。
+
+| 验收项 | 实际结果 |
+| --- | --- |
+| Docker平台 | linux/amd64 |
+| 系统禁网 | NetworkMode=none；OS网络隔离探针输出OS network namespace isolation verified |
+| 容器退出码 | 0 |
+| Host状态 | original=0 logs=0 inspect=0 copy=0 cleanup=0 evidence=0 |
+| junit.xml | 467 passed；failures=0、errors=0、skipped=0 |
+| outside-junit.xml | 467 passed；failures=0、errors=0、skipped=0 |
+| explicit-junit.xml | 467 passed；failures=0、errors=0、skipped=0 |
+| 节点一致性 | 三份JUnit节点集一致，各467个唯一节点；为同一套测试的三轮运行，不是1401个独立测试 |
+| Coverage | 综合94.44%；Statements 95.20%；Branches 91.23% |
+| tox凭证隔离 | 真实commands_pre在pytest启动前输出account environment isolated；父环境为合成P1_FAKE_VALUE哨兵 |
+| 工具版本 | Python 3.11.18、pytest 9.2.0、pytest-cov 7.1.0、coverage 7.17.2、tox 4.67.13 |
+| 命令退出 | commands.json记录的五个原驱动步骤均退出0，保留默认tox、仓库外不同顺序及显式tests/三个入口 |
+
+以上为最终受测Head对应的**远端CI Artifact**结果，与§3–§13的本地macOS/Linux验证分开记录，不把本地结果改称远端CI，也不以覆盖率或累计运行数量单独判定资金安全。
+
+### 14.4 Head、Merge与master的Git Tree
+
+GitHub API独立核验结果：
+
+| 版本 | Tree SHA |
+| --- | --- |
+| 最终受测Head Commit | `4e87bc9c41e5ce09cccde0b284487b48566def0c` |
+| Merge Commit | `4e87bc9c41e5ce09cccde0b284487b48566def0c` |
+| 复核时远端master | `4e87bc9c41e5ce09cccde0b284487b48566def0c` |
+
+三者完全一致；受测Head与合并提交SHA不同，但代码树相同。上述Head、Merge与Tree标识的是已经完成远端验收的版本；本次后续文档收尾不属于该受测Tree，不将文档收尾提交描述成新的生产代码验收提交，也不改写原Artifact或其SHA256。
+
+### 14.5 最终Review与阶段结论
+
+- **P3整体最终PASS；E-REMOTE关闭。** 此前源码独立Review PASS与本次E-REMOTE PASS共同完成最终验收闭环。
+- **R1/R2/R3缺陷均已关闭。** 原始Review FAIL、各轮修复及红绿/变异记录、历史NEEDS EVIDENCE、446/467测试结果、本地Linux验证和远端证据产生前的状态均按原文保留，不追溯改称当时已经PASS。
+- 没有新增交易重试、重登重放或自动补偿；原有旧API、CLI的兼容边界得到保留。TradeOutcomeUnknown仍不是重发许可，非HTTP原异常、内存context/APM及旧API既有风险的限制不因阶段关闭而消失。
+- **P3已正式完成并合并至master。后续进入P4，P3不再扩大实施范围。** 本次仅完成验收文档归档，不实施P4；P4按其独立需求、计划与授权开展。
