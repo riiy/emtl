@@ -30,6 +30,7 @@ def wheel_files():
         prefix + "METADATA": metadata.encode(),
         prefix + "entry_points.txt": b"[console_scripts]\nemt = emtl.cli:run\n",
         prefix + "licenses/LICENSE": b"MIT\n",
+        prefix + "licenses/AUTHORS.rst": b"Authors\n=======\n",
         prefix + "WHEEL": b"Wheel-Version: 1.0\nRoot-Is-Purelib: true\nTag: py3-none-any\n",
         prefix + "RECORD": b"",
     }
@@ -49,6 +50,7 @@ def test_audit_records_exact_hash_metadata_and_file_list(tmp_path):
     assert report["version"] == VERSION
     assert len(report["sha256"]) == 64
     assert report["files"] == sorted(files)
+    assert f"emtl-{VERSION}.dist-info/licenses/AUTHORS.rst" in report["files"]
     assert set(report["requires_dist"]) == AUDITOR["DEPENDENCIES"]
 
 
@@ -57,6 +59,17 @@ def test_audit_rejects_non_delivery_and_unsafe_files(tmp_path, extra):
     files = wheel_files()
     files[extra] = b"synthetic"
     with pytest.raises(ValueError, match="non-delivery|unsafe archive path"):
+        AUDITOR["audit"](write_wheel(tmp_path, files), VERSION)
+
+
+@pytest.mark.parametrize(
+    "extra",
+    [f"emtl-{VERSION}.dist-info/licenses/OTHER.rst", f"emtl-{VERSION}.dist-info/AUTHORS.rst"],
+)
+def test_audit_rejects_unapproved_license_neighbors(tmp_path, extra):
+    files = wheel_files()
+    files[extra] = b"synthetic"
+    with pytest.raises(ValueError, match="non-delivery file"):
         AUDITOR["audit"](write_wheel(tmp_path, files), VERSION)
 
 
@@ -91,6 +104,7 @@ def test_sdist_audit_uses_real_archive_metadata_and_files(tmp_path):
     root = f"emtl-{VERSION}/"
     files = {root + "src/" + name: data for name, data in wheel.items() if name.startswith("emtl/")}
     files.update({root + name: b"synthetic\n" for name in AUDITOR["ROOT_FILES"]})
+    assert root + "AUTHORS.rst" in files
     files[root + "PKG-INFO"] = wheel[dist_root + "METADATA"]
     files[root + "src/emtl.egg-info/entry_points.txt"] = wheel[dist_root + "entry_points.txt"]
     path = tmp_path / f"emtl-{VERSION}.tar.gz"
@@ -100,6 +114,26 @@ def test_sdist_audit_uses_real_archive_metadata_and_files(tmp_path):
             item.size = len(data)
             archive.addfile(item, BytesIO(data))
     assert AUDITOR["audit"](path, VERSION)["files"] == sorted(files)
+
+
+@pytest.mark.parametrize("extra", ["tests/test_live.py", "ci/build.log", "AUTHORS-copy.rst"])
+def test_sdist_rejects_unapproved_neighbors(tmp_path, extra):
+    wheel = wheel_files()
+    dist_root = f"emtl-{VERSION}.dist-info/"
+    root = f"emtl-{VERSION}/"
+    files = {root + "src/" + name: data for name, data in wheel.items() if name.startswith("emtl/")}
+    files.update({root + name: b"synthetic\n" for name in AUDITOR["ROOT_FILES"]})
+    files[root + "PKG-INFO"] = wheel[dist_root + "METADATA"]
+    files[root + "src/emtl.egg-info/entry_points.txt"] = wheel[dist_root + "entry_points.txt"]
+    files[root + extra] = b"synthetic"
+    path = tmp_path / f"emtl-{VERSION}.tar.gz"
+    with tarfile.open(path, "w:gz") as archive:
+        for name, data in files.items():
+            item = tarfile.TarInfo(name)
+            item.size = len(data)
+            archive.addfile(item, BytesIO(data))
+    with pytest.raises(ValueError, match="non-delivery file"):
+        AUDITOR["audit"](path, VERSION)
 
 
 def test_sdist_symlink_is_rejected_without_extraction(tmp_path):

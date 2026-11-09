@@ -129,3 +129,12 @@ Linux 实际执行既有 `ci/run_offline_tests.py`；其每个命令/cwd/退出�
 此前按批实施但依授权未自动提交，本轮以一个完整受测快照交付（不伪造逐批历史）；最终提交与推送状态以实际 Git 输出和远端 ref 核验为准。本授权不解除依赖公告、审批保护、独立 Review、最终 SHA 远端 CI 或 Beta/Stable 的阻断项。
 
 提交前所有 36 个交付文件加入暂存后，使用既有 Python 3.11 tox check 环境禁网检查：metadata check 及 ruff/black/whitespace/EOF/debug hooks 全部通过，未改动暂存内容，日志 `dist/p4/precommit-check.log`。直接调用 pre-commit 时曾选择缺构建依赖的新 hook 环境而失败；该环境准备失败不记为通过，后续实际完整 tox check 通过才继续提交。
+
+## PR #10 Package Alpha 构建审计失败与修复待验（2026-11-09）
+
+- 历史失败：PR #10，受测 head `1ff2eee9901e38c357961e07c429266087e2bc79`，Run [42547411046](https://github.com/riiy/emtl/actions/runs/42547411046)，Job [128935288776](https://github.com/riiy/emtl/actions/runs/42547411046/job/128935288776)。`Build internal candidate once` 退出 1；后续 `Install and smoke the same artifacts without network`、`Recheck unchanged artifacts` 未执行，不得冒称远端 smoke PASS。
+- 原日志记录 `Successfully built emtl-0.3.0a1.tar.gz and emtl-0.3.0a1-py3-none-any.whl`；Twine strict 两包均 PASSED；`ci/audit_packages.py:83` 抛出 `ValueError("non-delivery file in artifact")`。
+- 同一构建日志确认 setuptools 84.2.1 把 `AUTHORS.rst` 作为合法作者/许可证文件放在 sdist 根目录、wheel 的 `emtl-0.3.0a1.dist-info/licenses/AUTHORS.rst`。当前审计白名单分别遗漏 `ROOT_FILES` 中的 `AUTHORS.rst`、`DIST_FILES` 中的 `licenses/AUTHORS.rst`。
+- 定向修复范围：只允许这两个**精确路径**；将合成 wheel/sdist fixture 与当前实际生成布局对齐，并保留/补充对未经批准的 license 文件、测试文件、CI 临时文件、私钥、敏感路径、路径穿越及符号链接的拒绝测试。`MANIFEST.in`、生产交易代码、依赖及 Release 发布权限不变。
+- 初次失败 Run 上传了名为 `alpha-package-evidence` 的 Artifact（ID `13643962489`），但这是失败构建的部分证据，不能作为完整审计、安装 smoke 或发布验收的 PASS 证据。
+- **证据边界：** 此条作为 GitHub 定向补丁的待验记录，不代表已运行最终干净 checkout 的 sdist/wheel、Twine、真实包审计、禁网双安装、完整 pytest、pre-commit 或新的远端 CI。修复应用后必须记录每项真实命令/退出码、更新后的 PR head SHA、新 Run/Artifact 和独立 Review；在取得证据前，P4 仍为 **NEEDS EVIDENCE**，Beta/Stable 仍 **BLOCKED**。
