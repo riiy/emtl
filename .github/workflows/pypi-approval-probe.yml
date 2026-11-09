@@ -1,0 +1,25 @@
+name: PyPI Environment Approval Probe
+
+on:
+  workflow_dispatch:
+    inputs:
+      run_probe:
+        description: "Run a no-upload check of the pypi environment reviewer gate"
+        required: true
+        type: boolean
+        default: false
+
+permissions: {}
+
+jobs:
+  approval-probe:
+    if: ${{ inputs.run_probe }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    environment:
+      name: pypi
+    steps:
+      - name: Confirm environment approval was granted
+        run: |
+          echo "The pypi environment approval gate was released."
+          echo "No checkout, OIDC permission, package build, PyPI token, or upload was used."

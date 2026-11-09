@@ -1,5 +1,8 @@
 # P4 Build 与阶段验收记录
 
+> **当前状态（2026-11-09 收尾复核）：** master `624fc5aba6875b89202d16b5db9d6c927c48fb8b` / tree `db8b5ae9b35763dc2bedfb4b405f8c59a1524647`. P4 实现、最终 master Build、Offline tests、Package Alpha 和运行时依赖修复均已有对应证据。旧段落中的“未配置 reviewers”“requests 2.31.0 / cryptography 42.0.5”是历史基线，已由本文末尾 2026-11-09 收尾记录 supersede。**P4 阶段整体仍为 NEEDS EVIDENCE**：no-upload 审批探针、独立 RTD build ID 核验及 Beta 观察/退出尚未闭环；本次授权不包含 Beta/Stable 上传、tag 或正式发布。
+
+
 ## 授权与当前状态
 
 - 日期：2026-11-08；分支 `refactor/p4-release-maintenance`。
@@ -147,3 +150,50 @@ Linux 实际执行既有 `ci/run_offline_tests.py`；其每个命令/cwd/退出�
 - 2026-11-08 的实测 `pypi.protection_rules=[]` 是历史证据。当前 GitHub 集成不提供环境规则写入及完整环境设置读取权限；因此**不能声称 required reviewers 已配置**。需管理员打开 `https://github.com/riiy/emtl/settings/environments`，进入 `pypi` → 勾选 Required reviewers → 选择有仓库读取权限的审核人 → Save protection rules；按维护团队情况考虑 Prevent self-review 与禁止绕过规则。
 - 配置完成后，使用有足够权限的本地 `gh api repos/riiy/emtl/environments/pypi --jq '.protection_rules'` 确认存在类型为 `required_reviewers` 且 reviewer 非空的规则；不能通过创建 tag 或上传 PyPI 来试探安全设置。进一步审批行为实测须单独安排非发布场景，防止误触发真实 Publish。
 - 除非得到 Environment rule 真实证据及独立 Review，P4 仍 **NEEDS EVIDENCE**，公开 Beta/Stable 仍 **BLOCKED**。
+
+
+## 2026-11-09 最终 master 收尾证据（覆盖早期待验状态）
+
+### 受测提交与远端 CI
+
+- master commit：`624fc5aba6875b89202d16b5db9d6c927c48fb8b`
+- master tree：`db8b5ae9b35763dc2bedfb4b405f8c59a1524647`
+- 三个 Run 均为 `push` 事件、`master` 分支、相同 head SHA，且 Run 与所有 Job 均 success：
+  - [Build](https://github.com/riiy/emtl/actions/runs/42585602357)：`check`、`docs`、`py311-cover (ubuntu)`、`finish` 全部成功。
+  - [Offline tests](https://github.com/riiy/emtl/actions/runs/42585602255)：`offline` 成功；Artifact `offline-test-evidence` ID `13659326002`。
+  - [Package Alpha](https://github.com/riiy/emtl/actions/runs/42585602194)：`package` 成功；Artifact `alpha-package-evidence` ID `13659046312`。
+
+### Artifact 原件核验
+
+- Offline Artifact ZIP SHA256：`d23bbd40ed2260012d33633a7f5478a8d3cf9b2db8c29b0a729b4e297c4f5af7`。
+- Offline 镜像：`sha256:6df9178706ed3999b36098cfe9f092fc0c3beef2d0d8ecd2d2ac92b58beda2df`；`NetworkMode=none`；容器退出码 0；宿主证据收集/清理退出状态均为 0。
+- 三份 JUnit（默认入口、仓库外入口、显式 `tests/`）分别 559 passed、0 failure、0 error、0 skipped，节点数和集合一致。
+- Coverage：行覆盖 95.97%（468/482）；分支覆盖 91.23%（104/114）。此数字只记录该 Artifact 的 coverage.json，不与 P3 旧口径直接比较。
+- Package Alpha Artifact ZIP SHA256：`658f8fbb7c4e04793eca0ee1bca3b487fa4504ca8fb657988a3bf66a61852b1c`；Artifact 的 `release/commit.txt` 与上述 master SHA 一致。
+- Package smoke 镜像：`sha256:5c8aa9e3f9cfc2b834984cfa03c5cb6bd99908624a9631bcb42fdd379b12a255`；容器 `NetworkMode=none`，退出码 0；wheel 和 sdist 分别在独立环境安装、smoke、`pip check` 均成功。
+- Wheel SHA256：`183495fb00f233f79ff0bae84b5934bf69cde2c057dc4fa7312b599c1fe8a935`。
+- sdist SHA256：`06e18561c8826022436de6fb25fd1340c6f25c7ff36252ed5c7144d2c34dd9af`。
+- Artifact manifest 确认版本 `0.3.0a1`、Requires-Python `>=3.11,<3.12`、直接依赖 `rsa==4.9`、`requests==2.33.1`、`ddddocr==1.4.11`、`cryptography==50.0.2`；`SHA256SUMS` 对两种产物复核均 OK。
+
+### PyPI Environment 静态保护
+
+维护者提供的当前 `gh api repos/riiy/emtl/environments/pypi` 输出包含：
+- `required_reviewers`：审核人 `riiy`，`prevent_self_review=false`。
+- `custom_branch_policies=true`，`protected_branches=false`；分支策略列表仅有 `master`。
+
+这确认了静态配置。单人维护时允许 self-review 可避免唯一审核人无法批准自己触发的部署，但不提供第二人独立复核。不得把静态配置当成审批实际运行证据。
+
+本分支新增 `.github/workflows/pypi-approval-probe.yml`：仅 `workflow_dispatch`，需显式将 `run_probe=true`；job 绑定 `pypi` Environment，`permissions: {}`，不 checkout、不配置 OIDC、不构建、不调用 PyPI、不上传。合并后由维护者从 `master` 手动触发，先确认 Job 显示 Waiting for approval，再批准并确认 Job 成功及日志明确无上传。当前 GitHub 连接不提供 workflow dispatch / deployment approval 动作；这一步仍需维护者在网页完成。
+
+### 文档与 Read the Docs
+
+- 维护者已在此前会话确认：tox docs、Sphinx HTML、autodoc、中文导航及 Read the Docs 远端 HTML 构建验收通过；PDF/EPUB 不再生成。
+- 本轮未取得对应 RTD Build ID 或 API 原始结果，故标记为 **维护者确认 PASS，独立远端记录 NEEDS EVIDENCE**。不得将历史失败 Build 35727016 当作最终结果，也不得凭本地 Sphinx 构建代替 RTD 远端证据。
+
+### 当前结论与未授权范围
+
+- P4 实现和最终 master 的 Build / Offline / Package Alpha / 包安装证据：PASS。
+- 已知 requests 2.31.0、cryptography 42.0.5 公告对应的升级和兼容性测试：见依赖审查报告 2026-11-09 更新；不宣称完成全量 SBOM 或未来零漏洞保证。
+- Required reviewers 静态配置：维护者提供证据，PASS；审批行为：等待 no-upload probe。
+- **P4 总体仍 NEEDS EVIDENCE**，直到 no-upload 审批探针和 RTD 远端 build 记录核验完成。Beta 的十个工作日反馈窗口、退出决策及 Stable 另行批准仍未执行；不得据此宣布已发布或对真实券商生产可用。
+- 本次不创建 tag、GitHub Release，不上传 PyPI，不执行真实账户或交易操作。

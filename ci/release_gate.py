@@ -15,6 +15,7 @@ from packaging.version import Version
 REQUIRED_WORKFLOWS = {
     "github-actions.yml": {"check", "docs", "py311-cover (ubuntu)", "finish"},
     "offline-tests.yml": {"offline"},
+    "packages.yml": {"package"},
 }
 
 

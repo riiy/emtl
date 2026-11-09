@@ -1,5 +1,8 @@
 # P4 依赖审查（2026-11-08）
 
+> **当前版本状态（2026-11-09）：** 下文 2026-11-08 的公告命中表是旧 pin 的历史快照，不代表当前 master 仍在使用 requests 2.31.0 或 cryptography 42.0.5。当前 master `624fc5aba6875b89202d16b5db9d6c927c48fb8b` 已固定为 requests 2.33.1、cryptography 50.0.2；更新依据、兼容性测试和剩余限制见本文末尾。不要删除旧快照，它用于追溯升级前风险。
+
+
 ## 结论
 
 **公开 Beta / Stable 阻断：需要维护者完成已知公告的适用性评估及逐项更新/延期决策。** 本次未升级任何运行时依赖，未把“可安装/测试通过”解释为无漏洞。
@@ -99,3 +102,30 @@ OSV 对另外三项查询未返回公告，**不等于证明它们安全**；本
 - https://github.com/advisories/GHSA-9hjg-9r4m-mvj7
 - https://github.com/psf/requests/security/advisories/GHSA-gc5v-m9x4-r6x2
 - https://github.com/psf/requests/blob/main/HISTORY.md
+
+
+## 2026-11-09 当前 master 依赖修复与剩余审查
+
+### 最终 pin 与证据
+
+最终 master `624fc5aba6875b89202d16b5db9d6c927c48fb8b` 的 sdist/wheel Artifact manifest 与 `setup.py` 均确认：
+
+| 直接运行依赖 | 最终 pin | 结论 |
+| --- | --- | --- |
+| requests | `2.33.1` | 已高于此前记录的三个公告首修版本；Session/TLS 默认、真实 Requests prepare_request、302 不重定向、订单 POST 单次等合成回归在最终 559 项 CI 中通过 |
+| cryptography | `50.0.2` | 高于此前列出的 OpenSSL wheel、SECT、X.509 name constraints 等公告首修版本；RSA 生产公钥和 PKCS#1 v1.5 加密兼容测试通过 |
+| rsa | `4.9` | 保持原 pin；Dependabot PR [#20](https://github.com/riiy/emtl/pull/20) 提议升级到 4.9.1，目前仍 open，尚未合并。它是单独依赖维护事项，不应借 P4 收尾自动合并 |
+| ddddocr | `1.4.11` | 保持原 pin；metadata 要求 Python <3.12，当前支持范围仍限定 CPython 3.11/Linux |
+
+Requests 2.33.1 的上游发行记录确认：2.33.0 修复 CVE-2026-25645，且 2.33.1 修复头部解析与该公告测试清理问题；2.32.0 / 2.32.4 已包含此前 CVE-2024-35195 / CVE-2024-47081 修复。来源：[Requests HISTORY](https://github.com/psf/requests/blob/main/HISTORY.md#2331-2026-03-30)。
+
+cryptography 50.0.2 的上游变更记录确认 Linux/macOS/Windows wheels 使用 OpenSSL 4.0.3；50.0.0 已修复其 PKCS7 decrypt oracle 相关问题，50.0.2 高于本报告旧表列出的修复版本。来源：[cryptography 50.0.2 changelog](https://cryptography.io/en/50.0.2/changelog/)。
+
+### 适用性与声明边界
+
+- 这是对本报告所列旧公告的版本修复核对，不是完整 SBOM 扫描，也不证明当前 pin 或所有传递依赖不存在任何漏洞。
+- Requests 2.33.1 不是截至本记录日 PyPI 最新版本；选择它是此前维护者批准的最小升级目标。更高版本的升级应另行评估 changelog、依赖元数据和请求行为，不在本次 P4 收尾中扩大。
+- cryptography 50.0.2 的实际 Linux wheel、RSA 生产公钥/PKCS#1 v1.5 测试均由最终 master 的 CI 覆盖；不因此宣称其他 OS/Python 平台兼容。
+- `rsa==4.9` 的 Dependabot PR #20 仍需单独 Review/CI 决策；当前不自动合并、不扩大本次依赖变更。
+- `ddddocr==1.4.11` 与 Python 3.12+ 的兼容性问题仍然存在；本项目当前明确限制为 Python 3.11，不把 OCR 迁移混入本次收尾。
+- 每月 Dependabot 仅提出 PR；所有 runtime pin 变更仍需独立审查、Offline、Package Alpha 和 API/交易行为回归。
