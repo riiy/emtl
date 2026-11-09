@@ -138,3 +138,12 @@ Linux 实际执行既有 `ci/run_offline_tests.py`；其每个命令/cwd/退出�
 - 定向修复范围：只允许这两个**精确路径**；将合成 wheel/sdist fixture 与当前实际生成布局对齐，并保留/补充对未经批准的 license 文件、测试文件、CI 临时文件、私钥、敏感路径、路径穿越及符号链接的拒绝测试。`MANIFEST.in`、生产交易代码、依赖及 Release 发布权限不变。
 - 初次失败 Run 上传了名为 `alpha-package-evidence` 的 Artifact（ID `13643962489`），但这是失败构建的部分证据，不能作为完整审计、安装 smoke 或发布验收的 PASS 证据。
 - **证据边界：** 此条作为 GitHub 定向补丁的待验记录，不代表已运行最终干净 checkout 的 sdist/wheel、Twine、真实包审计、禁网双安装、完整 pytest、pre-commit 或新的远端 CI。修复应用后必须记录每项真实命令/退出码、更新后的 PR head SHA、新 Run/Artifact 和独立 Review；在取得证据前，P4 仍为 **NEEDS EVIDENCE**，Beta/Stable 仍 **BLOCKED**。
+
+## 2026-11-09 requests 安全修复与 PyPI required reviewers 边界
+
+- 将 `requests==2.31.0` 命中公告作为阻断项；建议候选 `requests==2.33.1`，同步严格包元数据与 Requests Session 定向回归；详细公告及真实调用路径见 `P4-dependency-review.md` 的 requests 专项。
+- 此处记录安全修复的实施意图，**不能作为实际 CI 已通过或公开发布已完成的证据**。必须用最终 PR Head 和最终 master push 的 Build/Offline/Package Alpha 三项工作流结果及 Artifact 替换待验状态。
+- PyPI 发布工作流已有 `environment: pypi` 和 `id-token: write` 仅 Publish Job 的配置，但是否真正设置 `Required reviewers` 是 GitHub 远端 Environment protection rule，不能通过仓库代码提交代替。
+- 2026-11-08 的实测 `pypi.protection_rules=[]` 是历史证据。当前 GitHub 集成不提供环境规则写入及完整环境设置读取权限；因此**不能声称 required reviewers 已配置**。需管理员打开 `https://github.com/riiy/emtl/settings/environments`，进入 `pypi` → 勾选 Required reviewers → 选择有仓库读取权限的审核人 → Save protection rules；按维护团队情况考虑 Prevent self-review 与禁止绕过规则。
+- 配置完成后，使用有足够权限的本地 `gh api repos/riiy/emtl/environments/pypi --jq '.protection_rules'` 确认存在类型为 `required_reviewers` 且 reviewer 非空的规则；不能通过创建 tag 或上传 PyPI 来试探安全设置。进一步审批行为实测须单独安排非发布场景，防止误触发真实 Publish。
+- 除非得到 Environment rule 真实证据及独立 Review，P4 仍 **NEEDS EVIDENCE**，公开 Beta/Stable 仍 **BLOCKED**。

@@ -87,6 +87,7 @@ def test_audit_rejects_sensitive_material_and_developer_paths(tmp_path, bad_data
         (b"0.3.0a1", b"0.2.6"),
         (b"rsa==4.9", b"rsa==4.8"),
         (b"cryptography==50.0.2", b"cryptography==42.0.5"),
+        (b"requests==2.33.1", b"requests==2.31.0"),
         (b"<3.12,>=3.11", b">=3.10"),
         (b"emtl.cli:run", b"emtl.cli:other"),
     ],
