@@ -81,3 +81,21 @@ OSV 对另外三项查询未返回公告，**不等于证明它们安全**；本
 4. 合并后重新核验最终 master 的 Build、Offline tests、Package Alpha；不以旧版/PR Head 成功代替合并后的证据。
 5. 如发生 RSA PEM 解码、加密输出、依赖解析或远端 CI 回归，维持阻断并停止合并，不删除测试或回退审计严格性。
 6. `requests==2.31.0` 的独立安全公告仍未关闭；即使本修复通过，P4 Beta/Stable 发布门槛仍须单独处理 requests 和 required reviewers。
+
+## 2026-11-09 requests 安全修复专项（候选，等待远端验收）
+
+**状态：已完成版本命中和实际调用路径评估；候选版本已选定，CI 与发布审批未完成前不得视为最终通过。** 本段不改写上文关于旧版本的历史证据。
+
+- 当前源代码明确以 `requests.Session` 用于登录、持久 Cookie、查询、下单和撤单；订单请求的 `allow_redirects=False` 保护必须保留，且 P3 禁止对不确定交易结果自动重试。项目没有直接调用 `requests.utils.extract_zipped_paths`，也没有在生产请求中显式 `verify=False`；但 `.netrc` / TLS 行为仍受 Requests 运行时影响。
+- 上游已确认三个漏洞：CVE-2024-35195（错误 TLS Session 复用，首修 2.32.0）、CVE-2024-47081（恶意 URL 下可能泄漏 `.netrc` 凭证，首修 2.32.4）、CVE-2026-25645（`extract_zipped_paths` 临时文件复用，首修 2.33.0）。命中版本 `requests==2.31.0`。
+- 推荐并批准的最小修复候选 `requests==2.33.1`：覆盖上述三个修复；相对于 2.34.2 的 URL、代理和类型变更，减少一次跨发行线的行为变化。2.33.1 的头部解析和 CVE-2026-25645 测试清理修复来自上游 release notes；**这不是声称没有任何剩余漏洞**。
+- 同步 `setup.py`、`ci/audit_packages.py` 的严格 Requires-Dist 契约与两个合成包审计测试；不改交易代码，不放宽固定依赖集及路径/秘密扫描。
+- 增加 `tests/test_requests_compat.py`：确认真实安装版本、TLS verify 默认开启、以真实 Requests Session + 仅内存适配器验证交易 POST 遇 302 只发送一次且不跟随重定向。CI 中使用合成凭证和 `trust_env=False` 隔离宿主代理/netrc。此测试不是对三个上游 CVE 的完整 exploit reproduction。
+- 必须在同一新 Head 上完成 Build/check/docs/coverage、Offline tests（三入口 NetworkMode=none）、Package Alpha（sdist/wheel、Twine、严格审计、禁网双安装），且审查最终提交的差异；合并后再确认 master push CI。
+- 由于 PyPI `0.2.6` 仍旧版发行，master 修复不代表已安装的最终用户受保护。Beta/Stable 仍受发布审批门槛和实际授权阻断。
+
+官方公告和变更：
+- https://github.com/advisories/GHSA-9wx4-h78v-vm56
+- https://github.com/advisories/GHSA-9hjg-9r4m-mvj7
+- https://github.com/psf/requests/security/advisories/GHSA-gc5v-m9x4-r6x2
+- https://github.com/psf/requests/blob/main/HISTORY.md

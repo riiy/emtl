@@ -29,7 +29,7 @@ def test_python_and_platform_claims_match_approved_scope(package_metadata):
 
 
 def test_runtime_dependencies_are_not_silently_upgraded(package_metadata):
-    assert package_metadata["install_requires"] == ["rsa==4.9", "requests==2.31.0", "ddddocr==1.4.11", "cryptography==50.0.2"]
+    assert package_metadata["install_requires"] == ["rsa==4.9", "requests==2.33.1", "ddddocr==1.4.11", "cryptography==50.0.2"]
     assert package_metadata["entry_points"] == {"console_scripts": ["emt = emtl.cli:run"]}
     assert package_metadata["long_description_content_type"] == "text/x-rst"
 
