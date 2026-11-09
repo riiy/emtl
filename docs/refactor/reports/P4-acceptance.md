@@ -1,6 +1,7 @@
 # P4 Build 与阶段验收记录
 
-> **当前状态（2026-11-09 收尾复核）：** master `624fc5aba6875b89202d16b5db9d6c927c48fb8b` / tree `db8b5ae9b35763dc2bedfb4b405f8c59a1524647`. P4 实现、最终 master Build、Offline tests、Package Alpha 和运行时依赖修复均已有对应证据。旧段落中的“未配置 reviewers”“requests 2.31.0 / cryptography 42.0.5”是历史基线，已由本文末尾 2026-11-09 收尾记录 supersede。**P4 阶段整体仍为 NEEDS EVIDENCE**：no-upload 审批探针、独立 RTD build ID 核验及 Beta 观察/退出尚未闭环；本次授权不包含 Beta/Stable 上传、tag 或正式发布。
+> **当前 P4 收尾代码基线（2026-11-09）：** PR #23 已合并到 master，merge commit `d5eb7d71e4b65fb28e0398b64269a9d1225c833a`，tree `f9d361cec8d5a23e2f3b6576efbc63d915250633`。PR head `66d3a3b58b55ba047bef595f497874c7fd619c88` 与 merge commit 的 tree 完全一致；最终 master push 的 Build、Offline tests、Package Alpha 均已在 merge SHA 上成功。详情见本文末尾“PR #23 合并后最终 master 验证”。**P4 阶段整体仍为 NEEDS EVIDENCE**：no-upload 审批探针和 Beta 观察/退出尚未闭环；RTD HTML 验收由维护者确认通过，但本轮未取得独立 Build ID。未创建 tag、未上传 PyPI、未执行正式发布。
+
 
 
 ## 授权与当前状态
@@ -197,3 +198,39 @@ Linux 实际执行既有 `ci/run_offline_tests.py`；其每个命令/cwd/退出�
 - Required reviewers 静态配置：维护者提供证据，PASS；审批行为：等待 no-upload probe。
 - **P4 总体仍 NEEDS EVIDENCE**，直到 no-upload 审批探针和 RTD 远端 build 记录核验完成。Beta 的十个工作日反馈窗口、退出决策及 Stable 另行批准仍未执行；不得据此宣布已发布或对真实券商生产可用。
 - 本次不创建 tag、GitHub Release，不上传 PyPI，不执行真实账户或交易操作。
+
+
+## 2026-11-09 PR #23 合并后最终 master 验证
+
+### 合并与代码树对应
+
+- PR：[ #23 P4 closeout: exact-SHA Alpha gate and safe PyPI approval probe ](https://github.com/riiy/emtl/pull/23)
+- PR head：`66d3a3b58b55ba047bef595f497874c7fd619c88`
+- Merge commit / master：`d5eb7d71e4b65fb28e0398b64269a9d1225c833a`
+- PR head 与 merge commit tree 均为：`f9d361cec8d5a23e2f3b6576efbc63d915250633`；文件树完全一致。
+
+### 最终 master push CI（精确匹配 merge SHA）
+
+- [Build](https://github.com/riiy/emtl/actions/runs/42622822695)：success；`check`、`docs`、`py311-cover (ubuntu)`、`finish` 全部成功。
+- [Offline tests](https://github.com/riiy/emtl/actions/runs/42622822706)：success；Artifact ID `13676768110`。
+- [Package Alpha](https://github.com/riiy/emtl/actions/runs/42622822718)：success；Artifact ID `13675948724`。
+- 三个 Run 均为 `push` / `master`，head SHA 都是 `d5eb7d71e4b65fb28e0398b64269a9d1225c833a`。
+
+### 最终 master Artifact 原件
+
+- Offline ZIP SHA256：`3c964e0c18ff3026948ee37921bdc2965e6fb1ecac798de322d5b31ccd290b73`。
+- Offline Linux image：`sha256:037cc5c84a23ae02e7f71ad547a05551d16b9d32edb025ffd2360a1eb75d63b8`；`NetworkMode=none`；容器退出 0。
+- 默认入口、仓库外入口、显式 `tests/` 三份 JUnit 各 **565 passed**，0 failure、0 error、0 skipped；节点集一致。
+- Coverage：行 95.97%（468/482），分支 91.23%（104/114）。
+- Package Alpha ZIP SHA256：`4394938d4dcaa86e68001dd7206d9857d4c555d4dabc40aedfe754e00aff457d`；Artifact 内 `release/commit.txt` 精确等于 merge SHA。
+- Package smoke image：`sha256:aa40f38017468aeeed402a69c985c22bb75ea581e125773017a788038c3a0945`；`NetworkMode=none`；容器退出 0；wheel/sdist 独立安装与 smoke 成功，`pip check` 成功。
+- Wheel SHA256：`1de67b7c41772d70972c9e60b114ec9031088032aed0b18505dc0e6ac7bc44a6`。
+- sdist SHA256：`b4bb90f049aaf6b9fb2bfd81ff8b3848a28d12941680a9fe9e74494610e2c567`。
+
+### PR #23 改动复核与剩余步骤
+
+- Release Gate 已把 `packages.yml: package` 纳入必需 exact-SHA master push 工作流集合；新增合成测试拒绝 Package Alpha 缺失、失败、skipped 或 head SHA 不匹配。
+- `.github/workflows/pypi-approval-probe.yml` 已合并。该工作流只需人工 `workflow_dispatch`，绑定 `pypi` Environment，`permissions: {}`，无 OIDC、无 checkout、无构建、无 PyPI token、无上传步骤。
+- 维护者仍需从 master 手动运行该 probe，记录 Job 先进入 Waiting for approval、指定 reviewer 批准后 Job 成功。GitHub 连接未提供 dispatch/approval 动作，本轮没有替维护者触发。
+- RTD 远端 HTML build：维护者已确认验收通过；本轮未取得 Build ID，保留为“维护者确认 PASS、独立记录未核验”。
+- **P4 总体仍 NEEDS EVIDENCE**：审批行为验证和 Beta 反馈窗口/退出决策未完成。Stable 发布仍需单独授权。本轮没有创建 tag、GitHub Release 或上传 PyPI。
