@@ -234,3 +234,11 @@ Linux 实际执行既有 `ci/run_offline_tests.py`；其每个命令/cwd/退出�
 - 维护者仍需从 master 手动运行该 probe，记录 Job 先进入 Waiting for approval、指定 reviewer 批准后 Job 成功。GitHub 连接未提供 dispatch/approval 动作，本轮没有替维护者触发。
 - RTD 远端 HTML build：维护者已确认验收通过；本轮未取得 Build ID，保留为“维护者确认 PASS、独立记录未核验”。
 - **P4 总体仍 NEEDS EVIDENCE**：审批行为验证和 Beta 反馈窗口/退出决策未完成。Stable 发布仍需单独授权。本轮没有创建 tag、GitHub Release 或上传 PyPI。
+
+## 2026-11-09 PR #24 文档收尾合并后的 master CI 复核
+
+- PR [#24 docs: record final P4 closeout merge evidence](https://github.com/riiy/emtl/pull/24) 已于 2026-11-09 合并；其变更只涉及 P4 验收与依赖审查文档，未改变交易实现或运行依赖。
+- 当前 master SHA：`dbf13b49dac3b3e56d0087d4c426a5075ddc6d20`。同一 SHA 的 [Build](https://github.com/riiy/emtl/actions/runs/42623935010)（check、docs、py311-cover、finish）、[Offline tests](https://github.com/riiy/emtl/actions/runs/42623935014)（offline）和 [Package Alpha](https://github.com/riiy/emtl/actions/runs/42623935209)（package）均为 `push/master`、completed/success。
+- 本次 master Run 上传的 Offline Artifact：`offline-test-evidence`，ID `13677019759`；Package Alpha Artifact：`alpha-package-evidence`，ID `13678215603`，均未过期。此条核对 GitHub Run/Job/Artifact 元数据，**未重新下载逐文件复算 ZIP SHA256 或检查 JUnit 内容**；前一节 PR #23 merge SHA 的原件哈希、565 项 JUnit 和禁网容器实测不能自动冒称为本 SHA 的逐文件复核。
+- 截至本次记录，未发现已运行的无上传 PyPI Environment Approval Probe 证据；不能将 required reviewer 静态配置当作真实审批门禁验证。Read the Docs 的独立 Build ID 仍未补齐；Beta 观察/退出及 Stable 授权仍未完成。
+- 判定：**工程代码、包候选及当前 master 三项 CI 门禁 PASS；P4 整体 NEEDS EVIDENCE；Beta/Stable 不得据此自动发布。**
