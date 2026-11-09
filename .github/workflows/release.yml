@@ -32,7 +32,7 @@ jobs:
     steps:
       # Never execute the candidate tag's validator before proving ancestry.
       # Dispatch uses the reviewed workflow commit; tag checks bootstrap master.
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           ref: ${{ github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/master' && github.sha || 'master' }}
           fetch-depth: 0
@@ -45,7 +45,7 @@ jobs:
         with:
           python-version: '3.11'
       - run: python -m pip install packaging==26.3
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           ref: ${{ env.RELEASE_TAG }}
           fetch-depth: 0
@@ -85,7 +85,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 45
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           ref: ${{ needs.validate-build.outputs.sha }}
           persist-credentials: false
@@ -123,7 +123,7 @@ jobs:
       actions: read
       id-token: write
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           ref: ${{ github.sha }}
           fetch-depth: 0
@@ -136,7 +136,7 @@ jobs:
         with:
           python-version: '3.11'
       - run: python -m pip install packaging==26.3
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           ref: ${{ env.RELEASE_TAG }}
           fetch-depth: 0
