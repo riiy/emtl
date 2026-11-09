@@ -26,9 +26,7 @@ def test_requests_can_prepare_trade_form_without_sending():
     """Exercise real Requests encoding without calling guarded request/send."""
     with Session() as session:
         session.trust_env = False  # no proxy or .netrc inputs
-        prepared = session.prepare_request(
-            Request("POST", "https://example.invalid/order", data={"stockCode": "SYNTHETIC"})
-        )
+        prepared = session.prepare_request(Request("POST", "https://example.invalid/order", data={"stockCode": "SYNTHETIC"}))
     assert prepared.method == "POST"
     assert prepared.url == "https://example.invalid/order"
     assert prepared.body == "stockCode=SYNTHETIC"
