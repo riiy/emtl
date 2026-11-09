@@ -48,3 +48,36 @@ OSV 对另外三项查询未返回公告，**不等于证明它们安全**；本
 ## 下一步（未经授权不执行）
 
 由仓库维护者逐项决定定向修补或有依据的延期，记录适用性、版本范围、风险、验证及回退；HTTP 更新须保留请求次数、重定向、异常与零重发回归，密码学更新须验证既有加密契约。再跑完整 Offline、安装产物、兼容目标和文档构建。未经解释的高严重度问题不得进入公开 Beta；不得用自动升级或自动合并跳过审核。
+
+## 2026-11-09 cryptography 安全修复专项：候选变更与验证边界
+
+**状态：已完成风险及调用路径评估；待新 Head 的远端 CI 和独立 Review 通过后才能确认修复合并。** 之前列出的 `cryptography 42.0.5` 风险仍为历史有效记录；本节说明候选版本和风险处理，不追溯修改既有证据。
+
+### 实际使用路径
+
+- `src/emtl/utils.py::emt_trade_encrypt` 使用 `serialization.load_pem_public_key`、`rsa.RSAPublicKey.encrypt`、`padding.PKCS1v15` 对登录密码进行 RSA 公钥加密，然后做 Base64 编码。生产 PEM 公钥是固定内嵌值；未发现 emtl 调用 PKCS#7 解密、X.509 链验证、二进制曲线 ECDH/ECDSA 或载入任意第三方 RSA 公钥。
+- 对 SECT subgroup、PKCS#7 解密 oracle、证书 name constraints 等已公布漏洞，现有调用链未见直接可利用路径，但无法把这解释为旧版 OpenSSL wheel 安全。42.0.5 仍落入多个已发布版本范围；特别是捆绑 OpenSSL 漏洞与项目实际 wheel 安装相关。
+- 保持交易协议使用的 PKCS#1 v1.5 **加密**；不改为 OAEP。此次只是升级依赖，不修改生产实现/真实账户调用。
+
+### 目标版本与依据
+
+- 本次针对已开放的 Dependabot #18，采用 `cryptography==50.0.2`（2026-09-30）；官方 PyPI 元数据允许 Python 3.11，Linux wheel 的 OpenSSL 已更新到 4.0.3。
+- 上游 GHSA-537c-gmf6-5ccf（CVE-2026-34180，旧 wheel 携带有漏洞 OpenSSL；48.0.1 修复），GHSA-r6ph-v2qm-q3c2（CVE-2026-26007；46.0.5 修复），GHSA-p423-j2cm-9vmq（CVE-2026-39892；46.0.7 修复），GHSA-jwv3-5hgf-82ww 与 GHSA-m2h6-j472-rp4c（49.0.0 修复）均早于目标版本得到修复。
+- GHSA-g6cj-pr64-35w5（CVE-2026-69247）始于 44.0.0 且 50.0.0 修复；42.0.5 不在其影响范围内，不能误算为旧版本本来就受该公告影响。50.0.2 包含此修复。
+- cryptography 49+ 的兼容性变化包括移除 macOS x86_64 wheel 和部分旧算法；emtl 已批准平台为 CPython 3.11/Linux，仍需对真实 RSA 加密路径和所有 Linux CI 实测，不因 PyPI metadata 就直接宣布兼容。
+
+来源：
+- https://github.com/pyca/cryptography/security/advisories
+- https://github.com/pyca/cryptography/security/advisories/GHSA-537c-gmf6-5ccf
+- https://github.com/pyca/cryptography/security/advisories/GHSA-g6cj-pr64-35w5
+- https://cryptography.io/en/50.0.2/changelog/
+- https://pypi.org/project/cryptography/50.0.2/
+
+### 修复与验收
+
+1. 仅同步 `setup.py` 的 pin、`ci/audit_packages.py` 的严格依赖元数据契约、相关合成包测试和 `tests/test_package_metadata.py`。不扩大依赖允许集合，不放宽文件或秘密扫描。
+2. 新增 `tests/test_cryptography_compat.py`：确认安装版本；真实载入现有生产公钥、PKCS#1 v1.5 密文长度和 Base64；用临时合成 2048 位 RSA 密钥对完成 UTF-8 加密/解密回环。无真实凭证、无 HTTP/券商访问、密钥不写盘。
+3. 在新 PR Head 实测：Build (包括 docs/check/py311-cover)、Offline tests（OS NetworkMode=none，三入口）、Package Alpha（sdist/wheel 审计、Twine strict、禁网双安装 smoke），三项均通过且 SHA 匹配才可合并。
+4. 合并后重新核验最终 master 的 Build、Offline tests、Package Alpha；不以旧版/PR Head 成功代替合并后的证据。
+5. 如发生 RSA PEM 解码、加密输出、依赖解析或远端 CI 回归，维持阻断并停止合并，不删除测试或回退审计严格性。
+6. `requests==2.31.0` 的独立安全公告仍未关闭；即使本修复通过，P4 Beta/Stable 发布门槛仍须单独处理 requests 和 required reviewers。
