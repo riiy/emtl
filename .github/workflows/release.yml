@@ -1,29 +1,165 @@
-name: Publish Python 🐍 distributions 📦 to PyPI
+name: Release distributions
 on:
   push:
-    tags:
-     - '*'
+    tags: ['v*']
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: 'Existing immutable v-prefixed tag on merged master'
+        required: true
+        type: string
+      channel:
+        description: 'Beta/rc or separately approved Stable'
+        type: choice
+        options: [beta, stable]
+        default: beta
+      publish:
+        description: 'Explicit upload authorization; also requires pypi environment review'
+        type: boolean
+        default: false
+permissions:
+  contents: read
+  actions: read
+env:
+  RELEASE_TAG: ${{ inputs.tag || github.ref_name }}
 jobs:
-  pypi-publish:
-    name: Upload release to PyPI
+  validate-build:
     runs-on: ubuntu-latest
+    timeout-minutes: 30
+    outputs:
+      version: ${{ steps.gate.outputs.version }}
+      sha: ${{ steps.gate.outputs.sha }}
+    steps:
+      # Never execute the candidate tag's validator before proving ancestry.
+      # Dispatch uses the reviewed workflow commit; tag checks bootstrap master.
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/master' && github.sha || 'master' }}
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Stage trusted release validators outside the candidate checkout
+        run: |
+          mkdir -p "$RUNNER_TEMP/emtl-release-tools"
+          cp ci/release_gate.py ci/audit_packages.py "$RUNNER_TEMP/emtl-release-tools/"
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - run: python -m pip install packaging==26.3
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ env.RELEASE_TAG }}
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Validate tag, merged SHA, CI and reviewer protection
+        id: gate
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PUBLISH: ${{ github.event_name == 'workflow_dispatch' && inputs.publish }}
+          CHANNEL: ${{ inputs.channel || 'beta' }}
+        shell: bash
+        run: |
+          flags=()
+          if [ "$PUBLISH" = true ]; then flags+=(--publish); fi
+          python -I "$RUNNER_TEMP/emtl-release-tools/release_gate.py" "$RELEASE_TAG" --channel "$CHANNEL" "${flags[@]}"
+      - name: Prepare build tools only after the target commit is trusted
+        run: python -m pip install -r ci/requirements.txt
+      - name: Build once and audit
+        env:
+          VERSION: ${{ steps.gate.outputs.version }}
+        run: |
+          set -euo pipefail
+          mkdir -p dist/release
+          python -m build --sdist --wheel --outdir dist/release 2>&1 | tee dist/release/build.log
+          python -m twine check --strict dist/release/*.whl dist/release/*.tar.gz 2>&1 | tee dist/release/twine.log
+          python -I "$RUNNER_TEMP/emtl-release-tools/audit_packages.py" dist/release "$VERSION"
+          git rev-parse HEAD > dist/release/commit.txt
+          python -m pip freeze > dist/release/build-tools.txt
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: release-distributions
+          path: dist/release/
+          if-no-files-found: error
+  smoke:
+    needs: validate-build
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ needs.validate-build.outputs.sha }}
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - run: python -m pip install packaging==26.3
+      - uses: actions/download-artifact@v4
+        with:
+          name: release-distributions
+          path: dist/release/
+      - name: Verify, install and smoke the downloaded artifacts
+        env:
+          VERSION: ${{ needs.validate-build.outputs.version }}
+        run: |
+          python ci/audit_packages.py dist/release "$VERSION" --verify
+          python ci/run_package_smoke.py dist/release "$VERSION" dist/package-smoke
+          python ci/audit_packages.py dist/release "$VERSION" --verify
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: release-smoke-evidence
+          path: dist/package-smoke/
+          if-no-files-found: error
+  publish:
+    needs: [validate-build, smoke]
+    if: github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/master' && inputs.publish
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
     environment:
       name: pypi
       url: https://pypi.org/p/emtl
     permissions:
-      id-token: write  # IMPORTANT: this permission is mandatory for trusted publishing
+      contents: read
+      actions: read
+      id-token: write
     steps:
-    - uses: actions/checkout@master
-    - name: Set up Python 3.10
-      uses: actions/setup-python@v3
-      with:
-        python-version: '3.10'
-    - name: Install pypa/setuptools
-      run: >-
-        python -m
-        pip install wheel
-    - name: Build a binary wheel
-      run: >-
-        python setup.py sdist bdist_wheel
-    - name: Publish package distributions to PyPI
-      uses: pypa/gh-action-pypi-publish@release/v1
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Stage trusted release validators outside the candidate checkout
+        run: |
+          mkdir -p "$RUNNER_TEMP/emtl-release-tools"
+          cp ci/release_gate.py ci/audit_packages.py "$RUNNER_TEMP/emtl-release-tools/"
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - run: python -m pip install packaging==26.3
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ env.RELEASE_TAG }}
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/download-artifact@v4
+        with:
+          name: release-distributions
+          path: dist/release/
+      - name: Revalidate approval protection, SHA, versions and exact bytes
+        env:
+          GH_TOKEN: ${{ github.token }}
+          CHANNEL: ${{ inputs.channel }}
+          VERSION: ${{ needs.validate-build.outputs.version }}
+          TESTED_SHA: ${{ needs.validate-build.outputs.sha }}
+        run: |
+          test "$(git rev-parse HEAD)" = "$TESTED_SHA"
+          python -I "$RUNNER_TEMP/emtl-release-tools/release_gate.py" "$RELEASE_TAG" --publish --channel "$CHANNEL"
+          python -I "$RUNNER_TEMP/emtl-release-tools/audit_packages.py" dist/release "$VERSION" --verify
+          mkdir -p dist/upload
+          cp dist/release/*.whl dist/release/*.tar.gz dist/upload/
+          cd dist/upload
+          sha256sum --check ../release/SHA256SUMS
+      # Verified release/v1 commit via GitHub API on 2026-11-08.
+      - uses: pypa/gh-action-pypi-publish@7245906fb61fa33a13554f9d5fb856fe61758086
+        with:
+          packages-dir: dist/upload/

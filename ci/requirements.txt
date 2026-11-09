@@ -4,3 +4,4 @@ setuptools>=18.0.1
 six>=1.14.0
 tox
 twine
+build==1.2.2.post1

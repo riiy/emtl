@@ -1,0 +1,7 @@
+# Deliver library sources and build metadata, not test/CI/acceptance evidence.
+global-exclude *
+include MANIFEST.in LICENSE README.rst CHANGELOG.rst setup.py pyproject.toml
+recursive-include src/emtl *.py
+recursive-include src/emtl.egg-info *.txt PKG-INFO not-zip-safe
+prune src/emtl/tests
+global-exclude *.py[cod]

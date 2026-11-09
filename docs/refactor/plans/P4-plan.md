@@ -1,6 +1,6 @@
 # P4 · 发布、兼容性与持续维护实施计划（emtl）
 
-> **状态：实施计划草案，等待维护者审查；尚未批准 Build 或发布。**
+> **状态：维护者已于 2026-11-08 在本会话批准下述决策及本地 Build；2026-11-09 另行授权提交并推送当前 P4 分支。tag、包上传、Release 和 Stable 发布仍未授权。**
 >
 > 需求：`docs/refactor/requirements/P4.md`
 >
@@ -8,11 +8,27 @@
 >
 > 计划创建时基线：`master` HEAD `225d4e59c9689ed7414a2f0aa9d0a1c7ac8c8fbb`；P4 分支 HEAD `d891d704ff808be66f4430cce2b2dad8467a0c30`。实施前必须重新核实，不能把这些 SHA 当作未来最新版本。
 >
-> 本文件只定义实施顺序、决策、修改范围和验收证据。**本次没有修改生产代码、测试、CI 配置、依赖、版本、tag 或发布状态。**
+> 起草时本文件只定义实施顺序、决策、修改范围和验收证据，未修改实现。批准后的实测结果另记于 `docs/refactor/reports/P4-acceptance.md`，下文调查事实保留为起草时历史基线。
 >
 > **安全硬约束：** P0–P3 的系统级禁网、合成账户、禁止真实凭证、禁止真实登录/查询/下单/撤单继续有效。Alpha、Beta、包安装测试和正式发布门禁都不得以真实交易作为自动验收。正式 PyPI 发布、创建正式 tag、GitHub Release 和任何真实账户验证均需另行明确授权。
 
 ## 1. 结论与推荐路径
+
+### 维护者批准记录（2026-11-08）
+
+用户在 Build 停止提示后明确确认本计划 §13 决策：下一稳定版本 `0.3.0`；首轮 CPython 3.11 / Linux，Requires-Python `>=3.11,<3.12`；保留 ddddocr 1.4.11，无获批 OCR fixture，不升级 OCR；Beta 采用 PyPI `0.3.0b1`；Read the Docs 为唯一 canonical，GitHub Pages 为 mirror；`pypi` environment 必须启用 required reviewers；Stable 在 Beta 后另行单独批准。
+
+本次继续执行已请求的 P4 Build，内部 Alpha 以 `0.3.0a1` 为候选，不宣称稳定版已发布。批准 Beta 渠道不等于授权本次上传 Beta。不得自动 commit、push、创建 tag、发布 GitHub Release、修改远端权限或使用真实账户。
+
+后续 Git 交付授权（2026-11-09）：维护者明确要求“先 commit + push 当前 P4 分支，暂不 tag、上传或发布”。因此仅本轮当前分支提交/推送不再受前述 Build 期间禁止自动 Git 操作的限制；不扩展到合并、tag、包上传、Release 或远端权限修改。此前各批次未提交，现以一个完整受测交付快照提交，避免制造缺依赖的中间版本；批次验收与偏差记录保留。
+
+Build 实施细化（不改变交易范围）：复用已在现有环境使用的 setuptools 84.2.1 / setuptools_scm 10.3.4，将其固定为构建后端；增加 build 1.2.2.post1。新增 `MANIFEST.in` 显式裁剪非交付文件，`ci/audit_packages.py` 检查元数据/白名单/哈希，`tests/test_package_artifacts.py` 覆盖损坏和污染产物；这些是 S3 包内容审计的具体落点。运行时版本读 SCM 生成文件，仅无生成文件时回退内部 Alpha 字符串，不改变任何 API。README 的历史已发布 tag badge 不提前指向不存在的候选 tag。文档仅修复严格 HTML 检查发现的无效 Alabaster 主题选项，不重写 Sphinx。
+
+后续具体落点：`ci/run_package_smoke.py` 复用 Docker 运行/失败证据收集，`.github/workflows/packages.yml` 提供 PR/master 的只验证 Alpha job；`ci/release_gate.py` 和 `tests/test_release_gate.py` 为 S6 的 tag/ancestry/精确 SHA CI/reviewer 门禁及合成失败测试。新增依赖审查和桌面推演报告保存 S1/S8 的审计结论。由于 B5/B6 的公开发布需另行授权，本地先准备 S7/S8 文档/维护配置，**不把这视为 Beta/Stable 或最终 Review 已完成**；这是独立交付的排程细化，不放宽退出门禁。
+
+2026-11-09 S6 信任边界细化：候选不得提供证明自身可信的校验器。先从可信 master/工作流提交复制门禁和审计到 checkout 外，再以隔离 Python 校验候选；未通过门禁前不安装候选声明的 CI 依赖。Publish 同样使用可信副本，并要求事件 SHA = 受测 tag SHA，以保持 OIDC provenance 正确。这不改变发布授权范围；最终本地 545 项及未闭环门禁见验收报告。
+
+S0 重新核实：HEAD `038e1fdc031a5be6cbe277a48913e0c6d3230863`，tree `341c0393ddc1c8ab8f821948ab3f956e0b6b959c`；远端 master 仍为 `225d4e59c9689ed7414a2f0aa9d0a1c7ac8c8fbb`，requirements blob 未变；起始工作区干净。GitHub API 实测 `pypi.protection_rules=[]`，与批准的目标设置不同：未配置前不得发布；本地 Build 不冒称审批保护已生效。
 
 P4 的交付重点是建立可重复、可审计的包构建和发布闭环。建议按以下顺序实施：
 

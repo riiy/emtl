@@ -1,38 +1,75 @@
-name: Documentation
-
+name: Documentation mirror
+# RTD is canonical. Do not deploy alpha/beta tags as stable documentation.
+# Mirror deployment is a separate explicit maintainer action after publication.
 on:
-  push:
-    tags:
-      - "*"
-
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: 'Already published stable tag to mirror'
+        required: true
+        type: string
+permissions:
+  contents: read
+  actions: read
+env:
+  RELEASE_TAG: ${{ inputs.tag }}
 jobs:
   build:
-    name: Publish documentation
+    if: github.ref == 'refs/heads/master'
     runs-on: ubuntu-latest
+    timeout-minutes: 30
     steps:
       - uses: actions/checkout@v4
-
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Stage trusted mirror validator
+        run: |
+          mkdir -p "$RUNNER_TEMP/emtl-release-tools"
+          cp ci/release_gate.py "$RUNNER_TEMP/emtl-release-tools/"
       - uses: actions/setup-python@v5
         with:
-          python-version: 3.11
-          architecture: x64
-      - name: install dependencies
-        run: |
-          python -mpip install --progress-bar=off -r ci/requirements.txt
-          python -mpip install Sphinx==7.2.6
-          virtualenv --version
-          pip --version
-          tox --version
-          pip list --format=freeze
-      - name: Build
-        env:
-          TOXPYTHON: 'python311'
-        run: >
-          tox -e docs -v
-      - name: Publish
-        uses: peaceiris/actions-gh-pages@v3
-        env:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
+          python-version: '3.11'
+      - run: python -m pip install packaging==26.3
+      - uses: actions/checkout@v4
         with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: ./dist/docs
+          ref: ${{ env.RELEASE_TAG }}
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Require published stable version and matching master CI
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          python -I "$RUNNER_TEMP/emtl-release-tools/release_gate.py" "$RELEASE_TAG"
+          python - <<'PY'
+          import json, os, runpy, urllib.request
+          from packaging.version import Version
+          version = runpy.run_path(os.environ['RUNNER_TEMP'] + '/emtl-release-tools/release_gate.py')['tag_version'](os.environ['RELEASE_TAG'])
+          assert not Version(version).is_prerelease, 'mirror requires a stable version'
+          with urllib.request.urlopen(f'https://pypi.org/pypi/emtl/{version}/json', timeout=30) as response:
+              assert json.load(response)['info']['version'] == version
+          PY
+      - name: Prepare documentation tools after the tag is trusted
+        run: python -m pip install -r ci/requirements.txt
+      - name: Build HTML mirror
+        run: tox -e docs -v
+      - uses: actions/upload-artifact@v4
+        with:
+          name: documentation-mirror
+          path: dist/docs/
+          if-no-files-found: error
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: documentation-mirror
+          path: dist/docs/
+      - uses: peaceiris/actions-gh-pages@v3
+        with:
+          github_token: ${{ github.token }}
+          publish_dir: dist/docs/

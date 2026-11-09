@@ -1,6 +1,12 @@
 emtl
 ====
 
+The 0.3.0 support target is CPython 3.11 on Linux. Public signatures, successful
+return values and CLI arguments/exit codes remain subject to the contracts below.
+Additions require contract tests; deprecations require release notes and migration
+instructions. Removals or other breaking changes need separate maintainer approval
+and a version decision; no removal is authorized by P4.
+
 The legacy API and compatibility baseline are documented in the
 :download:`P0 public API contract <../refactor/contracts/P0-public-api.md>`.
 

@@ -1,3 +1,6 @@
+from importlib.metadata import PackageNotFoundError
+from importlib.metadata import version as distribution_version
+
 needs_sphinx = "7.2"
 sphinx = "7.2"
 extensions = [
@@ -18,14 +21,9 @@ year = "2024-2025"
 author = "Eastmoney Trade Library"
 copyright = f"{year}, {author}"
 try:
-    from importlib.metadata import version as distribution_version
-
     version = release = distribution_version("emtl")
-except Exception:
-    import traceback
-
-    traceback.print_exc()
-    version = release = "0.2.6"
+except PackageNotFoundError:
+    version = release = "0.3.0a1"
 
 pygments_style = "trac"
 templates_path = ["."]
@@ -35,8 +33,10 @@ extlinks = {
 }
 
 html_theme = "alabaster"
+html_baseurl = "https://emtl.readthedocs.io/en/latest/"
 html_theme_options = {
-    "githuburl": "https://github.com/riiy/emtl/",
+    "github_user": "riiy",
+    "github_repo": "emtl",
 }
 
 html_use_smartypants = True
