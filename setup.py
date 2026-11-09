@@ -69,7 +69,7 @@ setup(
         "交易机器人",
     ],
     python_requires=">=3.11,<3.12",
-    install_requires=["rsa==4.9", "requests==2.31.0", "ddddocr==1.4.11", "cryptography==42.0.5"],
+    install_requires=["rsa==4.9", "requests==2.31.0", "ddddocr==1.4.11", "cryptography==50.0.2"],
     extras_require={
         # eg:
         #   "rst": ["docutils>=0.11"],
