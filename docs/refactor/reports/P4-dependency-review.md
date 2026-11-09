@@ -90,7 +90,7 @@ OSV 对另外三项查询未返回公告，**不等于证明它们安全**；本
 - 上游已确认三个漏洞：CVE-2024-35195（错误 TLS Session 复用，首修 2.32.0）、CVE-2024-47081（恶意 URL 下可能泄漏 `.netrc` 凭证，首修 2.32.4）、CVE-2026-25645（`extract_zipped_paths` 临时文件复用，首修 2.33.0）。命中版本 `requests==2.31.0`。
 - 推荐并批准的最小修复候选 `requests==2.33.1`：覆盖上述三个修复；相对于 2.34.2 的 URL、代理和类型变更，减少一次跨发行线的行为变化。2.33.1 的头部解析和 CVE-2026-25645 测试清理修复来自上游 release notes；**这不是声称没有任何剩余漏洞**。
 - 同步 `setup.py`、`ci/audit_packages.py` 的严格 Requires-Dist 契约与两个合成包审计测试；不改交易代码，不放宽固定依赖集及路径/秘密扫描。
-- 增加 `tests/test_requests_compat.py`：确认真实安装版本、TLS verify 默认开启、以真实 Requests Session + 仅内存适配器验证交易 POST 遇 302 只发送一次且不跟随重定向。CI 中使用合成凭证和 `trust_env=False` 隔离宿主代理/netrc。此测试不是对三个上游 CVE 的完整 exploit reproduction。
+- 增加 `tests/test_requests_compat.py`：确认真实安装版本、TLS verify 默认开启；以真实 Requests `Session.prepare_request` 无网络构造合成订单表单，并以完全合成 Session 验证交易 POST 遇 302 时只调用一次且明确禁止自动重定向。必须保留 P0 对 `Session.request/send` 的进程级禁网拦截，不挂载或绕过原有安全 guard。此测试不是对三个上游 CVE 的完整 exploit reproduction。
 - 必须在同一新 Head 上完成 Build/check/docs/coverage、Offline tests（三入口 NetworkMode=none）、Package Alpha（sdist/wheel、Twine、严格审计、禁网双安装），且审查最终提交的差异；合并后再确认 master push CI。
 - 由于 PyPI `0.2.6` 仍旧版发行，master 修复不代表已安装的最终用户受保护。Beta/Stable 仍受发布审批门槛和实际授权阻断。
 
