@@ -58,7 +58,7 @@ Release checklist
 The maintainer is responsible for every release decision:
 
 #. Confirm candidate is a clean, merged master commit, with successful required
-   Build/check/docs and Offline workflows at that exact SHA (not just a PR head).
+   Build/check/docs, Offline and Package Alpha workflows at that exact SHA (not just a PR head).
 #. Build once, validate and install those exact artifacts; publish only the same
    SHA256-verified files. Archive logs, JUnit, coverage, manifests and tool versions.
 #. Confirm tag, SCM, sdist, wheel, runtime version, Changelog and release notes agree.
@@ -79,6 +79,28 @@ The maintainer is responsible for every release decision:
    environments and run the same network-disabled smoke. Record PyPI URL, workflow
    run, artifact ID, tag and commit. Package publication is not contingent on a
    successful mirror deployment; repair docs independently.
+
+
+PyPI environment approval probe (no upload)
+-------------------------------------------
+
+After configuring the ``pypi`` environment's required reviewers, verify the
+actual wait/release behavior without exercising the Release workflow or PyPI:
+
+#. From the ``master`` branch, open Actions → PyPI Environment Approval Probe
+   → Run workflow, and set ``run_probe=true`.
+#. Confirm the ``approval-probe`` job enters Waiting for approval before any
+   step runs.
+#. Have a configured reviewer approve the deployment; confirm the job completes
+   and its log states that no checkout, OIDC permission, package build, PyPI
+   token or upload was used.
+#. Archive the run URL, head SHA, waiting/approval timestamps and final result
+   in ``P4-acceptance.md``.
+
+The probe has no repository token permissions (``permissions: {}``), no
+OIDC permission, no package build and no upload step. It exists only to test
+the GitHub Environment protection rule. A skipped probe (input false) is not
+approval evidence. Do not use a real Beta/Stable release to test protection.
 
 Failure, rollback and Hotfix
 ----------------------------
@@ -122,8 +144,12 @@ and ``pip inspect`` (resolved transitive), pyproject.toml (build backend),
 ci/requirements.txt and tox.ini (CI/test/check), docs/requirements.txt (Sphinx).
 Record tool/resolved dependency versions per candidate. Review upstream security
 advisories, Python limits and maintenance status; do not equate a frozen version
-or successful tests with absence of vulnerabilities. Existing old HTTP/crypto pins
-require security assessment before public release, not an unreviewed bulk upgrade.
+or successful tests with absence of vulnerabilities. Current runtime pins are
+rsa==4.9, requests==2.33.1, ddddocr==1.4.11 and cryptography==50.0.2. The
+previously identified Requests and cryptography advisories have targeted version
+updates and final-master compatibility evidence; this is not a full SBOM or
+zero-vulnerability guarantee. Dependabot PRs remain review-only; rsa 4.9 → 4.9.1
+is pending separate review and must not be auto-merged.
 
 The maintainer triages issues/PRs into security, trading risk, defect, compatibility,
 installation, documentation, dependency or usage. Follow SECURITY.md for private

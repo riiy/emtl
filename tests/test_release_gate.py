@@ -217,3 +217,35 @@ def test_candidate_cannot_replace_the_trusted_validator(workflow):
         assert publish.index("ref: ${{ github.sha }}") < publish.index(stage) < publish.index(candidate_checkout)
         assert 'python -I "$RUNNER_TEMP/emtl-release-tools/audit_packages.py"' in publish
         assert "python ci/audit_packages.py" not in publish
+
+
+@pytest.mark.parametrize("failure", ["missing", "failed", "skipped", "wrong_sha"])
+def test_release_requires_successful_package_alpha_for_exact_sha(failure):
+    data = remote_evidence()
+    if failure == "missing":
+        data["packages.yml"]["workflow_runs"] = []
+    elif failure == "failed":
+        data["packages.yml"]["workflow_runs"][0]["conclusion"] = "failure"
+    elif failure == "skipped":
+        data["2"]["jobs"][0]["conclusion"] = "skipped"
+    else:
+        data["packages.yml"]["workflow_runs"][0]["head_sha"] = "b" * 40
+
+    with pytest.raises(ValueError, match="exact-SHA|CI job"):
+        GATE["check_remote"](api_for(data), SHA, publishing=True)
+
+
+def test_release_gate_requires_package_alpha_workflow():
+    assert GATE["REQUIRED_WORKFLOWS"]["packages.yml"] == {"package"}
+
+
+def test_pypi_approval_probe_has_no_publish_or_oidc_permission():
+    probe = (ROOT / ".github/workflows/pypi-approval-probe.yml").read_text()
+    assert "workflow_dispatch:" in probe
+    assert "environment:" in probe
+    assert "name: pypi" in probe
+    assert "permissions: {}" in probe
+    assert "id-token:" not in probe
+    assert "gh-action-pypi-publish" not in probe
+    assert "pip install" not in probe
+    assert "python -m build" not in probe
