@@ -7,7 +7,7 @@
 
 **历史状态：** 当时 requests 2.31.0 / cryptography 42.0.5 命中已知公告，公开 Beta / Stable 被阻断。当前 pin 与定向修复证据见本文末尾“2026-11-09 当前 master 依赖修复与剩余审查”；不得将此历史段落当作当前版本状态。
 
-## 清单与来源
+## 2026-11-08 历史清单与来源（升级前 pin）
 
 | 类型 | 直接依赖 / 声明来源 | 策略与证据 |
 | --- | --- | --- |
@@ -27,7 +27,7 @@
 - 候选 ddddocr 1.6.1 的公开 metadata 为 `>=3.10`、MIT，依赖 numpy/onnxruntime/Pillow/平台 OpenCV。没有获批 OCR fixture，不运行识别对照、不更换模型、不宣称 3.12+ 兼容。
 - CPython 3.10 已 EOL，不再作为声明范围；3.11 仍在安全维护期但有到期风险，维护者于 2027-04-01 前启动 OCR/Python 迁移复核。上游发布新版本不等于项目可无风险升级。
 
-## 已核实公开公告
+## 2026-11-08 已核实公开公告（旧 pin 命中快照）
 
 只读调用 `POST https://api.osv.dev/v1/querybatch`，查询 PyPI 精确版本 requests 2.31.0、rsa 4.9、ddddocr 1.4.11、cryptography 42.0.5、urllib3 2.8.0；返回 HTTP 200。随后逐项读取下列 GHSA 的 OSV 记录，均 HTTP 200。PYSEC 别名不重复计数。
 
@@ -48,13 +48,15 @@
 
 OSV 对另外三项查询未返回公告，**不等于证明它们安全**；本次不是全量 SBOM 漏洞扫描。上述是版本命中，不是 emtl 调用路径的可利用性结论：需核查实际加密用法、wheel 内 OpenSSL、宿主 Session/netrc/CA 配置及不可信输入来源。默认测试禁网不能替代生产影响评估。
 
-## 下一步（未经授权不执行）
+## 2026-11-08 当时拟定的下一步（已由后续记录 supersede）
 
 由仓库维护者逐项决定定向修补或有依据的延期，记录适用性、版本范围、风险、验证及回退；HTTP 更新须保留请求次数、重定向、异常与零重发回归，密码学更新须验证既有加密契约。再跑完整 Offline、安装产物、兼容目标和文档构建。未经解释的高严重度问题不得进入公开 Beta；不得用自动升级或自动合并跳过审核。
 
-## 2026-11-09 cryptography 安全修复专项：候选变更与验证边界
+## 2026-11-09 cryptography 安全修复专项（候选阶段历史记录）
 
-**状态：已完成风险及调用路径评估；待新 Head 的远端 CI 和独立 Review 通过后才能确认修复合并。** 之前列出的 `cryptography 42.0.5` 风险仍为历史有效记录；本节说明候选版本和风险处理，不追溯修改既有证据。
+> 本节记录合并前的候选状态；最终 pin、Artifact、远端 CI 和 RSA 兼容性结果以末尾“Requests / cryptography 修复最终记录”为准。
+
+**历史状态：已完成风险及调用路径评估；当时仍待新 Head 的远端 CI 和独立 Review。** 之前列出的 `cryptography 42.0.5` 风险仍为历史有效记录；本节说明候选版本和风险处理，不追溯修改既有证据。
 
 ### 实际使用路径
 
@@ -85,9 +87,11 @@ OSV 对另外三项查询未返回公告，**不等于证明它们安全**；本
 5. 如发生 RSA PEM 解码、加密输出、依赖解析或远端 CI 回归，维持阻断并停止合并，不删除测试或回退审计严格性。
 6. `requests==2.31.0` 的独立安全公告仍未关闭；即使本修复通过，P4 Beta/Stable 发布门槛仍须单独处理 requests 和 required reviewers。
 
-## 2026-11-09 requests 安全修复专项（候选，等待远端验收）
+## 2026-11-09 requests 安全修复专项（候选阶段历史记录）
 
-**状态：已完成版本命中和实际调用路径评估；候选版本已选定，CI 与发布审批未完成前不得视为最终通过。** 本段不改写上文关于旧版本的历史证据。
+> 本节记录合并前的候选状态；最终 pin、Artifact、远端 CI 和 Session 兼容性结果以末尾“Requests / cryptography 修复最终记录”为准。
+
+**历史状态：已完成版本命中和实际调用路径评估；当时 CI 与发布审批尚未完成。** 本段不改写上文关于旧版本的历史证据。
 
 - 当前源代码明确以 `requests.Session` 用于登录、持久 Cookie、查询、下单和撤单；订单请求的 `allow_redirects=False` 保护必须保留，且 P3 禁止对不确定交易结果自动重试。项目没有直接调用 `requests.utils.extract_zipped_paths`，也没有在生产请求中显式 `verify=False`；但 `.netrc` / TLS 行为仍受 Requests 运行时影响。
 - 上游已确认三个漏洞：CVE-2024-35195（错误 TLS Session 复用，首修 2.32.0）、CVE-2024-47081（恶意 URL 下可能泄漏 `.netrc` 凭证，首修 2.32.4）、CVE-2026-25645（`extract_zipped_paths` 临时文件复用，首修 2.33.0）。命中版本 `requests==2.31.0`。
@@ -104,11 +108,11 @@ OSV 对另外三项查询未返回公告，**不等于证明它们安全**；本
 - https://github.com/psf/requests/blob/main/HISTORY.md
 
 
-## 2026-11-09 当前 master 依赖修复与剩余审查
+## 2026-11-09 Requests / cryptography 修复最终记录（PR #22 合并基线）
 
 ### 最终 pin 与证据
 
-最终 master `624fc5aba6875b89202d16b5db9d6c927c48fb8b` 的 sdist/wheel Artifact manifest 与 `setup.py` 均确认：
+PR #22 合并时的 master `624fc5aba6875b89202d16b5db9d6c927c48fb8b` 的 sdist/wheel Artifact manifest 与 `setup.py` 均确认：
 
 | 直接运行依赖 | 最终 pin | 结论 |
 | --- | --- | --- |
