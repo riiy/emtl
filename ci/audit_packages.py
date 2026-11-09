@@ -14,7 +14,7 @@ from pathlib import PurePosixPath
 from packaging.version import Version
 
 MODULES = {"__init__", "__main__", "_coordination", "_protocol", "_version", "cli", "client", "const", "core", "errors", "utils"}
-DEPENDENCIES = {"rsa==4.9", "requests==2.31.0", "ddddocr==1.4.11", "cryptography==42.0.5"}
+DEPENDENCIES = {"rsa==4.9", "requests==2.31.0", "ddddocr==1.4.11", "cryptography==50.0.2"}
 EGG_FILES = {"PKG-INFO", "SOURCES.txt", "dependency_links.txt", "entry_points.txt", "requires.txt", "top_level.txt", "not-zip-safe"}
 ROOT_FILES = {"MANIFEST.in", "LICENSE", "AUTHORS.rst", "README.rst", "CHANGELOG.rst", "setup.py", "setup.cfg", "pyproject.toml", "PKG-INFO"}
 DIST_FILES = {"METADATA", "WHEEL", "RECORD", "entry_points.txt", "top_level.txt", "LICENSE", "licenses/LICENSE", "licenses/AUTHORS.rst"}
