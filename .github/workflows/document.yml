@@ -54,7 +54,7 @@ jobs:
         run: python -m pip install -r ci/requirements.txt
       - name: Build HTML mirror
         run: tox -e docs -v
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
           name: documentation-mirror
           path: dist/docs/

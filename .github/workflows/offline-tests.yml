@@ -66,7 +66,7 @@ jobs:
           exit_code=$(docker inspect --format '{{.State.ExitCode}}' "$name")
           [[ "$exit_code" =~ ^[0-9]+$ ]] || exit 1
           exit "$exit_code"
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         if: always()
         with:
           name: offline-test-evidence
