@@ -83,7 +83,13 @@ def test_audit_rejects_sensitive_material_and_developer_paths(tmp_path, bad_data
 
 @pytest.mark.parametrize(
     ("old", "new"),
-    [(b"0.3.0a1", b"0.2.6"), (b"rsa==4.9", b"rsa==4.8"), (b"cryptography==50.0.2", b"cryptography==42.0.5"), (b"<3.12,>=3.11", b">=3.10"), (b"emtl.cli:run", b"emtl.cli:other")],
+    [
+        (b"0.3.0a1", b"0.2.6"),
+        (b"rsa==4.9", b"rsa==4.8"),
+        (b"cryptography==50.0.2", b"cryptography==42.0.5"),
+        (b"<3.12,>=3.11", b">=3.10"),
+        (b"emtl.cli:run", b"emtl.cli:other"),
+    ],
 )
 def test_audit_rejects_version_dependency_python_or_entry_point_drift(tmp_path, old, new):
     files = {name: data.replace(old, new) for name, data in wheel_files().items()}
