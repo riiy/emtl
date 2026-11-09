@@ -47,9 +47,10 @@ def test_trade_query_does_not_request_an_automatic_redirect_or_retry():
             return response
 
     starts = []
+    request_suffix = "SYNTHETIC"
     response = _protocol.query(
         SyntheticSession(),
-        token=str(),
+        token=request_suffix,
         tag="create_order",
         req_data={"stockCode": "SYNTHETIC"},
         check=lambda result: None,
