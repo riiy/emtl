@@ -33,7 +33,7 @@ jobs:
             tox_env: 'py311-cover'
             os: 'ubuntu-latest'
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v7
       with:
         fetch-depth: 0
     - uses: actions/setup-python@v5
@@ -57,7 +57,7 @@ jobs:
     if: ${{ always() }}
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v7
       with:
         fetch-depth: 0
     - uses: actions/setup-python@v5
