@@ -38,7 +38,7 @@ jobs:
         run: python ci/run_package_smoke.py dist/release "$VERSION" dist/package-smoke
       - name: Recheck unchanged artifacts
         run: python ci/audit_packages.py dist/release "$VERSION" --verify
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         if: always()
         with:
           name: alpha-package-evidence

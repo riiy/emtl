@@ -74,7 +74,7 @@ jobs:
           python -I "$RUNNER_TEMP/emtl-release-tools/audit_packages.py" dist/release "$VERSION"
           git rev-parse HEAD > dist/release/commit.txt
           python -m pip freeze > dist/release/build-tools.txt
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         if: always()
         with:
           name: release-distributions
@@ -104,7 +104,7 @@ jobs:
           python ci/audit_packages.py dist/release "$VERSION" --verify
           python ci/run_package_smoke.py dist/release "$VERSION" dist/package-smoke
           python ci/audit_packages.py dist/release "$VERSION" --verify
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         if: always()
         with:
           name: release-smoke-evidence
