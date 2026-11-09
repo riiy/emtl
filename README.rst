@@ -56,6 +56,15 @@ Overview
 Installation
 ============
 
+The next release targets **CPython 3.11 on Linux only**
+(``Requires-Python >=3.11,<3.12``). Windows, macOS, PyPy and Python 3.12+
+are not verified support targets. ddddocr remains at 1.4.11; upgrading OCR
+requires a separately approved non-sensitive image regression set.
+
+The current work is an unpublished internal ``0.3.0a1`` candidate for
+``0.3.0``. The command below installs the existing public stable version,
+not this candidate. Beta ``0.3.0b1`` will require separate upload approval.
+
 ::
 
     pip install emtl
@@ -71,11 +80,18 @@ Documentation
 
 https://emtl.readthedocs.io/
 
+Read the Docs is the only canonical documentation site. GitHub Pages is a
+mirror, not a second source of release or support guarantees.
+
+Release and maintenance procedures: https://emtl.readthedocs.io/en/latest/releasing.html
+
 
 Development
 ===========
 
-建议使用python3.11
+Use CPython 3.11. Tests use synthetic accounts and must run without network
+access; they do not establish real broker protocol or execution correctness.
+No automatic retry, resubmission or trade compensation is provided.
 
 To run all the tests run::
 

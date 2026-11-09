@@ -1,0 +1,48 @@
+name: Package Alpha
+on:
+  push:
+    branches: [master]
+  pull_request:
+    branches: [master]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  package:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Prepare build tools
+        run: python -m pip install -r ci/requirements.txt
+      - name: Build internal candidate once
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -z "$(git status --porcelain --untracked-files=all)"
+          version=$(python -c 'import configparser; p=configparser.ConfigParser(); p.read(".bumpversion.cfg"); print(p["bumpversion"]["current_version"])')
+          echo "VERSION=$version" >> "$GITHUB_ENV"
+          mkdir -p dist/release
+          SETUPTOOLS_SCM_PRETEND_VERSION_FOR_EMTL="$version" python -m build --sdist --wheel --outdir dist/release 2>&1 | tee dist/release/build.log
+          python -m twine check --strict dist/release/*.whl dist/release/*.tar.gz 2>&1 | tee dist/release/twine.log
+          python ci/audit_packages.py dist/release "$version"
+          git rev-parse HEAD > dist/release/commit.txt
+          python -m pip freeze > dist/release/build-tools.txt
+      - name: Install and smoke the same artifacts without network
+        run: python ci/run_package_smoke.py dist/release "$VERSION" dist/package-smoke
+      - name: Recheck unchanged artifacts
+        run: python ci/audit_packages.py dist/release "$VERSION" --verify
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: alpha-package-evidence
+          path: |
+            dist/release/
+            dist/package-smoke/
+          if-no-files-found: error

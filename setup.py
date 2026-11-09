@@ -16,10 +16,11 @@ setup(
     use_scm_version={
         "local_scheme": "dirty-tag",
         "write_to": "src/emtl/_version.py",
-        "fallback_version": "0.2.6",
+        "fallback_version": "0.3.0a1",
     },
     license="MIT",
     description="东方财富自动交易接口",
+    long_description_content_type="text/x-rst",
     long_description="{}\n{}".format(
         re.compile("^.. start-badges.*^.. end-badges", re.M | re.S).sub("", read("README.rst")),
         re.sub(":[a-z]+:`~?(.*?)`", r"``\1``", read("CHANGELOG.rst")),
@@ -37,9 +38,7 @@ setup(
         "Development Status :: 5 - Production/Stable",
         "Intended Audience :: Developers",
         "License :: OSI Approved :: MIT License",
-        "Operating System :: Unix",
-        "Operating System :: POSIX",
-        # "Operating System :: Microsoft :: Windows",
+        "Operating System :: POSIX :: Linux",
         "Programming Language :: Python",
         "Programming Language :: Python :: 3",
         "Programming Language :: Python :: 3 :: Only",
@@ -69,7 +68,7 @@ setup(
         "交易",
         "交易机器人",
     ],
-    python_requires=">=3.10",
+    python_requires=">=3.11,<3.12",
     install_requires=["rsa==4.9", "requests==2.31.0", "ddddocr==1.4.11", "cryptography==42.0.5"],
     extras_require={
         # eg:

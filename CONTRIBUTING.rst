@@ -11,8 +11,13 @@ Bug reports
 When `reporting a bug <https://github.com/riiy/emtl/issues>`_ please include:
 
     * Your operating system name and version.
-    * Any details about your local setup that might be helpful in troubleshooting.
+    * Python and emtl versions and installation method.
     * Detailed steps to reproduce the bug.
+
+Use synthetic reproductions only. Never post passwords, captcha images/codes,
+tokens, cookies, account identifiers, full requests/responses or trading records.
+For security and trading-risk disclosures, follow ``SECURITY.md`` rather than
+opening a public issue containing sensitive details.
 
 Documentation improvements
 ==========================
@@ -39,8 +44,8 @@ Tests must run offline with synthetic account data only. Never run the old
 live-trading tests or put real credentials in tests or CI. Prepare Python 3.11
 and the project, pytest and pytest-cov dependencies separately; from the
 repository root run ``python -m pytest`` or ``tox -e py311-cover`` with the
-test network guard enabled. The tox docs environment includes an online
-linkcheck and is not an offline test command. Do not push or publish without
+test network guard enabled. ``tox -e docs`` builds HTML only; online
+``tox -e linkcheck`` is separate and is not an offline test command. Do not push or publish without
 human approval. Tests live in the checkout's ``tests/`` directory, not in the
 installed package. From elsewhere, pass the absolute checkout ``tests/`` path
 to pytest. The old ``pytest --pyargs emtl`` entry point is no longer supported.
@@ -48,7 +53,7 @@ to pytest. The old ``pytest --pyargs emtl`` entry point is no longer supported.
 The separate ``Offline tests (network namespace)`` CI workflow prepares its
 dependencies before running the full suite in a Docker container with external
 networking disabled. Its artifacts include tox, coverage and isolation evidence.
-This does not make the docs environment's online linkcheck an offline test.
+This does not make the separate online linkcheck an offline test.
 For local reproduction, build ``ci/offline.Dockerfile`` and run the resulting
 image with ``--network none``; inspect the network mode and container exit code.
 

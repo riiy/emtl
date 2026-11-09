@@ -1,4 +1,7 @@
-__version__ = "0.2.6"
+try:
+    from ._version import __version__
+except ImportError:
+    __version__ = "0.3.0a1"
 
 from .client import TradingClient
 from .core import cancel_order
