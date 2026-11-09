@@ -77,7 +77,7 @@ jobs:
         PYTEST_ADDOPTS: '--cov-append'
       run: >
         PYTEST_ADDOPTS=--cov-append tox -e py311-cover -v
-    - uses: codecov/codecov-action@v4
+    - uses: codecov/codecov-action@v7
       with:
         token: ${{ secrets.CODECOV_TOKEN }}
         CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
