@@ -16,6 +16,29 @@ The synchronous account-bound client is documented in the
 Trade uncertainty and safe HTTP errors for the explicit client are documented in
 the :download:`P3 trade error contract <../refactor/contracts/P3-trade-errors.md>`.
 
+Current exported API
+--------------------
+
+``emtl.__all__`` exports the nine legacy module-level functions plus
+``TradingClient``. The legacy functions retain their original identities
+and use shared state in ``emtl.core``; see the P0 contract above.
+
+The synchronous, account-bound ``TradingClient`` provides:
+
+* ``login(duration=30)`` and ``close()``;
+* ``query_asset_and_position()``, ``query_orders()``, ``query_trades()``;
+* ``query_history_orders(size, start_time, end_time)``,
+  ``query_history_trades(size, start_time, end_time)``,
+  ``query_funds_flow(size, start_time, end_time)``;
+* ``get_last_price(symbol_code, market)``;
+* ``create_order(stock_code, trade_type, market, price, amount)`` and
+  ``cancel_order(order_str)``.
+
+``TradeOutcomeUnknown`` and ``BrokerHTTPError`` are imported from
+``emtl.errors`` and are not exported in the package-level ``__all__``.
+They apply to the explicit client under the P3 contract, not the legacy
+module-level calls. See :doc:`../usage` for manual usage and safety notes.
+
 .. testsetup::
 
     from emtl import *
