@@ -158,10 +158,10 @@ OCR 升级需获批准的脱敏图像样本。
 应在 ``2027-04-01`` 前审查 CPython 3.11 与 OCR 迁移，
 不得提前宣称支持 Python 3.12+。
 
-依赖来源分别是 ``setup.py``（运行时直接依赖）、
-``pip freeze`` 和 ``pip inspect``（已安装的传递依赖）、
-``pyproject.toml``（构建后端）、``ci/requirements.txt`` 与
-``tox.ini``（CI/测试）、``docs/requirements.txt``（Sphinx）。
+依赖来源分别是 ``setup.py`` （运行时直接依赖）、
+``pip freeze`` 和 ``pip inspect`` （已安装的传递依赖）、
+``pyproject.toml`` （构建后端）、``ci/requirements.txt`` 与
+``tox.ini`` （CI/测试）、``docs/requirements.txt`` （Sphinx）。
 每个候选应记录工具及解析后的依赖版本。
 固定版本或测试成功不等于没有漏洞。
 
