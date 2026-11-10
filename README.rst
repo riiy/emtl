@@ -74,6 +74,27 @@ You can also install the in-development version with::
     pip install https://github.com/riiy/emtl/archive/master.zip
 
 
+Python interfaces
+=================
+
+The library provides two Python APIs with different safety boundaries:
+
+* Legacy module-level functions such as ``emtl.login()`` and
+  ``emtl.create_order()`` share process-level Session and token state;
+  they are preserved for compatibility, not account isolation.
+* ``emtl.TradingClient`` is a synchronous, account-bound client with its
+  own Session, cookies and token. Use ``close()`` in a ``finally`` block;
+  it has no ``with`` or asynchronous API.
+
+An attempted trade POST with an unconfirmed outcome on ``TradingClient``
+raises ``emtl.errors.TradeOutcomeUnknown``. Never automatically resubmit.
+Legacy module-level functions do not provide this new error contract.
+Offline tests do not establish real broker acceptance or execution.
+
+The ``emt`` command and ``python -m emtl`` currently parse options only:
+they do not log in, query the account, or submit trades. See the
+`usage guide <https://emtl.readthedocs.io/en/latest/usage.html>`_.
+
 Documentation
 =============
 
