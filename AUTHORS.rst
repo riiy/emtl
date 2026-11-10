@@ -1,5 +1,5 @@
+========
+项目作者
+========
 
-Authors
-=======
-
-* Eastmoney Trade Library - riiy.gihub.io/emtl
+* Eastmoney Trade Library — https://github.com/riiy/emtl
