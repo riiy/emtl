@@ -1,85 +1,83 @@
+========
+变更记录
+========
 
-Changelog
-=========
+0.3.0a1 (未发布的内部 Alpha；目标正式版 0.3.0)
+------------------------------------------------------------
 
-0.3.0a1 (unreleased internal Alpha; target stable 0.3.0)
---------------------------------------------------------
-
-* Preserve legacy package functions and CLI signatures, arguments, exit codes
-  and successful response structures; CLI no longer echoes credentials (P0).
-* Remove sensitive SDK logs and root logger reconfiguration; isolate tests and
-  CI from real accounts using synthetic fixtures and system-level network denial.
-* Add account-bound TradingClient with independent HTTP/auth state, same-account
-  serialization and different-account concurrency within one process (P2).
-* Add TradeOutcomeUnknown and BrokerHTTPError in emtl.errors for the explicit
-  client (P3). Unknown is not evidence of execution or rejection; never resubmit
-  automatically. Legacy error behavior is unchanged.
-* Narrow the approved support target to CPython 3.11 / Linux,
-  Requires-Python >=3.11,<3.12. Keep ddddocr 1.4.11 and existing runtime pins.
-* Establish artifact installation checks and approval-gated release procedures.
-  Real broker protocol and transactions are not validated by automated tests.
-* Planned Beta: 0.3.0b1 on PyPI, only after separate upload approval. Stable 0.3.0
-  needs a separate post-Beta decision. No release date or production assurance yet.
-
+* 保留旧版包级函数、CLI 签名、参数、退出码及成功响应结构；
+  P0 已取消 CLI 凭证回显。
+* 移除 SDK 中的敏感日志和 root logger 重配置，
+  使用合成替身及系统级禁网隔离自动测试和 CI。
+* P2 新增独立账户 ``TradingClient``，独立管理 HTTP/认证状态，
+  同一账户在单进程内串行，不同账户允许并发。
+* P3 为显式客户端增加 ``emtl.errors.TradeOutcomeUnknown``
+  与 ``BrokerHTTPError``。Unknown 不代表成交或拒绝，不得自动重发；
+  旧模块级接口异常行为保持不变。
+* 已批准的支持目标缩小为 Linux / CPython 3.11
+  （``Requires-Python >=3.11,<3.12``）；
+  保留 ``ddddocr==1.4.11`` 及已批准的运行时依赖固定版本。
+* 增加发布产物安装验证与受人工审批保护的发布流程。
+  自动化测试未验证真实券商协议或实际交易。
+* 计划 PyPI Beta ``0.3.0b1``，必须另行批准上传；
+  正式版 ``0.3.0`` 需 Beta 后单独决策。
+  尚未承诺发布日期或生产可用性。
 
 0.1.0 (2024-04-14)
 ------------------
 
-* First release on PyPI.
+* 首次发布至 PyPI。
 
 0.1.1 (2024-04-16)
 ------------------
 
-* Delete python3.8 python3.9 pypy.
+* 移除 Python 3.8、3.9 和 PyPy 的旧支持声明。
 
 0.1.2 (2024-04-18)
 ------------------
 
-* add login && add asset position
+* 新增登录、资产和持仓查询。
 
 0.1.3 (2024-04-19)
 ------------------
 
-* update docs theme
+* 更新文档主题。
 
 0.1.5 (2024-04-24)
 ------------------
 
-* update login refrence
+* 更新登录参考说明。
 
 0.1.7 (2024-04-27)
 ------------------
 
-* add insert order api
-
+* 新增下单接口（当时名称为 insert_order）。
 
 0.1.8 (2024-04-30)
 ------------------
 
-* delete macos actions
-
+* 删除 macOS Actions。
 
 0.2.0 (2024-05-21)
 ------------------
 
-* complete all method
-
+* 补齐当时的全部方法。
 
 0.2.1 (2024-05-29)
 ------------------
 
-* add auto deploy to pypi
-
+* 增加向 PyPI 的自动部署功能（历史记录）。
 
 0.2.2 (2024-07-11)
 ------------------
 
-* replace insert_order with create_order
+* 将 ``insert_order`` 替换为 ``create_order``。
 
-P0 security baseline (unreleased)
----------------------------------
+P0 安全基线（未发布）
+--------------------
 
-* Remove sensitive log output and stop configuring the host application's root logger.
-* Replace live trading tests with isolated offline tests and remove CI account credential injection.
-* With explicit approval, stop echoing CLI credentials; arguments and exit codes remain unchanged.
-* Move offline tests outside the package to ``tests/`` and retire the unsafe ``--pyargs emtl`` test entry point.
+* 删除敏感日志输出，不再重新配置宿主应用的 root logger。
+* 用隔离的离线测试替代真实交易测试，移除 CI 账户凭证注入。
+* 经明确批准，CLI 不再回显凭证，参数与退出码不变。
+* 将离线测试迁移到仓库根目录的 ``tests/``；
+  淘汰不安全的 ``pytest --pyargs emtl`` 测试入口。
