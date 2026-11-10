@@ -6,7 +6,7 @@
 
 * 候选状态：准备受控 Beta；只有完成独立 Review、最终 master CI、产物审计
   和明确的上传授权后，才能公开发布；尚无发布日期。
-* 首轮仅验证 **Linux / CPython 3.11**（``Requires-Python >=3.11,<3.12``）；
+* 首轮仅验证 **Linux / CPython 3.11** （``Requires-Python >=3.11,<3.12``）；
   Windows、macOS、PyPy 和 Python 3.12+ 不在验证/支持范围内。
 * 包含 P0–P3 的安全加固、兼容保留、``TradingClient`` 多账户隔离以及
   ``TradeOutcomeUnknown`` / ``BrokerHTTPError`` 异常契约。
