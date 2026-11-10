@@ -1,43 +1,38 @@
+====
 emtl
 ====
 
-The 0.3.0 support target is CPython 3.11 on Linux. Public signatures, successful
-return values and CLI arguments/exit codes remain subject to the contracts below.
-Additions require contract tests; deprecations require release notes and migration
-instructions. Removals or other breaking changes need separate maintainer approval
-and a version decision; no removal is authorized by P4.
+版本 ``0.3.0`` 的计划支持范围为 Linux / CPython 3.11。
+公开函数签名、成功返回值及 CLI 参数与退出码遵循以下契约；
+新增功能需补充契约测试，废弃接口需提供变更记录和迁移说明。
+删除或不兼容修改必须另行批准并确定版本策略，P4 未授权删除既有接口。
 
-The legacy API and compatibility baseline are documented in the
-:download:`P0 public API contract <../refactor/contracts/P0-public-api.md>`.
+- :download:`P0 旧版公共 API 契约 <../refactor/contracts/P0-public-api.md>`
+- :download:`P2 独立账户客户端契约 <../refactor/contracts/P2-client-api.md>`
+- :download:`P3 交易结果不确定性与异常契约 <../refactor/contracts/P3-trade-errors.md>`
 
-The synchronous account-bound client is documented in the
-:download:`P2 client API contract <../refactor/contracts/P2-client-api.md>`.
+当前导出的接口
+==============
 
-Trade uncertainty and safe HTTP errors for the explicit client are documented in
-the :download:`P3 trade error contract <../refactor/contracts/P3-trade-errors.md>`.
+``emtl.__all__`` 包含九个旧模块级函数和 ``TradingClient``。
+旧接口直接引用 ``emtl.core`` 的对应函数，保留共享会话与令牌的
+历史行为；参见上述 P0 契约。
 
-Current exported API
---------------------
+同步独立账户客户端 ``TradingClient`` 提供：
 
-``emtl.__all__`` exports the nine legacy module-level functions plus
-``TradingClient``. The legacy functions retain their original identities
-and use shared state in ``emtl.core``; see the P0 contract above.
+- ``login(duration=30)``、``close()``
+- ``query_asset_and_position()``、``query_orders()``、``query_trades()``
+- ``query_history_orders(size, start_time, end_time)``
+- ``query_history_trades(size, start_time, end_time)``
+- ``query_funds_flow(size, start_time, end_time)``
+- ``get_last_price(symbol_code, market)``
+- ``create_order(stock_code, trade_type, market, price, amount)``
+- ``cancel_order(order_str)``
 
-The synchronous, account-bound ``TradingClient`` provides:
-
-* ``login(duration=30)`` and ``close()``;
-* ``query_asset_and_position()``, ``query_orders()``, ``query_trades()``;
-* ``query_history_orders(size, start_time, end_time)``,
-  ``query_history_trades(size, start_time, end_time)``,
-  ``query_funds_flow(size, start_time, end_time)``;
-* ``get_last_price(symbol_code, market)``;
-* ``create_order(stock_code, trade_type, market, price, amount)`` and
-  ``cancel_order(order_str)``.
-
-``TradeOutcomeUnknown`` and ``BrokerHTTPError`` are imported from
-``emtl.errors`` and are not exported in the package-level ``__all__``.
-They apply to the explicit client under the P3 contract, not the legacy
-module-level calls. See :doc:`../usage` for manual usage and safety notes.
+``TradeOutcomeUnknown`` 与 ``BrokerHTTPError`` 位于
+``emtl.errors``，并未从包根目录通过 ``__all__`` 导出。
+它们适用于 P3 约定的显式客户端，不适用于旧模块级交易接口。
+实际使用方式与交易风险说明参见 :doc:`../usage`。
 
 .. testsetup::
 
