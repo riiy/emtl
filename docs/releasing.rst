@@ -6,8 +6,9 @@ Status and support
 
 The current internal candidate is 0.3.0a1 (unpublished). The planned next stable
 target is 0.3.0, preceded by PyPI Beta 0.3.0b1; neither upload is authorized.
-Only CPython 3.11 / Linux is the support target. Other platforms/versions remain unverified. Tests are synthetic
-and offline, not evidence of broker protocol correctness or real execution.
+Only CPython 3.11 / Linux is the support target. Other platforms/versions
+remain unverified. Tests are synthetic and offline, not evidence of broker
+protocol correctness or real execution.
 Read the Docs is canonical; GitHub Pages is a mirror. HTML + RST + Sphinx only.
 
 Version and immutable tags
@@ -107,9 +108,9 @@ without exercising the Release workflow or PyPI:
 
 The probe requests no additional token permissions (``permissions: {}``;
 GitHub retains ``metadata: read``), no OIDC permission, no package build and
-no upload step. It exists only to test
-the GitHub Environment protection rule. A skipped probe (input false) is not
-approval evidence. Do not use a real Beta/Stable release to test protection.
+no upload step. It exists only to test the GitHub Environment protection
+rule. A skipped probe (input false) is not approval evidence. Do not use a
+real Beta/Stable release to test protection.
 
 Failure, rollback and Hotfix
 ----------------------------
