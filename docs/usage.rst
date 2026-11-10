@@ -74,7 +74,7 @@
 
 ``emt`` 和 ``python -m emtl`` 目前只解析命令行参数并退出。
 虽然接受 ``--buy``、``--sell``、``--query`` 等参数，
-``emtl.cli.run()`` **不会**实际登录、查询券商或提交订单。
+``emtl.cli.run()`` **不会** 实际登录、查询券商或提交订单。
 
 .. code-block:: console
 
