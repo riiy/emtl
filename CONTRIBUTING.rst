@@ -1,107 +1,87 @@
-============
-Contributing
-============
+========
+参与贡献
+========
 
-Contributions are welcome, and they are greatly appreciated! Every
-little bit helps, and credit will always be given.
+欢迎提交缺陷修复、文档改进与经过验证的新功能。
+本项目由维护者决定发布范围和发布时机。
 
-Bug reports
-===========
+报告问题
+========
 
-When `reporting a bug <https://github.com/riiy/emtl/issues>`_ please include:
+请通过 `GitHub Issues <https://github.com/riiy/emtl/issues>`_ 反馈一般问题，
+并尽量包含：
 
-    * Your operating system name and version.
-    * Python and emtl versions and installation method.
-    * Detailed steps to reproduce the bug.
+- 操作系统及版本、Python 与 emtl 版本、安装方式。
+- 复现步骤、预期结果与实际结果。
+- **只使用合成数据** 的最小复现样例。
 
-Use synthetic reproductions only. Never post passwords, captcha images/codes,
-tokens, cookies, account identifiers, full requests/responses or trading records.
-For security and trading-risk disclosures, follow ``SECURITY.md`` rather than
-opening a public issue containing sensitive details.
+不要公开密码、验证码图片或文本、token、Cookie、账户标识、
+完整 HTTP 请求/响应或真实交易记录。
+安全漏洞、重复下单和账户混用风险请依照 ``SECURITY.md`` 私密报告，
+不要在公开 Issue 或 PR 中上传敏感内容。
 
-Documentation improvements
-==========================
+改进文档和提出需求
+==================
 
-emtl could always use more documentation, whether as part of the
-official emtl docs, in docstrings, or even on the web in blog posts,
-articles, and such.
+欢迎修改 RST 文档、公开接口文档及代码注释。
+目前官方文档以**简体中文单语**维护，技术标识、API 名称和命令保持原样。
+提交需求时请明确用途、预期行为、兼容影响及最小实现范围；
+不默认接受额外架构改造或新的生产交易能力。
 
-Feature requests and feedback
-=============================
+开发与测试
+==========
 
-The best way to send feedback is to file an issue at https://github.com/riiy/emtl/issues.
+请使用 Python 3.11。测试必须使用合成账户并在系统级网络隔离下运行，
+禁止让旧真实交易测试重新进入 CI，也不要把真实凭证写入测试或构建产物。
 
-If you are proposing a feature:
+从仓库根目录使用 ``python -m pytest`` 或 ``tox -e py311-cover``
+运行测试，并启用现有的网络隔离保护。``tox -e docs`` 仅构建 HTML；
+联网的 ``tox -e linkcheck`` 需单独运行，不能当成离线测试。
 
-* Explain in detail how it would work.
-* Keep the scope as narrow as possible, to make it easier to implement.
-* Remember that this is a volunteer-driven project, and that code contributions are welcome :)
+测试代码位于 checkout 下的 ``tests/``，不随安装包分发；
+从其他目录运行时须显式传入 checkout 中 ``tests/`` 的绝对路径，
+不再使用 ``pytest --pyargs emtl``。
 
-Development
-===========
+独立的 ``Offline tests (network namespace)`` CI 工作流会先准备依赖，
+随后在 Docker ``NetworkMode=none`` 容器中执行测试，
+并上传 tox、coverage 和隔离证据。
+本地复现时使用 ``ci/offline.Dockerfile`` 构建镜像，
+运行容器时传入 ``--network none``，并核对容器退出码和网络模式。
 
-Tests must run offline with synthetic account data only. Never run the old
-live-trading tests or put real credentials in tests or CI. Prepare Python 3.11
-and the project, pytest and pytest-cov dependencies separately; from the
-repository root run ``python -m pytest`` or ``tox -e py311-cover`` with the
-test network guard enabled. ``tox -e docs`` builds HTML only; online
-``tox -e linkcheck`` is separate and is not an offline test command. Do not push or publish without
-human approval. Tests live in the checkout's ``tests/`` directory, not in the
-installed package. From elsewhere, pass the absolute checkout ``tests/`` path
-to pytest. The old ``pytest --pyargs emtl`` entry point is no longer supported.
+贡献流程
+========
 
-The separate ``Offline tests (network namespace)`` CI workflow prepares its
-dependencies before running the full suite in a Docker container with external
-networking disabled. Its artifacts include tox, coverage and isolation evidence.
-This does not make the separate online linkcheck an offline test.
-For local reproduction, build ``ci/offline.Dockerfile`` and run the resulting
-image with ``--network none``; inspect the network mode and container exit code.
+1. 在 GitHub `Fork 仓库 <https://github.com/riiy/emtl>`_ 并克隆::
 
-To set up `emtl` for local development:
+       git clone git@github.com:YOURGITHUBNAME/emtl.git
 
-1. Fork `emtl <https://github.com/riiy/emtl>`_
-   (look for the "Fork" button).
-2. Clone your fork locally::
+2. 创建工作分支::
 
-    git clone git@github.com:YOURGITHUBNAME/emtl.git
+       git checkout -b name-of-your-fix
 
-3. Create a branch for local development::
+3. 在隔离环境完成修改和适用的测试、文档检查::
 
-    git checkout -b name-of-your-bugfix-or-feature
+       tox
 
-   Now you can make your changes locally.
+4. 经维护者批准后提交并推送自己的分支::
 
-4. When you're done making changes run all the checks and docs builder with one command::
+       git add .
+       git commit -m "Describe the change"
+       git push origin name-of-your-fix
 
-    tox
+5. 提交 Pull Request，记录改动目的、验证证据与剩余风险。
 
-5. Commit your changes and push your branch to GitHub::
+PR 审核应检查测试结果、API/兼容性文档、``CHANGELOG.rst``
+及必要的 ``AUTHORS.rst`` 更新；不要因 CI 通过自动宣布可发布。
+创建 Tag、GitHub Release 或上传 PyPI 均需单独授权。
 
-    git add .
-    git commit -m "Your detailed description of your changes."
-    git push origin name-of-your-bugfix-or-feature
+常用命令
+========
 
-6. Submit a pull request through the GitHub website.
+运行部分测试（环境名与筛选条件按实际配置调整）::
 
-Pull Request Guidelines
------------------------
+    tox -e py311-cover -- pytest -k test_myfeature
 
-If you need some code review or feedback while you're developing the code just make the pull request.
-
-For merging, you should:
-
-1. Include passing tests (run ``tox``).
-2. Update documentation when there's new API, functionality etc.
-3. Add a note to ``CHANGELOG.rst`` about the changes.
-4. Add yourself to ``AUTHORS.rst``.
-
-Tips
-----
-
-To run a subset of tests::
-
-    tox -e envname -- pytest -k test_myfeature
-
-To run all the test environments in *parallel*::
+并行运行适用的 tox 环境::
 
     tox -p auto
