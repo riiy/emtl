@@ -57,7 +57,7 @@ setup(
     ],
     project_urls={
         "Documentation": "https://emtl.readthedocs.io/",
-        "Changelog": "https://emtl.readthedocs.io/en/latest/changelog.html",
+        "Changelog": "https://emtl.readthedocs.io/page/changelog.html",
         "Issue Tracker": "https://github.com/riiy/emtl/issues",
     },
     keywords=[

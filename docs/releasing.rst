@@ -1,174 +1,183 @@
-Release and maintenance
-=======================
+============
+发布与维护
+============
 
-Status and support
-------------------
+当前状态与支持范围
+==================
 
-The current internal candidate is 0.3.0a1 (unpublished). The planned next stable
-target is 0.3.0, preceded by PyPI Beta 0.3.0b1; neither upload is authorized.
-Only CPython 3.11 / Linux is the support target. Other platforms/versions
-remain unverified. Tests are synthetic and offline, not evidence of broker
-protocol correctness or real execution.
-Read the Docs is canonical; GitHub Pages is a mirror. HTML + RST + Sphinx only.
+当前内部候选版为 ``0.3.0a1``，**尚未发布**。
+计划先发布 PyPI Beta ``0.3.0b1``，再单独评估正式版 ``0.3.0``；
+两者均未取得上传授权。
 
-Version and immutable tags
---------------------------
+目前仅验证和支持 Linux / CPython 3.11，其他平台或 Python 版本未获支持承诺。
+自动测试采用合成数据与禁网环境，不能证明券商协议正确或真实成交。
+Read the Docs 是规范文档站点，GitHub Pages 只是手动维护的镜像；
+仅交付 RST + Sphinx 生成的 HTML，不生成 PDF、EPUB。
 
-Use PEP 440: 0.3.0a1, 0.3.0b1, 0.3.0rc1, 0.3.0; tags are v-prefixed canonical
-versions. setuptools_scm writes the runtime version; a source archive without Git
-must preserve its PKG-INFO/generated version. Untagged internal snapshots may
-have a development version and must not be presented as a tagged release.
-Update fallback/candidate fields, docs, cookiecutter and bumpversion together;
-use bumpversion only with ``--no-commit --no-tag`` and inspect the diff. README's
-commits-since badge stays at the last actually published tag until publication.
-Never overwrite tags, reuse versions, or use ``skip-existing`` to hide conflicts.
+版本号与不可变 Tag
+==================
 
-Alpha and Beta gates
---------------------
+遵循 PEP 440：``0.3.0a1``、``0.3.0b1``、``0.3.0rc1``、``0.3.0``，
+Git Tag 使用前缀 ``v``，并与规范版本号严格对应。
 
-Alpha is internal: clean checkout, check/docs/Offline CI, one sdist and one wheel,
-strict metadata/content audit, independent fresh venv installs, ``pip check``,
-matching runtime/distribution versions, API/CLI help and constructor smoke under
-OS-level network denial. Record commit, tool versions, commands, SHA256, file
-lists and installation evidence. No real credentials or broker calls.
+``setuptools_scm`` 负责运行时版本；不含 Git 元数据的源码包必须保留
+``PKG-INFO`` 或生成的版本文件。没有对应 Tag 的内部快照可能包含开发版本后缀，
+不得以正式版本名宣传。
 
-Beta requires a separate maintainer upload decision after Alpha and independent
-review. The planned explicit opt-in command (not available until upload) is::
+变更版本时同步核对 fallback、候选版本、文档、cookiecutter 和 bumpversion 配置。
+使用 bumpversion 必须添加 ``--no-commit --no-tag``，并自行检查 diff。
+README 的 commits-since 徽章在实际发布前始终指向最后已公开发布的 Tag。
+禁止覆盖 Tag、复用 PyPI 版本，或以 ``skip-existing`` 隐藏冲突。
+
+Alpha 与 Beta 门禁
+==================
+
+Alpha 仅供内部验证：使用干净 checkout、对应提交的 Build/check/docs、
+Offline 和 Package Alpha CI、单个 sdist 与 wheel、严格元数据和文件审计、
+独立干净虚拟环境安装、``pip check``、运行时与分发版本一致性、
+API/CLI help 及构造烟测，并在系统级禁网下完成。
+保留提交、工具版本、执行命令、SHA256、文件清单和安装证据。
+不能使用真实账户凭证或调用券商。
+
+Beta 必须在 Alpha 和独立 Review 后，由维护者**另行批准上传**。
+只有该版本真实上传后，以下显式预发布安装命令才可使用::
 
     python -m pip install --pre emtl==0.3.0b1
 
-Beta notes must name version, date, commit, hashes, environment, changes,
-compatibility limits, upgrade/downgrade risks and known issues. Collect feedback
-for a suggested ten working days. If no useful feedback arrives, the maintainer
-explicitly chooses further observation, pause or stable consideration; silence
-does not validate real trading. Classify feedback as installation/environment,
-documentation, API compatibility, defect or security/trading risk.
+Beta 说明至少包含版本、日期、Commit、产物哈希、环境、变更、
+兼容范围、升级/降级风险和已知限制。建议观察十个工作日并按
+安装/环境、文档、API 兼容、缺陷、安全/交易风险分类反馈。
 
-Feedback template: emtl/Python/OS versions; install method; synthetic minimal
-reproduction; expected/actual behavior; sanitized exception category. Never submit
-passwords, captcha data, tokens, cookies, account identifiers, full requests or
-responses, or trading records. Do not request live login/order/cancel results.
-All blockers (leakage, duplicate-submit risk, account mixing, unintended API
-breakage) must be resolved; deferrals need explicit approval and disclosure.
-Stable requires an explicit post-Beta approval; channel selection is not upload
-authorization.
+没有有价值的反馈时，维护者应显式选择延长观察、暂停或评估正式版；
+**沉默不能证明真实交易安全**。反馈模板仅包含 emtl/Python/OS 版本、
+安装方法、脱敏的合成最小复现、预期/实际行为及异常类别。
+不得索取密码、验证码、令牌、Cookie、账户标识、完整请求/响应或交易记录，
+也不要求真实登录、下单或撤单的结果。
 
-Release checklist
------------------
+凭证泄漏、重复提交风险、账户混用、未经授权的 API 不兼容改动等阻断项
+必须解决；延期须明确批准并披露。Stable 需 Beta 后再次批准，
+选择发布通道本身不等于获得上传权限。
 
-The maintainer is responsible for every release decision:
+正式发布检查单
+==============
 
-#. Confirm candidate is a clean, merged master commit, with successful required
-   Build/check/docs, Offline and Package Alpha workflows at that exact SHA (not just a PR head).
-#. Build once, validate and install those exact artifacts; publish only the same
-   SHA256-verified files. Archive logs, JUnit, coverage, manifests and tool versions.
-#. Confirm tag, SCM, sdist, wheel, runtime version, Changelog and release notes agree.
-   Manual dispatch must run from master at the exact tagged commit: GitHub's event
-   SHA must equal the tested checkout SHA so Trusted Publishing provenance does
-   not identify a later master commit. If master has already advanced before
-   dispatch, stop and prepare a new approved candidate; do not relabel evidence.
-#. Confirm protected ``pypi`` environment has active required reviewers. OIDC belongs
-   only to Publish; PRs never get publishing rights. No long-lived PyPI token.
-   Stage validators from the trusted master/workflow commit outside the workspace
-   before checking out a candidate. Run them in isolated Python; never let an
-   unmerged candidate replace its own ancestry/approval validator or install
-   candidate-supplied build requirements before those checks.
-#. Obtain separate approval before any tag push, Beta upload, Stable upload or
-   GitHub Release. A tag alone must not authorize upload.
-#. After authorized publication, compare PyPI filenames/hashes and provenance
-   repository/workflow/commit, then install that exact version from PyPI in fresh
-   environments and run the same network-disabled smoke. Record PyPI URL, workflow
-   run, artifact ID, tag and commit. Package publication is not contingent on a
-   successful mirror deployment; repair docs independently.
+每次发布都由维护者负责，按顺序完成：
 
+#. 确认候选来自已合并、干净的 ``master`` 提交；
+   该**精确 SHA** 上的 Build/check/docs、Offline 和 Package Alpha
+   CI 均成功，不以 PR head 的成功结果代替。
+#. 构建一次并审计、安装同一批产物；只发布通过 SHA256 核验的原文件。
+   归档构建日志、JUnit、覆盖率、manifest 和工具版本。
+#. 核对 Tag、SCM、sdist、wheel、运行时版本、Changelog 与发布说明一致。
+   手动 Workflow 必须从 ``master`` 上的**精确目标 Tag 提交**触发；
+   GitHub 事件 SHA 必须等于受测 checkout SHA，以避免 Trusted Publishing
+   provenance 指向之后的提交。若 ``master`` 已前进，停止该次发布，
+   重新准备获批准的候选，不得改写原验收证据。
+#. 确认 ``pypi`` Environment 已配置有效 Required reviewers。
+   OIDC 仅授予 Publish Job；PR 不得持有发布权限，禁止长期 PyPI Token。
+   先从可信的 master/Workflow 提交复制校验器到候选工作区之外，
+   以隔离 Python 运行。未验证前不得允许候选版本替换自己的
+   ancestry/审批校验器，也不得提前安装候选代码提供的构建依赖。
+#. 推送 Tag、上传 Beta、上传 Stable、创建 GitHub Release 均须单独批准；
+   只推送 Tag 不会自动授权上传。
+#. 经批准发布后，从 PyPI 核对文件名、SHA256 以及 provenance 对应的
+   repository、workflow 和 commit；再从 PyPI 在全新环境安装指定版本，
+   运行禁网且无交易副作用的 smoke test，并记录 PyPI URL、Run、
+   Artifact ID、Tag 和 Commit。文档镜像失败独立修复，不重发包。
 
-PyPI environment approval probe (no upload)
--------------------------------------------
+PyPI Environment 审批探针（不上传）
+===================================
 
-The no-upload approval probe passed on 2026-11-10: `run #42780759403
-<https://github.com/riiy/emtl/actions/runs/42780759403>`_ on master commit
-``8f654edbec6f29d4e39e5b63e6ad2d2b8ed28191`` was approved for ``pypi``
-by ``riiy`` and completed successfully. This validates the gate for that run,
-not a PyPI upload or independent second-person review. Details are recorded in
-``docs/refactor/reports/P4-acceptance.md``.
+2026-11-10 的 `no-upload Probe Run #42780759403
+<https://github.com/riiy/emtl/actions/runs/42780759403>`_
+已在 ``master`` 提交
+``8f654edbec6f29d4e39e5b63e6ad2d2b8ed28191`` 上成功执行。
+``riiy`` 对 ``pypi`` 审批后 Job 成功。
+这只证明本次无上传审批门禁有效，不证明 PyPI 上传成功，
+也不构成第二名独立审核人的批准。原始证据见
+``docs/refactor/reports/P4-acceptance.md``。
 
-If the ``pypi`` protection rules change, repeat this no-upload verification
-without exercising the Release workflow or PyPI:
+如修改了 ``pypi`` Environment 保护规则，使用以下**不上传**流程重验，
+不要用真实 Release 或 PyPI 试探：
 
-#. From the ``master`` branch, open Actions → PyPI Environment Approval Probe
-   → Run workflow, and set ``run_probe=true``.
-#. Confirm the ``approval-probe`` job enters Waiting for approval before any
-   step runs.
-#. Have a configured reviewer approve the deployment; confirm the job completes
-   and its log states that no checkout, OIDC permission, package build, PyPI
-   token or upload was used.
-#. Archive the run URL, head SHA, approval API record, job log and final result
-   in ``P4-acceptance.md``. Record the waiting state/timestamp when captured;
-   do not infer missing timestamps.
+#. 在 ``master`` 上打开 GitHub Actions →
+   PyPI Environment Approval Probe → Run workflow，
+   将 ``run_probe=true``。
+#. 在步骤开始执行前确认 ``approval-probe`` Job 显示等待审批。
+#. 由配置的 reviewer 批准，确认 Job 成功，
+   日志显示没有 checkout、OIDC、构建、PyPI Token 或上传。
+#. 在 ``P4-acceptance.md`` 记录 Run URL、SHA、审批 API 返回、
+   Job 日志及最终状态；仅当实际捕获时才记录等待状态及时间戳，
+   不猜测缺失的时间。
 
-The probe requests no additional token permissions (``permissions: {}``;
-GitHub retains ``metadata: read``), no OIDC permission, no package build and
-no upload step. It exists only to test the GitHub Environment protection
-rule. A skipped probe (input false) is not approval evidence. Do not use a
-real Beta/Stable release to test protection.
+Probe 的 ``permissions: {}`` 不请求额外权限；
+GitHub 仍保留 ``metadata: read``。
+它不申请 OIDC，不构建也不上传。若输入为 false 使 Job 跳过，
+不能将其算作审批成功证据。
 
-Failure, rollback and Hotfix
-----------------------------
+故障、回退和 Hotfix
+===================
 
-Build/test failure: stop, do not create a release tag. Bad unuploaded artifact:
-fix and generate a new candidate, then repeat all gates. Uncertain upload: query
-actual PyPI versions, filenames and hashes first; never blindly retry.
+构建或测试失败：停止，不创建发布 Tag。
+未上传的产物损坏：修正并重新生成候选，重复全部门禁。
+上传状态不确定：先查询 PyPI 实际版本、文件名和哈希，
+**不得盲目重复上传**。
 
-For a published defect, stop recommending the version; the maintainer evaluates
-yanking and a GitHub release warning. Security/trading risk takes priority: stop
-affected operations, privately investigate, disclose a sanitized advisory and fix
-forward with a unique Hotfix version. Never imply that rollback can cancel orders
-or reverse funds movements. SDK auth state is in memory, with no SDK database
-migration to undo; external broker state cannot be rolled back by package install.
+已发布版本发现普通缺陷：停止推荐该版本，由维护者评估 yanking
+及 GitHub Release 提示。
+安全或交易风险：先停止受影响操作、私密调查，
+发布脱敏公告并以唯一新版本 Hotfix 向前修复。
 
-There is currently no published P0-P3 known-good rollback target: 0.2.6 predates
-those protections. Do not automatically downgrade to it and continue trading.
-After a maintainer has verified and recorded a known-good version, the software
-rollback command is (replace the placeholder with that approved version)::
+**安装旧版 SDK 不会撤回券商订单，也不能撤销资金变动。**
+SDK 认证状态保存在内存中，没有 SDK 数据库迁移可回退；
+真实券商侧状态无法通过软件包回滚恢复。
+
+目前没有已发布且经过 P0–P3 验证的安全回退基线：
+旧 ``0.2.6`` 发布早于这些保护措施，不能自动降级后继续交易。
+只有在维护者明确验证并记录某个 known-good 版本后，
+才考虑软件包级回退（先替换占位符）::
 
     python -m pip install --force-reinstall 'emtl==KNOWN_GOOD_VERSION'
 
-Until such a target exists, pause affected use and fix forward. A Hotfix branches
-from an identified stable/master baseline, adds a minimal failing regression,
-runs full required CI and artifact checks and receives a separate upload approval.
-Do not delete/overwrite an immutable PyPI release. Record incident timeline,
-affected versions, mitigation, fixed version and follow-up.
+在没有可信回退目标时，应暂停受影响功能并向前修复。
+Hotfix 从明确的 stable/master 基线分支，增加最小失败回归测试，
+完成全部 CI 与产物验收并另行批准发布。
+禁止删除或覆盖不可变的 PyPI 版本。
+应记录事故时间线、受影响版本、缓解措施、修复版本及后续行动。
 
-Maintenance ownership and triggers
-----------------------------------
+维护责任与触发条件
+==================
 
-The repository maintainer owns monthly dependency review and immediate review on
-an important security advisory. Dependabot may open PRs, never auto-merge. Preserve
-current runtime pins; evaluate each change separately. requests/urllib3 updates
-need request-count, redirect and exception regressions; OCR upgrades need approved
-image fixtures. All updates need offline, package and HTML checks. Review CPython
-3.11 / OCR migration by 2027-04-01 before Python 3.11 EOL; do not claim 3.12+ now.
+维护者每月审查依赖；重要安全公告出现时立即针对性评估。
+Dependabot 只负责创建 PR，**不得自动合并**。
+运行时依赖固定版本每次单独评估，不因告警批量升级。
 
-Dependency inventory sources: setup.py (direct runtime), installed ``pip freeze``
-and ``pip inspect`` (resolved transitive), pyproject.toml (build backend),
-ci/requirements.txt and tox.ini (CI/test/check), docs/requirements.txt (Sphinx).
-Record tool/resolved dependency versions per candidate. Review upstream security
-advisories, Python limits and maintenance status; do not equate a frozen version
-or successful tests with absence of vulnerabilities. Current runtime pins are
-rsa==4.9, requests==2.33.1, ddddocr==1.4.11 and cryptography==50.0.2. The
-previously identified Requests and cryptography advisories have targeted version
-updates and final-master compatibility evidence; this is not a full SBOM or
-zero-vulnerability guarantee. Dependabot PRs remain review-only; rsa 4.9 → 4.9.1
-is pending separate review and must not be auto-merged.
+``requests/urllib3`` 升级需验证请求次数、重定向和异常语义；
+OCR 升级需获批准的脱敏图像样本。
+所有变更都需离线测试、包安装及 HTML 构建。
+应在 ``2027-04-01`` 前审查 CPython 3.11 与 OCR 迁移，
+不得提前宣称支持 Python 3.12+。
 
-The maintainer triages issues/PRs into security, trading risk, defect, compatibility,
-installation, documentation, dependency or usage. Follow SECURITY.md for private
-reporting; never request secrets publicly. Failed CI blocks release; retain failure
-artifacts, reproduce with synthetic data and rerun at the final SHA. Publish only
-accurate support claims. Maintain the current stable normally; old versions are
-best effort, with no fixed SLA or unresourced long-term support promise. After each
-release/incident, record elapsed time, failures, rollback/Hotfix, feedback and new
-maintenance cost. Beta is opt-in and unsupported for production assurances.
+依赖来源分别是 ``setup.py`` （运行时直接依赖）、
+``pip freeze`` 和 ``pip inspect`` （已安装的传递依赖）、
+``pyproject.toml`` （构建后端）、``ci/requirements.txt`` 与
+``tox.ini`` （CI/测试）、``docs/requirements.txt`` （Sphinx）。
+每个候选应记录工具及解析后的依赖版本。
+固定版本或测试成功不等于没有漏洞。
 
-Download the :download:`security policy <../SECURITY.md>` and the current
-:download:`P4 dependency review <refactor/reports/P4-dependency-review.md>`.
+当前运行时固定版本为 ``rsa==4.9``、``requests==2.33.1``、
+``ddddocr==1.4.11``、``cryptography==50.0.2``。
+此前识别的 Requests 与 cryptography 公告已有定向更新和最终 master
+兼容测试证据，但不代表已完成全量 SBOM 或未来零漏洞保证。
+Dependabot 中 ``rsa 4.9 → 4.9.1`` 待单独审查，不得自动合并。
+
+Issue/PR 按安全、交易风险、缺陷、兼容性、安装、文档、依赖和用法分类。
+安全报告遵循 ``SECURITY.md``，不得公开索取秘密。
+CI 失败应阻断发布，保留原始失败证据，用合成数据复现，
+并在最终 SHA 重新运行。
+维护重点为当前 stable；旧版尽力支持，不承诺缺乏资源保障的 SLA。
+每次发布或事故后记录耗时、失败、回退/Hotfix、用户反馈及维护成本。
+Beta 只供自愿试用，不提供生产环境交易保障。
+
+- :download:`安全与交易风险报告原文（英文） <../SECURITY.md>`
+- :download:`P4 依赖审查记录 <refactor/reports/P4-dependency-review.md>`

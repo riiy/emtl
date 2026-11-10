@@ -16,6 +16,8 @@ extensions = [
 ]
 source_suffix = ".rst"
 master_doc = "index"
+language = "zh_CN"
+html_search_language = "zh"
 project = "emtl"
 year = "2024-2025"
 author = "Eastmoney Trade Library"
@@ -33,7 +35,7 @@ extlinks = {
 }
 
 html_theme = "alabaster"
-html_baseurl = "https://emtl.readthedocs.io/en/latest/"
+html_baseurl = "https://emtl.readthedocs.io/zh-cn/latest/"
 html_theme_options = {
     "github_user": "riiy",
     "github_repo": "emtl",

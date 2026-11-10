@@ -1,5 +1,5 @@
 ========
-Overview
+项目简介
 ========
 
 .. start-badges
@@ -7,11 +7,11 @@ Overview
 .. list-table::
     :stub-columns: 1
 
-    * - docs
+    * - 文档
       - |docs|
-    * - tests
+    * - 测试
       - |github-actions| |codecov|
-    * - package
+    * - 发布包
       - |version| |wheel| |supported-versions| |supported-implementations| |commits-since|
 .. |docs| image:: https://readthedocs.org/projects/emtl/badge/?style=flat
     :target: https://readthedocs.org/projects/emtl/
@@ -49,96 +49,80 @@ Overview
 
 .. end-badges
 
-东方财富自动交易接口
+东方财富自动交易接口 Python 库，MIT 许可证。
 
-* Free software: MIT license
+**文档语言：简体中文。** API 名称、Python 代码及命令保留原始英文标识。
+Read the Docs 是规范文档站点，GitHub Pages 仅为镜像。
 
-Installation
-============
+安装与支持范围
+==============
 
-The next release targets **CPython 3.11 on Linux only**
-(``Requires-Python >=3.11,<3.12``). Windows, macOS, PyPy and Python 3.12+
-are not verified support targets. ddddocr remains at 1.4.11; upgrading OCR
-requires a separately approved non-sensitive image regression set.
+计划中的下一个正式版本 ``0.3.0`` 仅以 **Linux / CPython 3.11**
+为验证和支持目标（``Requires-Python >=3.11,<3.12``）。
+Windows、macOS、PyPy 及 Python 3.12+ 尚未验证。
+当前固定 ``ddddocr==1.4.11``；升级 OCR 需要另行批准的脱敏图像回归测试。
 
-The current work is an unpublished internal ``0.3.0a1`` candidate for
-``0.3.0``. The command below installs the existing public stable version,
-not this candidate. Beta ``0.3.0b1`` will require separate upload approval.
+目前 ``0.3.0a1`` 仍是 **未公开发布** 的内部 Alpha 候选版本；
+计划中的 PyPI Beta ``0.3.0b1`` 和正式版 ``0.3.0``
+都需要维护者单独批准。以下命令安装现有公开版本，而不是内部候选版::
 
-::
+    python -m pip install emtl
 
-    pip install emtl
+如需获取开发中的源码，可从仓库安装，但源码不等于已验证的正式发布版本::
 
-You can also install the in-development version with::
+    python -m pip install https://github.com/riiy/emtl/archive/master.zip
 
-    pip install https://github.com/riiy/emtl/archive/master.zip
-
-
-Python interfaces
-=================
-
-The library provides two Python APIs with different safety boundaries:
-
-* Legacy module-level functions such as ``emtl.login()`` and
-  ``emtl.create_order()`` share process-level Session and token state;
-  they are preserved for compatibility, not account isolation.
-* ``emtl.TradingClient`` is a synchronous, account-bound client with its
-  own Session, cookies and token. Use ``close()`` in a ``finally`` block;
-  it has no ``with`` or asynchronous API.
-
-An attempted trade POST with an unconfirmed outcome on ``TradingClient``
-raises ``emtl.errors.TradeOutcomeUnknown``. Never automatically resubmit.
-Legacy module-level functions do not provide this new error contract.
-Offline tests do not establish real broker acceptance or execution.
-
-The ``emt`` command and ``python -m emtl`` currently parse options only:
-they do not log in, query the account, or submit trades. See the
-`usage guide <https://emtl.readthedocs.io/en/latest/usage.html>`_.
-
-Documentation
-=============
-
-
-https://emtl.readthedocs.io/
-
-Read the Docs is the only canonical documentation site. GitHub Pages is a
-mirror, not a second source of release or support guarantees.
-
-Release and maintenance procedures: https://emtl.readthedocs.io/en/latest/releasing.html
-
-
-Development
+Python 接口
 ===========
 
-Use CPython 3.11. Tests use synthetic accounts and must run without network
-access; they do not establish real broker protocol or execution correctness.
-No automatic retry, resubmission or trade compensation is provided.
+emtl 提供两套兼容边界不同的接口：
 
-To run all the tests run::
+- **旧模块级函数**：如 ``emtl.login()`` 和 ``emtl.create_order()``。
+  这些函数复用进程级 Session 和认证令牌，保留历史行为，**不保证多账户隔离**。
+- **``emtl.TradingClient``**：同步、显式绑定账户的客户端，独立管理
+  Session、Cookie 和 token。使用完毕须在 ``finally`` 中调用 ``close()``；
+  当前不支持 ``with`` 或异步接口。
 
-    pip install -r ci/requirements.txt
+对于 ``TradingClient``，交易 POST 开始尝试后若结果无法确定，
+将抛出 ``emtl.errors.TradeOutcomeUnknown``。 **不得据此自动重发订单**。
+旧模块级函数不具备这项新异常契约。离线测试也不能证明真实券商已受理或成交。
+
+命令行 ``emt`` 与 ``python -m emtl`` 当前只负责解析参数，
+**不会** 实际登录、查询或提交交易。
+
+文档
+====
+
+- `在线文档 <https://emtl.readthedocs.io/>`_
+- `安装说明 <https://emtl.readthedocs.io/page/installation.html>`_
+- `使用指南 <https://emtl.readthedocs.io/page/usage.html>`_
+- `API 参考 <https://emtl.readthedocs.io/page/reference/emtl.html>`_
+- `发布与维护 <https://emtl.readthedocs.io/page/releasing.html>`_
+
+以上页面由 Read the Docs 提供，GitHub Pages 只是镜像。
+站点由原英文项目切换为中文时，需要同步调整 Read the Docs 项目的语言设置；
+本仓库不会自动修改该远端设置。
+
+开发与测试
+==========
+
+开发使用 CPython 3.11。自动测试只使用合成账户和禁网环境，
+不连接真实券商，也不验证真实下单、撤单或成交结果。
+SDK 不自动重试、重发或补偿订单。
+
+在隔离测试环境中运行（完整离线验证需额外配置系统级禁网）::
+
+    python -m pip install -r ci/requirements.txt
     tox
 
-Note, to combine the coverage data from all the tox environments run:
+``tox -e docs`` 生成 HTML；在线外链检查 ``tox -e linkcheck``
+独立执行，不属于离线测试。
 
-.. list-table::
-    :widths: 10 90
-    :stub-columns: 1
+问题反馈
+========
 
-    - - Windows
-      - ::
+- `GitHub Issues <https://github.com/riiy/emtl/issues>`_
+- `Telegram 讨论组 <https://t.me/em_trade_lib>`_
 
-            set PYTEST_ADDOPTS=--cov-append
-            tox
-
-    - - Other
-      - ::
-
-            PYTEST_ADDOPTS=--cov-append tox
-
-
-Getting help
-============
-
-
-Join `Telegram group <https://t.me/em_trade_lib>`_. Asking a question here is often the quickest way to get a pointer in the right direction.
+请勿在公开讨论中提交密码、验证码、Cookie、令牌、账户标识或交易记录。
+安全与交易风险报告请遵循 ``SECURITY.md`` 的私密联系说明。
