@@ -1,6 +1,12 @@
 # P4 Build 与阶段验收记录
 
-> **当前 P4 收尾代码基线（2026-11-09）：** PR #23 已合并到 master，merge commit `d5eb7d71e4b65fb28e0398b64269a9d1225c833a`，tree `f9d361cec8d5a23e2f3b6576efbc63d915250633`。PR head `66d3a3b58b55ba047bef595f497874c7fd619c88` 与 merge commit 的 tree 完全一致；最终 master push 的 Build、Offline tests、Package Alpha 均已在 merge SHA 上成功。详情见本文末尾“PR #23 合并后最终 master 验证”。**P4 阶段整体仍为 NEEDS EVIDENCE**：no-upload 审批探针和 Beta 观察/退出尚未闭环；RTD HTML 验收由维护者确认通过，但本轮未取得独立 Build ID。未创建 tag、未上传 PyPI、未执行正式发布。
+## 当前结论（2026-11-10；下文保留历史验收快照）
+
+- **P4 工程实现与发布准备门禁：PASS（证据基线 `8f654edbec6f29d4e39e5b63e6ad2d2b8ed28191`）。** 同一 SHA 的 master Build、Offline tests、Package Alpha 均 success；无上传 PyPI Environment Approval Probe 已获得真实批准且 Job success；Read the Docs `latest` 的 HTML 构建成功，且检出的 SHA 与该基线一致。完整远端证据见文末“2026-11-10 工程发布准备门禁最终验收”。
+- **P4 整体仍为 NEEDS EVIDENCE，不能等同于公开发布 PASS。** Beta 尚未实际发布、观察、分类反馈或批准退出；独立最终 Review 和 Stable 正式发布及发布后核验不由本次证据更新替代。Beta/Stable 需要独立的维护者授权。
+- 本次仅补充验收记录，不更改交易生产代码、Workflow、Environment 设置，不创建 tag/GitHub Release，也不上传 PyPI。下文 2026-11-08～09 的 `NEEDS EVIDENCE`、`未取得 Build ID` 等表述是当时的历史快照，由文末 2026-11-10 新证据覆盖，不应理解为当前仍缺这两项工程门禁。
+
+> **历史快照：P4 收尾代码基线（2026-11-09）：** PR #23 已合并到 master，merge commit `d5eb7d71e4b65fb28e0398b64269a9d1225c833a`，tree `f9d361cec8d5a23e2f3b6576efbc63d915250633`。PR head `66d3a3b58b55ba047bef595f497874c7fd619c88` 与 merge commit 的 tree 完全一致；最终 master push 的 Build、Offline tests、Package Alpha 均已在 merge SHA 上成功。详情见本文末尾“PR #23 合并后最终 master 验证”。**P4 阶段整体仍为 NEEDS EVIDENCE**：no-upload 审批探针和 Beta 观察/退出尚未闭环；RTD HTML 验收由维护者确认通过，但本轮未取得独立 Build ID。未创建 tag、未上传 PyPI、未执行正式发布。
 
 
 
@@ -242,3 +248,38 @@ Linux 实际执行既有 `ci/run_offline_tests.py`；其每个命令/cwd/退出�
 - 本次 master Run 上传的 Offline Artifact：`offline-test-evidence`，ID `13677019759`；Package Alpha Artifact：`alpha-package-evidence`，ID `13678215603`，均未过期。此条核对 GitHub Run/Job/Artifact 元数据，**未重新下载逐文件复算 ZIP SHA256 或检查 JUnit 内容**；前一节 PR #23 merge SHA 的原件哈希、565 项 JUnit 和禁网容器实测不能自动冒称为本 SHA 的逐文件复核。
 - 截至本次记录，未发现已运行的无上传 PyPI Environment Approval Probe 证据；不能将 required reviewer 静态配置当作真实审批门禁验证。Read the Docs 的独立 Build ID 仍未补齐；Beta 观察/退出及 Stable 授权仍未完成。
 - 判定：**工程代码、包候选及当前 master 三项 CI 门禁 PASS；P4 整体 NEEDS EVIDENCE；Beta/Stable 不得据此自动发布。**
+
+## 2026-11-10 工程发布准备门禁最终验收（覆盖上述历史待验）
+
+- **验收代码基线：** `master` commit [`8f654edbec6f29d4e39e5b63e6ad2d2b8ed28191`](https://github.com/riiy/emtl/commit/8f654edbec6f29d4e39e5b63e6ad2d2b8ed28191)。以下远端证据均指向此 SHA；本次仅记录后续文档变更，不把新文档提交的 CI 状态冒称为该基线的已验结果。
+- **同 SHA 工程 CI：** [Build Run 42630300455](https://github.com/riiy/emtl/actions/runs/42630300455)、[Offline tests Run 42630300542](https://github.com/riiy/emtl/actions/runs/42630300542)、[Package Alpha Run 42630300432](https://github.com/riiy/emtl/actions/runs/42630300432)，均为 `push` / `master`、`completed/success`、head SHA 与上述基线完全一致（2026-11-10 重新核对 GitHub Run 元数据）。本条不宣称重新下载或复算这三次运行的 Artifact 原件哈希。
+
+### PyPI Environment 审批行为（no-upload）
+
+- Workflow：[PyPI Environment Approval Probe Run 42780759403](https://github.com/riiy/emtl/actions/runs/42780759403)；`workflow_dispatch`，`master`，head SHA 与验收基线一致；`completed/success`。
+- Job：`approval-probe`（Job ID `129709990246`）为 `completed/success`；步骤 `Confirm environment approval was granted` 为 `success`。
+- 审批原始记录：[Run approvals API](https://api.github.com/repos/riiy/emtl/actions/runs/42780759403/approvals) 返回 `user=riiy`、`state=approved`、`environment=pypi`。这是实际批准记录，足以验证 no-upload probe 经过 Environment 审批；未单独保存审批前 `Waiting for approval` 的 UI 快照，不声称持有该截图。静态配置先前记录 `required_reviewers=riiy`、`prevent_self_review=false`，故本次为允许 self-review 的维护者审批，并非第二人独立复核。
+- [Job 原始日志](https://github.com/riiy/emtl/actions/runs/42780759403/job/129709990246) 显示 `The pypi environment approval gate was released.` 以及 `No checkout, OIDC permission, package build, PyPI token, or upload was used.`；GITHUB_TOKEN 权限仅 `Metadata: read`。该 Run 的 Artifact 列表为空。
+- **判定：pypi required-reviewer 审批行为 PASS（限于 no-upload 探针）。** 它不证明真正上传 PyPI、Trusted Publisher/provenance 或真实发布后安装链路成功。
+
+### Read the Docs 最新 HTML 构建
+
+- 构建：[Read the Docs emtl Build #35755723](https://app.readthedocs.org/projects/emtl/builds/35755723/)；版本 `latest`，页面状态 `100% / Build succeeded`，耗时 43s。
+- 构建日志显示从 `origin/master` checkout 并输出 `HEAD is now at 8f654ed`；页面关联完整提交 [`8f654edbec6f29d4e39e5b63e6ad2d2b8ed28191`](https://github.com/riiy/emtl/commit/8f654edbec6f29d4e39e5b63e6ad2d2b8ed28191)。这次远端 HTML 验收与上述 master 工程 CI / 审批探针基线一致，不沿用历史失败 Build #35727016。
+- Read the Docs 使用 Python `3.11.15`、Sphinx `7.2.6`，执行 HTML 构建命令退出码 `0`；日志最终为 `build succeeded, 1 warning.` 和 `The HTML pages are in ../_readthedocs/html.`。配置 `formats: []`，没有 PDF/EPUB 下载交付。文档入口：[emtl.readthedocs.io](https://emtl.readthedocs.io/)。
+- **已知非阻断警告：** `docs/releasing.rst:90` 报 `Inline literal start-string without end-string`，源于 `run_probe=true` 的 RST 行内标记未闭合。这是文档格式问题，未阻断本次远端 HTML 构建；本次仅记录，不扩大授权去修改该文件，也不将此构建误写成零警告或 `-W` 严格通过。
+- **判定：RTD 对上述目标 SHA 的远端 HTML 构建 PASS（带 1 条已知警告）。**
+
+### 最终工程状态与发布边界
+
+| 验收领域 | 2026-11-10 状态 |
+| --- | --- |
+| P4 已合并工程实现、master Build / Offline / Package Alpha | **PASS**（上述精确 SHA 三次 Run） |
+| pypi required-reviewer 静态配置及 no-upload 实际审批 | **PASS**（Run 42780759403 + approvals + Job 日志） |
+| RTD 最新 master HTML 构建 | **PASS**（Build 35755723；1 条非阻断 RST warning） |
+| **P4 工程及发布准备门禁** | **PASS（在上述验收范围内）** |
+| Beta 发布、观察窗口、反馈分类及退出批准 | **未完成；另行授权** |
+| 独立最终 Review、Stable 发布及其发布后 PyPI 文件/哈希/provenance/安装核验 | **未由本次更新完成** |
+| **P4 整体** | **NEEDS EVIDENCE；公开 Beta/Stable 仍不得自动发布** |
+
+**停止条件：** 当前工程门禁已具备明确远端证据，不再为关闭这两个缺口反复重跑审批探针或旧测试。后续只按已批准的发布流程单独处理 Beta、独立 Review 与 Stable；未经明确授权，不创建正式 tag、GitHub Release，不上传 PyPI，不使用真实交易账户或券商接口。
