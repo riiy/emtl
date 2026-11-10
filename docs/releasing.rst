@@ -4,9 +4,9 @@ Release and maintenance
 Status and support
 ------------------
 
-The current internal candidate is 0.3.0a1 (unpublished); the approved next stable
-version is 0.3.0, with PyPI Beta 0.3.0b1 first. Only CPython 3.11 / Linux is the
-support target. Other platforms/versions remain unverified. Tests are synthetic
+The current internal candidate is 0.3.0a1 (unpublished). The planned next stable
+target is 0.3.0, preceded by PyPI Beta 0.3.0b1; neither upload is authorized.
+Only CPython 3.11 / Linux is the support target. Other platforms/versions remain unverified. Tests are synthetic
 and offline, not evidence of broker protocol correctness or real execution.
 Read the Docs is canonical; GitHub Pages is a mirror. HTML + RST + Sphinx only.
 
@@ -84,21 +84,30 @@ The maintainer is responsible for every release decision:
 PyPI environment approval probe (no upload)
 -------------------------------------------
 
-After configuring the ``pypi`` environment's required reviewers, verify the
-actual wait/release behavior without exercising the Release workflow or PyPI:
+The no-upload approval probe passed on 2026-11-10: `run #42780759403
+<https://github.com/riiy/emtl/actions/runs/42780759403>`_ on master commit
+``8f654edbec6f29d4e39e5b63e6ad2d2b8ed28191`` was approved for ``pypi``
+by ``riiy`` and completed successfully. This validates the gate for that run,
+not a PyPI upload or independent second-person review. Details are recorded in
+``docs/refactor/reports/P4-acceptance.md``.
+
+If the ``pypi`` protection rules change, repeat this no-upload verification
+without exercising the Release workflow or PyPI:
 
 #. From the ``master`` branch, open Actions → PyPI Environment Approval Probe
-   → Run workflow, and set ``run_probe=true`.
+   → Run workflow, and set ``run_probe=true``.
 #. Confirm the ``approval-probe`` job enters Waiting for approval before any
    step runs.
 #. Have a configured reviewer approve the deployment; confirm the job completes
    and its log states that no checkout, OIDC permission, package build, PyPI
    token or upload was used.
-#. Archive the run URL, head SHA, waiting/approval timestamps and final result
-   in ``P4-acceptance.md``.
+#. Archive the run URL, head SHA, approval API record, job log and final result
+   in ``P4-acceptance.md``. Record the waiting state/timestamp when captured;
+   do not infer missing timestamps.
 
-The probe has no repository token permissions (``permissions: {}``), no
-OIDC permission, no package build and no upload step. It exists only to test
+The probe requests no additional token permissions (``permissions: {}``;
+GitHub retains ``metadata: read``), no OIDC permission, no package build and
+no upload step. It exists only to test
 the GitHub Environment protection rule. A skipped probe (input false) is not
 approval evidence. Do not use a real Beta/Stable release to test protection.
 
