@@ -16,7 +16,7 @@ COLLECTION_CREDENTIALS_CLEARED = not any(os.environ.get(name) for name in ("EM_U
 
 
 def test_bootstrap_was_installed_before_collection():
-    assert COLLECTION_OCR == "FakeOcr"
+    assert COLLECTION_OCR == "TinyCaptchaOCR"
     assert sys.modules["ddddocr"].DdddOcr.__name__ == "FakeOcr"
     assert requests.sessions.Session.request.__name__ == "blocked"
     assert COLLECTION_CREDENTIALS_CLEARED
