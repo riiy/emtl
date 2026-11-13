@@ -14,7 +14,21 @@ from pathlib import PurePosixPath
 
 from packaging.version import Version
 
-MODULES = {"__init__", "__main__", "_coordination", "_ocr", "_ocr_lightweight", "_protocol", "_version", "cli", "client", "const", "core", "errors", "utils"}
+MODULES = {
+    "__init__",
+    "__main__",
+    "_coordination",
+    "_ocr",
+    "_ocr_lightweight",
+    "_protocol",
+    "_version",
+    "cli",
+    "client",
+    "const",
+    "core",
+    "errors",
+    "utils",
+}
 DEPENDENCIES = {"rsa==4.9", "requests==2.33.1", "Pillow==13.0.0", "cryptography==50.0.2", 'ddddocr==1.4.11; extra == "ddddocr"'}
 MODEL_SHA256 = "27dc2423ad452a3a723ba0d3ccc8d57a81bfda0238497baf94ce22926585cf4a"
 EGG_FILES = {"PKG-INFO", "SOURCES.txt", "dependency_links.txt", "entry_points.txt", "requires.txt", "top_level.txt", "not-zip-safe"}
