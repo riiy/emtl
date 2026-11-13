@@ -13,7 +13,7 @@ GATE = runpy.run_path(str(ROOT / "ci/release_gate.py"))
 SHA = "a" * 40
 
 
-@pytest.mark.parametrize("tag", ["v0.3.0a1", "v0.3.0b1", "v0.3.0rc1", "v0.3.0"])
+@pytest.mark.parametrize("tag", ["v0.3.0a1", "v0.3.0b1", "v0.3.0b2", "v0.3.0rc1", "v0.3.0"])
 def test_release_tag_accepts_canonical_pep440(tag):
     assert GATE["tag_version"](tag) == tag[1:]
 
@@ -40,7 +40,7 @@ def test_publish_intent_fails_closed(event, ref, version, channel):
         GATE["publish_intent"](event, ref, version, channel)
 
 
-@pytest.mark.parametrize(("version", "channel"), [("0.3.0b1", "beta"), ("0.3.0rc1", "beta"), ("0.3.0", "stable")])
+@pytest.mark.parametrize(("version", "channel"), [("0.3.0b1", "beta"), ("0.3.0b2", "beta"), ("0.3.0rc1", "beta"), ("0.3.0", "stable")])
 def test_manual_publish_intent_still_needs_other_gates(version, channel):
     GATE["publish_intent"]("workflow_dispatch", "refs/heads/master", version, channel)
 

@@ -41,9 +41,9 @@
     :alt: Supported implementations
     :target: https://pypi.org/project/emtl
 
-.. |commits-since| image:: https://img.shields.io/github/commits-since/riiy/emtl/v0.2.6.svg
+.. |commits-since| image:: https://img.shields.io/github/commits-since/riiy/emtl/v0.3.0b1.svg
     :alt: Commits since latest release
-    :target: https://github.com/riiy/emtl/compare/v0.2.6...master
+    :target: https://github.com/riiy/emtl/compare/v0.3.0b1...master
 
 
 
@@ -57,20 +57,21 @@ Read the Docs 是规范文档站点，GitHub Pages 仅为镜像。
 安装与支持范围
 ==============
 
-OCR v1 开发分支支持 **Linux / CPython 3.11、3.12、3.13**
+当前 ``master`` 的 OCR v1 实现支持 **Linux / CPython 3.11、3.12、3.13**
 （``Requires-Python >=3.11,<3.14``）；其他平台及 PyPy 尚未验证。
 默认使用冻结的微型 CNN（Pillow + Python 标准库），不会安装 ddddOCR、
 NumPy、ONNX Runtime 或 OpenCV。需要旧 OCR 时仅在 Python 3.11 上
 安装 ``emtl[ddddocr]`` 并设置环境变量
 ``EMTL_OCR_ENGINE=ddddocr``；显式选择失败不会静默回退。
-源代码中的 OCR v1 变更尚未批准合并或发布，PyPI 已发行版本可能不同。
+OCR v1 已随 PR #32 合并，但尚未作为 ``0.3.0b2`` 发布；已发行的
+``0.3.0b1`` 仍采用旧 OCR，仅支持 Python 3.11。
 具体体积与性能门槛及证据参见
 ``docs/refactor/reports/OCR-v1-acceptance.md``。
 
-内部 Alpha ``0.3.0a1`` 未对外发布；当前准备的 Beta 候选为
-``0.3.0b1``，**尚未获准上传 PyPI**。正式版 ``0.3.0``
-还需要 Beta 观察后的独立批准。以下命令安装已公开的稳定版本，
-**不会** 安装这次 Beta 候选::
+内部 Alpha ``0.3.0a1`` 未对外发布；``0.3.0b1`` 已于
+2026-11-10 发布为 Beta。下一候选 ``0.3.0b2`` 仍处于发布准备阶段，
+Tag、Release 与 PyPI 上传均须单独授权。正式版 ``0.3.0`` 需 Beta
+观察后的独立批准。以下命令安装已公开的稳定版本，**不会** 自动安装 Beta::
 
     python -m pip install emtl
 
@@ -112,7 +113,7 @@ emtl 提供两套兼容边界不同的接口：
 开发与测试
 ==========
 
-开发使用 CPython 3.11。自动测试只使用合成账户和禁网环境，
+开发及 CI 覆盖 CPython 3.11、3.12、3.13。自动测试只使用合成账户和禁网环境，
 不连接真实券商，也不验证真实下单、撤单或成交结果。
 SDK 不自动重试、重发或补偿订单。
 

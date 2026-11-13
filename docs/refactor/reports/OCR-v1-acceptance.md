@@ -1,5 +1,8 @@
 # OCR v1：冻结模型与集成验收记录
 
+2026-11-13：PR #32 已合并至 ``master``；本文件保留开发与集成验收证据。
+``0.3.0b2`` 仍为待审核发布候选，未因此自动获得 Tag、Release 或 PyPI 授权。
+
 本次仅集成此前冻结的离线 tiny-CNN 模型，不进行重新训练，不通过任何真实账户或交易接口验收。
 
 - **模型资源**：`src/emtl/models/tiny_captcha_model.b64`（解码即原始冻结 ZIP，SHA-256 校验不变）；SHA-256 `27dc2423ad452a3a723ba0d3ccc8d57a81bfda0238497baf94ce22926585cf4a`。

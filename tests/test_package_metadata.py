@@ -39,7 +39,7 @@ def test_runtime_dependencies_are_not_silently_upgraded(package_metadata):
 
 
 def test_candidate_fallbacks_and_manual_git_boundary(package_metadata, monkeypatch, capsys):
-    candidate = "0.3.0b1"
+    candidate = "0.3.0b2"
     assert package_metadata["use_scm_version"]["fallback_version"] == candidate
     config = configparser.ConfigParser()
     config.read(ROOT / ".bumpversion.cfg")

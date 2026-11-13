@@ -7,7 +7,7 @@ COPY ci/ ci/
 COPY docs/ docs/
 COPY .github/ .github/
 
-ARG EMTL_TEST_VERSION=0.3.0b1
+ARG EMTL_TEST_VERSION=0.3.0b2
 RUN python -m pip install 'tox>=4.67' && \
     SETUPTOOLS_SCM_PRETEND_VERSION_FOR_EMTL="${EMTL_TEST_VERSION}" \
     python -m tox -e py311-cover --notest -v
