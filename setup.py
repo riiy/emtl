@@ -71,7 +71,7 @@ setup(
         "交易机器人",
     ],
     python_requires=">=3.11,<3.14",
-    install_requires=["rsa==4.9", "requests==2.33.1", "Pillow==13.0.0", "cryptography==50.0.2"],
+    install_requires=["rsa==4.9.1", "requests==2.33.1", "Pillow==13.0.0", "cryptography==50.0.2"],
     extras_require={"ddddocr": ["ddddocr==1.4.11"]},
     setup_requires=[
         "setuptools_scm>=3.3.1",
