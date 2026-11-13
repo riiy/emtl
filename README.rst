@@ -57,10 +57,15 @@ Read the Docs 是规范文档站点，GitHub Pages 仅为镜像。
 安装与支持范围
 ==============
 
-计划中的下一个正式版本 ``0.3.0`` 仅以 **Linux / CPython 3.11**
-为验证和支持目标（``Requires-Python >=3.11,<3.12``）。
-Windows、macOS、PyPy 及 Python 3.12+ 尚未验证。
-当前固定 ``ddddocr==1.4.11``；升级 OCR 需要另行批准的脱敏图像回归测试。
+OCR v1 开发分支支持 **Linux / CPython 3.11、3.12、3.13**
+（``Requires-Python >=3.11,<3.14``）；其他平台及 PyPy 尚未验证。
+默认使用冻结的微型 CNN（Pillow + Python 标准库），不会安装 ddddOCR、
+NumPy、ONNX Runtime 或 OpenCV。需要旧 OCR 时仅在 Python 3.11 上
+安装 ``emtl[ddddocr]`` 并设置环境变量
+``EMTL_OCR_ENGINE=ddddocr``；显式选择失败不会静默回退。
+源代码中的 OCR v1 变更尚未批准合并或发布，PyPI 已发行版本可能不同。
+具体体积与性能门槛及证据参见
+``docs/refactor/reports/OCR-v1-acceptance.md``。
 
 内部 Alpha ``0.3.0a1`` 未对外发布；当前准备的 Beta 候选为
 ``0.3.0b1``，**尚未获准上传 PyPI**。正式版 ``0.3.0``

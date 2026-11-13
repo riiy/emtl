@@ -1,6 +1,7 @@
 """Fail-closed sdist/wheel content and metadata audit; never imports emtl."""
 
 import argparse
+import base64
 import configparser
 import hashlib
 import json
@@ -13,8 +14,23 @@ from pathlib import PurePosixPath
 
 from packaging.version import Version
 
-MODULES = {"__init__", "__main__", "_coordination", "_protocol", "_version", "cli", "client", "const", "core", "errors", "utils"}
-DEPENDENCIES = {"rsa==4.9", "requests==2.33.1", "ddddocr==1.4.11", "cryptography==50.0.2"}
+MODULES = {
+    "__init__",
+    "__main__",
+    "_coordination",
+    "_ocr",
+    "_ocr_lightweight",
+    "_protocol",
+    "_version",
+    "cli",
+    "client",
+    "const",
+    "core",
+    "errors",
+    "utils",
+}
+DEPENDENCIES = {"rsa==4.9", "requests==2.33.1", "Pillow==13.0.0", "cryptography==50.0.2", 'ddddocr==1.4.11; extra == "ddddocr"'}
+MODEL_SHA256 = "27dc2423ad452a3a723ba0d3ccc8d57a81bfda0238497baf94ce22926585cf4a"
 EGG_FILES = {"PKG-INFO", "SOURCES.txt", "dependency_links.txt", "entry_points.txt", "requires.txt", "top_level.txt", "not-zip-safe"}
 ROOT_FILES = {"MANIFEST.in", "LICENSE", "AUTHORS.rst", "README.rst", "CHANGELOG.rst", "setup.py", "setup.cfg", "pyproject.toml", "PKG-INFO"}
 DIST_FILES = {"METADATA", "WHEEL", "RECORD", "entry_points.txt", "top_level.txt", "LICENSE", "licenses/LICENSE", "licenses/AUTHORS.rst"}
@@ -60,6 +76,8 @@ def audit(path, expected_version):
     root = f"emtl-{expected_version}/"
     dist_root = f"emtl-{expected_version}.dist-info/"
     required = {f"{'emtl/' if wheel else root + 'src/emtl/'}{module}.py" for module in MODULES}
+    model_path = f"{'emtl/' if wheel else root + 'src/emtl/'}models/tiny_captcha_model.b64"
+    required.add(model_path)
     metadata_path = f"{dist_root}METADATA" if wheel else root + "PKG-INFO"
     entry_path = f"{dist_root}entry_points.txt" if wheel else root + "src/emtl.egg-info/entry_points.txt"
     required.update({metadata_path, entry_path, dist_root + "licenses/LICENSE" if wheel else root + "LICENSE"})
@@ -81,10 +99,12 @@ def audit(path, expected_version):
             )
         if not allowed:
             raise ValueError("non-delivery file in artifact")
+    if hashlib.sha256(base64.b64decode(files[model_path])).hexdigest() != MODEL_SHA256:
+        raise ValueError("frozen OCR model hash mismatch")
     metadata = BytesParser().parsebytes(files[metadata_path])
     if metadata["Name"] != "emtl" or metadata["Version"] != expected_version:
         raise ValueError("artifact version/name mismatch")
-    if metadata["Requires-Python"] != ">=3.11,<3.12" and metadata["Requires-Python"] != "<3.12,>=3.11":
+    if metadata["Requires-Python"] != ">=3.11,<3.14" and metadata["Requires-Python"] != "<3.14,>=3.11":
         raise ValueError("Python support metadata mismatch")
     dependencies = set(metadata.get_all("Requires-Dist", []))
     if dependencies != DEPENDENCIES:
@@ -95,7 +115,9 @@ def audit(path, expected_version):
     if [item for item in classifiers if item.startswith("Operating System ::")] != ["Operating System :: POSIX :: Linux"]:
         raise ValueError("OS metadata mismatch")
     if [item for item in classifiers if item.startswith("Programming Language :: Python :: 3.")] != [
-        "Programming Language :: Python :: 3.11"
+        "Programming Language :: Python :: 3.11",
+        "Programming Language :: Python :: 3.12",
+        "Programming Language :: Python :: 3.13",
     ]:
         raise ValueError("Python classifier mismatch")
     entries = configparser.ConfigParser()

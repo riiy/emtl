@@ -32,6 +32,7 @@ setup(
     package_dir={"": "src"},
     py_modules=[path.stem for path in Path("src").glob("*.py")],
     include_package_data=True,
+    package_data={"emtl": ["models/*.b64"]},
     zip_safe=False,
     classifiers=[
         # complete classifier list: http://pypi.python.org/pypi?%3Aaction=list_classifiers
@@ -46,7 +47,8 @@ setup(
         # "Programming Language :: Python :: 3.9",
         # "Programming Language :: Python :: 3.10",
         "Programming Language :: Python :: 3.11",
-        # "Programming Language :: Python :: 3.12",
+        "Programming Language :: Python :: 3.12",
+        "Programming Language :: Python :: 3.13",
         "Programming Language :: Python :: Implementation :: CPython",
         # "Programming Language :: Python :: Implementation :: PyPy",
         # uncomment if you test on these interpreters:
@@ -68,13 +70,9 @@ setup(
         "交易",
         "交易机器人",
     ],
-    python_requires=">=3.11,<3.12",
-    install_requires=["rsa==4.9", "requests==2.33.1", "ddddocr==1.4.11", "cryptography==50.0.2"],
-    extras_require={
-        # eg:
-        #   "rst": ["docutils>=0.11"],
-        #   ":python_version=='3.8'": ["backports.zoneinfo"],
-    },
+    python_requires=">=3.11,<3.14",
+    install_requires=["rsa==4.9", "requests==2.33.1", "Pillow==13.0.0", "cryptography==50.0.2"],
+    extras_require={"ddddocr": ["ddddocr==1.4.11"]},
     setup_requires=[
         "setuptools_scm>=3.3.1",
     ],

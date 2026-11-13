@@ -5,13 +5,13 @@ import sys
 from random import SystemRandom
 from typing import Optional
 
-from ddddocr import DdddOcr
 from requests import Session
 
 from . import _protocol
 from ._coordination import account_entry
 from ._coordination import claim
 from ._coordination import release
+from ._ocr import make_ocr
 from .const import _base_headers
 from .const import _urls
 from .errors import BrokerHTTPError
@@ -87,7 +87,7 @@ class TradingClient:
 
     def _get_ocr(self):
         if self._ocr is None:
-            ocr = DdddOcr(show_ad=False) if self._ocr_factory is None else self._ocr_factory()
+            ocr = make_ocr() if self._ocr_factory is None else self._ocr_factory()
             claim(self, ocr)
             if not callable(getattr(ocr, "classification", None)):
                 raise TypeError("invalid OCR dependency")

@@ -101,7 +101,7 @@ def test_captcha_invalid_ocr_recovers_without_leaking(monkeypatch, caplog):
     monkeypatch.setattr(core, "ocr", Mock(classification=classification))
     monkeypatch.setattr(core, "SystemRandom", Mock(return_value=Mock(random=random_value)))
 
-    assert core._get_captcha_code() == (0.75, 1234)
+    assert core._get_captcha_code() == (0.75, "1234")
     assert random_value.call_count == 2
     assert http_get.call_count == 2
     assert classification.call_count == 2

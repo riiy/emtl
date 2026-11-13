@@ -5,12 +5,28 @@
 版本与支持范围
 ==============
 
-计划中的 ``0.3.0`` 版本仅以 **Linux / CPython 3.11** 为验证和支持目标，
-Python 版本约束为 ``>=3.11,<3.12``。Windows、macOS、PyPy 和
-Python 3.12 及以上尚未验证。
+OCR v1 源码开发分支支持 Linux / CPython 3.11、3.12、3.13
+（``>=3.11,<3.14``），Windows、macOS 和 PyPy 尚未验证。
+开发分支默认安装 Pillow 13.0.0 与冻结的微型 CNN 模型，
+不再强制安装 ddddOCR、NumPy、ONNX Runtime 或 OpenCV。
 
-当前 OCR 依赖 ``ddddocr==1.4.11``，其要求 Python 低于 3.12。
-在获得合适的脱敏图片回归样本并完成验证之前，不升级 OCR 引擎。
+在 Python 3.11 上需要旧 OCR 时，可以安装额外依赖::
+
+    python -m pip install 'emtl[ddddocr]'
+
+并显式选择引擎::
+
+    export EMTL_OCR_ENGINE=ddddocr
+
+未设置 ``EMTL_OCR_ENGINE`` 时默认使用 ``lightweight``。
+未安装的旧引擎或未知引擎会明确失败，不进行静默回退。
+OCR 的返回值为四位数字字符串，前导零会原样提交。
+
+**体积限制仅适用于目标部署环境。** 目标机器源码构建 Pillow 后，
+已测量 Pillow + 推理代码 + 模型约 5.72 MB，P95 约 55.76 ms；
+官方 Pillow Wheel 安装可以超过 20 MB，不构成普通用户安装失败。
+源码构建依赖系统 JPEG/zlib 库，必须在目标环境自行验证。
+本段描述未合并的 OCR v1 开发分支；已发行版本的依赖可能不同。
 
 安装已公开的版本
 ================
