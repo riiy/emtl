@@ -14,22 +14,19 @@ from tests.helpers import response
 
 
 @pytest.mark.parametrize("code", ["", None, False, 0])
-def test_false_ocr_is_sent_unchanged(monkeypatch, fake_captcha, code):
-    fake_captcha.classification.return_value = code
+def test_invalid_ocr_retries_before_auth_post(monkeypatch, fake_captcha, code):
+    fake_captcha.classification.side_effect = [code, "0019"]
     monkeypatch.setattr(core, "emt_trade_encrypt", lambda value: "P1_FAKE_ENCRYPTED")
     session = Mock()
     session.post.return_value = response({"Status": -1})
     session.get.return_value = response(text="no token")
     monkeypatch.setattr(core, "session", session)
     assert core.login("P1_FAKE_USER", "P1_FAKE_PASSWORD") is None
-    sent = session.post.call_args.kwargs["data"]["identifyCode"]
-    assert sent == code
-    assert type(sent) is type(code)
-    core.get.assert_called_once()
-    fake_captcha.classification.assert_called_once()
+    assert session.post.call_args.kwargs["data"]["identifyCode"] == "0019"
+    assert core.get.call_count == 2
+    assert fake_captcha.classification.call_count == 2
     session.post.assert_called_once()
     session.get.assert_called_once()
-
 
 @pytest.mark.parametrize(("user", "password", "expected"), [("", "", ("", "")), ("  ", "  ", ("", ""))])
 def test_empty_credentials_and_whitespace(monkeypatch, fake_captcha, user, password, expected):
@@ -146,7 +143,7 @@ def test_explicit_credentials_override_environment_and_preserve_request(monkeypa
                 "userId": "P1_FAKE_USER",
                 "password": "P1_FAKE_ENCRYPTED",
                 "randNumber": 0.5,
-                "identifyCode": 1234,
+                "identifyCode": "1234",
                 "duration": 7,
                 "authCode": "",
                 "type": "Z",
