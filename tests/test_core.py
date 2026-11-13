@@ -28,7 +28,7 @@ def test_login(monkeypatch, fake_captcha):
         "userId": "P0_FAKE_USER",
         "password": "P0_FAKE_ENCRYPTED",
         "randNumber": 0.5,
-        "identifyCode": 1234,
+        "identifyCode": "1234",
         "duration": 9,
         "authCode": "",
         "type": "Z",
