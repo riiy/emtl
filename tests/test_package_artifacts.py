@@ -19,14 +19,17 @@ def wheel_files():
     prefix = f"emtl-{VERSION}.dist-info/"
     metadata = (
         "Metadata-Version: 2.1\nName: emtl\n"
-        f"Version: {VERSION}\nRequires-Python: <3.12,>=3.11\nLicense: MIT\nDescription-Content-Type: text/x-rst\n"
+        f"Version: {VERSION}\nRequires-Python: <3.14,>=3.11\nLicense: MIT\nDescription-Content-Type: text/x-rst\n"
         "Classifier: Operating System :: POSIX :: Linux\n"
         "Classifier: Programming Language :: Python :: 3.11\n"
+        "Classifier: Programming Language :: Python :: 3.12\n"
+        "Classifier: Programming Language :: Python :: 3.13\n"
         + "".join(f"Requires-Dist: {item}\n" for item in sorted(AUDITOR["DEPENDENCIES"]))
         + "\nOverview\nChangelog\n"
     )
     return {
         **{f"emtl/{name}.py": b"# synthetic source\n" for name in AUDITOR["MODULES"]},
+        "emtl/models/tiny_captcha_model.b64": (ROOT / "src/emtl/models/tiny_captcha_model.b64").read_bytes(),
         prefix + "METADATA": metadata.encode(),
         prefix + "entry_points.txt": b"[console_scripts]\nemt = emtl.cli:run\n",
         prefix + "licenses/LICENSE": b"MIT\n",
@@ -88,13 +91,20 @@ def test_audit_rejects_sensitive_material_and_developer_paths(tmp_path, bad_data
         (b"rsa==4.9", b"rsa==4.8"),
         (b"cryptography==50.0.2", b"cryptography==42.0.5"),
         (b"requests==2.33.1", b"requests==2.31.0"),
-        (b"<3.12,>=3.11", b">=3.10"),
+        (b"<3.14,>=3.11", b">=3.10"),
         (b"emtl.cli:run", b"emtl.cli:other"),
     ],
 )
 def test_audit_rejects_version_dependency_python_or_entry_point_drift(tmp_path, old, new):
     files = {name: data.replace(old, new) for name, data in wheel_files().items()}
     with pytest.raises(ValueError, match="mismatch"):
+        AUDITOR["audit"](write_wheel(tmp_path, files), VERSION)
+
+
+def test_audit_rejects_corrupt_frozen_model(tmp_path):
+    files = wheel_files()
+    files["emtl/models/tiny_captcha_model.b64"] = b"AA=="
+    with pytest.raises(ValueError, match="frozen OCR model hash mismatch"):
         AUDITOR["audit"](write_wheel(tmp_path, files), VERSION)
 
 
