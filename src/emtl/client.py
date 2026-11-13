@@ -5,13 +5,13 @@ import sys
 from random import SystemRandom
 from typing import Optional
 
-from ._ocr import make_ocr
 from requests import Session
 
 from . import _protocol
 from ._coordination import account_entry
 from ._coordination import claim
 from ._coordination import release
+from ._ocr import make_ocr
 from .const import _base_headers
 from .const import _urls
 from .errors import BrokerHTTPError
