@@ -3,7 +3,7 @@ from random import SystemRandom
 from typing import Any
 from typing import Optional
 
-from ddddocr import DdddOcr
+from ._ocr import make_ocr
 from requests import Response
 from requests import Session
 from requests import get
@@ -14,7 +14,7 @@ from .utils import emt_trade_encrypt
 from .utils import get_logger
 
 logger = get_logger(__name__)
-ocr = DdddOcr(show_ad=False)
+ocr = make_ocr()
 session = Session()
 _em_validate_key = ""
 
