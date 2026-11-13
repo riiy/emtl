@@ -12,7 +12,7 @@ import pytest
 
 ROOT = Path(__file__).resolve().parents[1]
 AUDITOR = runpy.run_path(str(ROOT / "ci/audit_packages.py"))
-VERSION = "0.3.0b1"
+VERSION = "0.3.0b2"
 
 
 def wheel_files():
@@ -87,7 +87,7 @@ def test_audit_rejects_sensitive_material_and_developer_paths(tmp_path, bad_data
 @pytest.mark.parametrize(
     ("old", "new"),
     [
-        (b"0.3.0b1", b"0.2.6"),
+        (b"0.3.0b2", b"0.2.6"),
         (b"rsa==4.9", b"rsa==4.8"),
         (b"cryptography==50.0.2", b"cryptography==42.0.5"),
         (b"requests==2.33.1", b"requests==2.31.0"),
