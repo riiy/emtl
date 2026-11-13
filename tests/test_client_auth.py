@@ -53,7 +53,7 @@ def test_login_uses_bound_credentials_and_exact_request_chain(client_factory, mo
                 "userId": "P2_FAKE_A",
                 "password": "P2_FAKE_ENCRYPTED",
                 "randNumber": 0.5,
-                "identifyCode": 1234,
+                "identifyCode": "1234",
                 "duration": 7,
                 "authCode": "",
                 "type": "Z",
@@ -211,16 +211,16 @@ def test_auto_login_is_reentrant_and_cookies_belong_to_current_attempt(client_fa
 
 
 @pytest.mark.parametrize("code", ["", None, False, 0])
-def test_false_ocr_preserves_value_and_type(client_factory, code):
-    ocr = Mock(classification=Mock(return_value=code))
+def test_invalid_ocr_never_reaches_login_post(client_factory, code):
+    ocr = Mock(classification=Mock(side_effect=[code, "0019"]))
     client = client_factory(ocr=ocr)
-    configure_auth(client)
+    client._session.get.side_effect = [response(text="invalid"), response(text="valid"), token_reply()]
+    client._session.post.return_value = response({"Status": 0})
     assert client.login() == "P2_FAKE_TOKEN"
-    sent = client._session.post.call_args.kwargs["data"]["identifyCode"]
-    assert sent == code
-    assert type(sent) is type(code)
-    ocr.classification.assert_called_once()
-
+    assert client._session.post.call_args.kwargs["data"]["identifyCode"] == "0019"
+    assert client._session.get.call_count == 3
+    assert ocr.classification.call_count == 2
+    client._session.post.assert_called_once()
 
 def test_invalid_ocr_recovery_executes_real_captcha_chain(client_factory):
     ocr = Mock(classification=Mock(side_effect=["P2_FAKE_BAD_CODE", "1234"]))
