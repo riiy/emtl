@@ -34,12 +34,9 @@ def captcha(get_image, classify, random_factory, check, logger, retry, *, header
     resp = get_image(f"{_urls['yzm']}{random_num}", headers=_base_headers if headers is None else headers, timeout=60)
     check(resp)
     code = classify(resp.content)
-    if code:
-        try:
-            code = int(code)
-        except Exception:
-            logger.error("captcha recognition failed")
-            return retry()
+    if not isinstance(code, str) or re.fullmatch(r"[0-9]{4}", code) is None:
+        logger.error("captcha recognition failed")
+        return retry()
     return random_num, code
 
 
