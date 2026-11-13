@@ -73,8 +73,12 @@ def test_invalid_ocr_retried_before_authentication(bad):
     values = iter([bad, "0019"])
     get_image = Mock(return_value=Mock(status_code=200, content=b"synthetic JPEG"))
     check = Mock()
-    random_factory = lambda: Mock(random=lambda: 0.5)
-    recognize = lambda _image: next(values)
+    def random_factory():
+        return Mock(random=lambda: 0.5)
+
+    def recognize(_image):
+        return next(values)
+
     log = Mock()
 
     def retry():
