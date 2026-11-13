@@ -54,7 +54,7 @@ def test_environment_password_snapshot_and_identity(monkeypatch):
 
 def test_default_constructor_does_not_call_http_or_ocr(monkeypatch):
     ocr = Mock(side_effect=AssertionError("OCR must be lazy"))
-    monkeypatch.setattr(client_module, "DdddOcr", ocr)
+    monkeypatch.setattr(client_module, "make_ocr", ocr
     client = TradingClient("P2_FAKE_A", "P2_FAKE_PASSWORD")
     session = client._session
     assert not session.cookies
