@@ -28,6 +28,7 @@ def test_invalid_ocr_retries_before_auth_post(monkeypatch, fake_captcha, code):
     session.post.assert_called_once()
     session.get.assert_called_once()
 
+
 @pytest.mark.parametrize(("user", "password", "expected"), [("", "", ("", "")), ("  ", "  ", ("", ""))])
 def test_empty_credentials_and_whitespace(monkeypatch, fake_captcha, user, password, expected):
     if user:
