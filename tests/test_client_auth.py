@@ -222,6 +222,7 @@ def test_invalid_ocr_never_reaches_login_post(client_factory, code):
     assert ocr.classification.call_count == 2
     client._session.post.assert_called_once()
 
+
 def test_invalid_ocr_recovery_executes_real_captcha_chain(client_factory):
     ocr = Mock(classification=Mock(side_effect=["P2_FAKE_BAD_CODE", "1234"]))
     client = client_factory(ocr=ocr)
