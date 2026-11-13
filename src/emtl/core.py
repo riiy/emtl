@@ -3,12 +3,12 @@ from random import SystemRandom
 from typing import Any
 from typing import Optional
 
-from ._ocr import make_ocr
 from requests import Response
 from requests import Session
 from requests import get
 
 from . import _protocol
+from ._ocr import make_ocr
 from .const import _urls
 from .utils import emt_trade_encrypt
 from .utils import get_logger
