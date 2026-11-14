@@ -1,20 +1,22 @@
 <!DOCTYPE html>
 
-<html lang="en" data-content_root="./">
+<html lang="zh-CN" data-content_root="./">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>Installation &#8212; emtl 0.2.6 documentation</title>
+    <title>安装说明 &#8212; emtl 0.3.0 文档</title>
     <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=34bb78ad" />
     <link rel="stylesheet" type="text/css" href="_static/alabaster.css?v=12dfc556" />
-    <script src="_static/documentation_options.js?v=fc7d8818"></script>
+    <script src="_static/documentation_options.js?v=32729429"></script>
     <script src="_static/doctools.js?v=888ff710"></script>
     <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
-    <link rel="index" title="Index" href="genindex.html" />
-    <link rel="search" title="Search" href="search.html" />
-    <link rel="next" title="Usage" href="usage.html" />
-    <link rel="prev" title="Overview" href="readme.html" />
+    <script src="_static/translations.js?v=beaddf03"></script>
+    <link rel="canonical" href="https://emtl.readthedocs.io/zh-cn/latest/installation.html" />
+    <link rel="index" title="索引" href="genindex.html" />
+    <link rel="search" title="搜索" href="search.html" />
+    <link rel="next" title="使用指南" href="usage.html" />
+    <link rel="prev" title="项目简介" href="readme.html" />
    
   <link rel="stylesheet" href="_static/custom.css" type="text/css" />
   
@@ -32,12 +34,77 @@
 
           <div class="body" role="main">
             
-  <section id="installation">
-<h1>Installation<a class="headerlink" href="#installation" title="Link to this heading">¶</a></h1>
-<p>At the command line:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">pip</span> <span class="n">install</span> <span class="n">emtl</span>
+  <section id="id1">
+<h1>安装说明<a class="headerlink" href="#id1" title="Link to this heading">¶</a></h1>
+<section id="id2">
+<h2>版本与支持范围<a class="headerlink" href="#id2" title="Link to this heading">¶</a></h2>
+<p><code class="docutils literal notranslate"><span class="pre">0.3.0</span></code> Stable 使用已发布 <code class="docutils literal notranslate"><span class="pre">0.3.0b2</span></code> 的功能基线，
+CPython 支持范围仍为 3.11、3.12、3.13
+（<code class="docutils literal notranslate"><span class="pre">Requires-Python</span> <span class="pre">&gt;=3.11,&lt;3.14</span></code>）。维护者在 Ubuntu x86_64
+和 macOS Intel x86_64 的三个 Python 版本上，分别从 PyPI 安装
+Beta <code class="docutils literal notranslate"><span class="pre">0.3.0b2</span></code> 并完成 10 次真实账户登录，六组合计 60/60。
+这些实测不能证明 <code class="docutils literal notranslate"><span class="pre">0.3.0</span></code> Stable 的交易功能、长期稳定性或
+未经验证的其他 Linux/macOS 架构；Apple Silicon、Windows、PyPy
+未验证。详见
+<a class="reference download internal" download="" href="_downloads/c852301ff52bb6123c3a4604bfe26ed1/v0.3.0b2-beta-field-acceptance.md"><code class="xref download docutils literal notranslate"><span class="pre">Beta</span> <span class="pre">实测验收报告</span></code></a>。
+Stable 的发布决策及例外见
+<a class="reference download internal" download="" href="_downloads/3cb815313cbdeecc97a081c3d46a70ba/v0.3.0-stable-release-decision.md"><code class="xref download docutils literal notranslate"><span class="pre">Stable</span> <span class="pre">发布决策</span></code></a>。</p>
+<p>Stable <code class="docutils literal notranslate"><span class="pre">0.3.0</span></code> 与 Beta <code class="docutils literal notranslate"><span class="pre">0.3.0b2</span></code> 默认安装 Pillow 13.0.0 与冻结的微型 CNN 模型，
+不再强制安装 ddddOCR、NumPy、ONNX Runtime 或 OpenCV。</p>
+<p>在 Python 3.11 上需要旧 OCR 时，可以安装额外依赖:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">python</span> <span class="o">-</span><span class="n">m</span> <span class="n">pip</span> <span class="n">install</span> <span class="s1">'emtl[ddddocr]'</span>
 </pre></div>
 </div>
+<p>并显式选择引擎:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">export</span> <span class="n">EMTL_OCR_ENGINE</span><span class="o">=</span><span class="n">ddddocr</span>
+</pre></div>
+</div>
+<p>未设置 <code class="docutils literal notranslate"><span class="pre">EMTL_OCR_ENGINE</span></code> 时默认使用 <code class="docutils literal notranslate"><span class="pre">lightweight</span></code>。
+未安装的旧引擎或未知引擎会明确失败，不进行静默回退。
+OCR 的返回值为四位数字字符串，前导零会原样提交。</p>
+<p><strong>体积限制仅适用于目标部署环境。</strong> 目标机器源码构建 Pillow 后，
+已测量 Pillow + 推理代码 + 模型约 5.72 MB，P95 约 55.76 ms；
+官方 Pillow Wheel 安装可以超过 20 MB，不构成普通用户安装失败。
+源码构建依赖系统 JPEG/zlib 库，必须在目标环境自行验证。
+OCR v1 已随 <code class="docutils literal notranslate"><span class="pre">0.3.0b2</span></code> 发布；此前的 <code class="docutils literal notranslate"><span class="pre">0.3.0b1</span></code>
+仍使用旧版 ddddOCR。</p>
+</section>
+<section id="stable">
+<h2>安装 Stable 版本<a class="headerlink" href="#stable" title="Link to this heading">¶</a></h2>
+<p><code class="docutils literal notranslate"><span class="pre">0.3.0</span></code> 正式完成 PyPI 上传后，使用固定版本安装:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">python</span> <span class="o">-</span><span class="n">m</span> <span class="n">pip</span> <span class="n">install</span> <span class="n">emtl</span><span class="o">==</span><span class="mf">0.3.0</span>
+</pre></div>
+</div>
+<p>不指定版本时，pip 选择 PyPI 上符合当前环境的可用稳定版本，
+不会默认安装 Beta 等预发布版本:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">python</span> <span class="o">-</span><span class="n">m</span> <span class="n">pip</span> <span class="n">install</span> <span class="n">emtl</span>
+</pre></div>
+</div>
+<p><strong>仅仅合并 Stable 候选或创建 Tag，不等于 ``0.3.0`` 已在 PyPI 发布。</strong>
+应先查看 <a class="reference external" href="https://pypi.org/project/emtl/">https://pypi.org/project/emtl/</a> 的实际发行记录。
+开发中的源码可以从 GitHub 获取，但不代表已完成正式发布验收:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">python</span> <span class="o">-</span><span class="n">m</span> <span class="n">pip</span> <span class="n">install</span> <span class="n">https</span><span class="p">:</span><span class="o">//</span><span class="n">github</span><span class="o">.</span><span class="n">com</span><span class="o">/</span><span class="n">riiy</span><span class="o">/</span><span class="n">emtl</span><span class="o">/</span><span class="n">archive</span><span class="o">/</span><span class="n">master</span><span class="o">.</span><span class="n">zip</span>
+</pre></div>
+</div>
+</section>
+<section id="id3">
+<h2>预发布版本<a class="headerlink" href="#id3" title="Link to this heading">¶</a></h2>
+<p>此前的 Beta <code class="docutils literal notranslate"><span class="pre">0.3.0b1</span></code> 可通过显式版本号安装（仍采用旧 OCR，
+仅支持 Python 3.11）:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">python</span> <span class="o">-</span><span class="n">m</span> <span class="n">pip</span> <span class="n">install</span> <span class="o">--</span><span class="n">pre</span> <span class="n">emtl</span><span class="o">==</span><span class="mf">0.3.0</span><span class="n">b1</span>
+</pre></div>
+</div>
+<p><code class="docutils literal notranslate"><span class="pre">0.3.0b2</span></code> 已在 PyPI 公开发布，使用默认的轻量 OCR 引擎。
+在明确接受 Beta 和非官方接口风险后，可显式安装:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">python</span> <span class="o">-</span><span class="n">m</span> <span class="n">pip</span> <span class="n">install</span> <span class="o">--</span><span class="n">pre</span> <span class="n">emtl</span><span class="o">==</span><span class="mf">0.3.0</span><span class="n">b2</span>
+</pre></div>
+</div>
+<p>Beta 与 Stable 均不代表已验证生产实盘交易安全，也不保证券商协议兼容。
+自动安装验收仅允许 import、CLI help、离线合成用例等无交易副作用的检查。
+不要在 CI 中使用真实凭证或真实下单/撤单。
+维护者的真实账户登录实测不属于自动化 CI 验收。</p>
+<p>升级风险、版本回退限制和反馈要求参见 <a class="reference internal" href="releasing.html"><span class="doc">发布与维护</span></a>。</p>
+</section>
 </section>
 
 
@@ -54,34 +121,47 @@
 
 
 
+<p>
+<iframe src="https://ghbtns.com/github-btn.html?user=riiy&repo=emtl&type=watch&count=true&size=large&v=2"
+  allowtransparency="true" frameborder="0" scrolling="0" width="200px" height="35px"></iframe>
+</p>
 
 
-<h3>Navigation</h3>
+
+
+
+<h3>导航</h3>
 <ul class="current">
-<li class="toctree-l1"><a class="reference internal" href="readme.html">Overview</a></li>
-<li class="toctree-l1 current"><a class="current reference internal" href="#">Installation</a></li>
-<li class="toctree-l1"><a class="reference internal" href="usage.html">Usage</a></li>
-<li class="toctree-l1"><a class="reference internal" href="reference/index.html">Reference</a></li>
-<li class="toctree-l1"><a class="reference internal" href="contributing.html">Contributing</a></li>
-<li class="toctree-l1"><a class="reference internal" href="authors.html">Authors</a></li>
-<li class="toctree-l1"><a class="reference internal" href="changelog.html">Changelog</a></li>
+<li class="toctree-l1"><a class="reference internal" href="readme.html">项目简介</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">安装说明</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#id2">版本与支持范围</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#stable">安装 Stable 版本</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#id3">预发布版本</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="usage.html">使用指南</a></li>
+<li class="toctree-l1"><a class="reference internal" href="reference/index.html">API 参考</a></li>
+<li class="toctree-l1"><a class="reference internal" href="contributing.html">参与贡献</a></li>
+<li class="toctree-l1"><a class="reference internal" href="authors.html">项目作者</a></li>
+<li class="toctree-l1"><a class="reference internal" href="changelog.html">变更记录（Changelog）</a></li>
+<li class="toctree-l1"><a class="reference internal" href="releasing.html">发布与维护</a></li>
 </ul>
 
 <div class="relations">
 <h3>Related Topics</h3>
 <ul>
   <li><a href="index.html">Documentation overview</a><ul>
-      <li>Previous: <a href="readme.html" title="previous chapter">Overview</a></li>
-      <li>Next: <a href="usage.html" title="next chapter">Usage</a></li>
+      <li>Previous: <a href="readme.html" title="上一章">项目简介</a></li>
+      <li>Next: <a href="usage.html" title="下一章">使用指南</a></li>
   </ul></li>
 </ul>
 </div>
 <div id="searchbox" style="display: none" role="search">
-  <h3 id="searchlabel">Quick search</h3>
+  <h3 id="searchlabel">快速搜索</h3>
     <div class="searchformwrapper">
     <form class="search" action="search.html" method="get">
       <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
-      <input type="submit" value="Go" />
+      <input type="submit" value="提交" />
     </form>
     </div>
 </div>

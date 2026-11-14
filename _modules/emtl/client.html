@@ -1,0 +1,431 @@
+<!DOCTYPE html>
+
+<html lang="zh-CN" data-content_root="../../">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>emtl.client &#8212; emtl 0.3.0 文档</title>
+    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=34bb78ad" />
+    <link rel="stylesheet" type="text/css" href="../../_static/alabaster.css?v=12dfc556" />
+    <script src="../../_static/documentation_options.js?v=32729429"></script>
+    <script src="../../_static/doctools.js?v=888ff710"></script>
+    <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../_static/translations.js?v=beaddf03"></script>
+    <link rel="canonical" href="https://emtl.readthedocs.io/zh-cn/latest/_modules/emtl/client.html" />
+    <link rel="index" title="索引" href="../../genindex.html" />
+    <link rel="search" title="搜索" href="../../search.html" />
+   
+  <link rel="stylesheet" href="../../_static/custom.css" type="text/css" />
+  
+
+  
+  
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <h1>emtl.client 源代码</h1><div class="highlight"><pre>
+<span></span><span class="sd">"""Synchronous, explicitly account-bound trading client."""</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">sys</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">random</span><span class="w"> </span><span class="kn">import</span> <span class="n">SystemRandom</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Optional</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">requests</span><span class="w"> </span><span class="kn">import</span> <span class="n">Session</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">.</span><span class="w"> </span><span class="kn">import</span> <span class="n">_protocol</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">._coordination</span><span class="w"> </span><span class="kn">import</span> <span class="n">account_entry</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">._coordination</span><span class="w"> </span><span class="kn">import</span> <span class="n">claim</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">._coordination</span><span class="w"> </span><span class="kn">import</span> <span class="n">release</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">._ocr</span><span class="w"> </span><span class="kn">import</span> <span class="n">make_ocr</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.const</span><span class="w"> </span><span class="kn">import</span> <span class="n">_base_headers</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.const</span><span class="w"> </span><span class="kn">import</span> <span class="n">_urls</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.errors</span><span class="w"> </span><span class="kn">import</span> <span class="n">BrokerHTTPError</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.errors</span><span class="w"> </span><span class="kn">import</span> <span class="n">TradeOutcomeUnknown</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">emt_trade_encrypt</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">get_logger</span>
+
+<span class="n">logger</span> <span class="o">=</span> <span class="n">get_logger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="TradingClient">
+<a class="viewcode-back" href="../../reference/emtl.html#emtl.TradingClient">[文档]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">TradingClient</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""Own one account identity and one independent HTTP session."""</span>
+
+<div class="viewcode-block" id="TradingClient.__init__">
+<a class="viewcode-back" href="../../reference/emtl.html#emtl.TradingClient.__init__">[文档]</a>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">username</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">password</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">session_factory</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">ocr_factory</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">username</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s2">"username must be a string"</span><span class="p">)</span>
+        <span class="n">username</span> <span class="o">=</span> <span class="n">username</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">username</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">"username is required"</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">password</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">password</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">getenv</span><span class="p">(</span><span class="s2">"EM_PASSWORD"</span><span class="p">,</span> <span class="s2">""</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">password</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s2">"password must be a string"</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">password</span><span class="o">.</span><span class="n">strip</span><span class="p">():</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">"password is required"</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_username</span> <span class="o">=</span> <span class="n">username</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_password</span> <span class="o">=</span> <span class="n">password</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_account</span> <span class="o">=</span> <span class="n">account_entry</span><span class="p">(</span><span class="n">username</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_session</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_owned_resources</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_ocr</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_ocr_factory</span> <span class="o">=</span> <span class="n">ocr_factory</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_token</span> <span class="o">=</span> <span class="s2">""</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_state</span> <span class="o">=</span> <span class="s2">"NEW"</span>
+        <span class="n">session</span> <span class="o">=</span> <span class="p">(</span><span class="n">Session</span> <span class="k">if</span> <span class="n">session_factory</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">session_factory</span><span class="p">)()</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">claim</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">session</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_session</span> <span class="o">=</span> <span class="n">session</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="nb">all</span><span class="p">(</span><span class="nb">callable</span><span class="p">(</span><span class="nb">getattr</span><span class="p">(</span><span class="n">session</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="kc">None</span><span class="p">))</span> <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="p">(</span><span class="s2">"get"</span><span class="p">,</span> <span class="s2">"post"</span><span class="p">,</span> <span class="s2">"close"</span><span class="p">)):</span>
+                <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s2">"invalid session dependency"</span><span class="p">)</span>
+            <span class="n">cookies</span> <span class="o">=</span> <span class="n">session</span><span class="o">.</span><span class="n">cookies</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="nb">callable</span><span class="p">(</span><span class="nb">getattr</span><span class="p">(</span><span class="n">cookies</span><span class="p">,</span> <span class="s2">"clear"</span><span class="p">,</span> <span class="kc">None</span><span class="p">)):</span>
+                <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s2">"invalid cookie dependency"</span><span class="p">)</span>
+            <span class="n">claim</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cookies</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">BaseException</span><span class="p">:</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_session</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="nb">callable</span><span class="p">(</span><span class="nb">getattr</span><span class="p">(</span><span class="n">session</span><span class="p">,</span> <span class="s2">"close"</span><span class="p">,</span> <span class="kc">None</span><span class="p">)):</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">_close_session</span><span class="p">(</span><span class="n">preserve_error</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+            <span class="k">finally</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_state</span> <span class="o">=</span> <span class="s2">"CLOSED"</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_password</span> <span class="o">=</span> <span class="s2">""</span>
+                <span class="n">release</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_session</span> <span class="o">=</span> <span class="kc">None</span>
+            <span class="k">raise</span></div>
+
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_close_session</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">preserve_error</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_session</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+        <span class="k">except</span> <span class="ne">BaseException</span><span class="p">:</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">preserve_error</span><span class="p">:</span>
+                <span class="k">raise</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_clear_cookies</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">preserve_error</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_session</span><span class="o">.</span><span class="n">cookies</span><span class="o">.</span><span class="n">clear</span><span class="p">()</span>
+        <span class="k">except</span> <span class="ne">BaseException</span><span class="p">:</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">preserve_error</span><span class="p">:</span>
+                <span class="k">raise</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_ensure_open</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_state</span> <span class="o">==</span> <span class="s2">"CLOSED"</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s2">"client is closed"</span><span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_get_ocr</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_ocr</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">ocr</span> <span class="o">=</span> <span class="n">make_ocr</span><span class="p">()</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_ocr_factory</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="bp">self</span><span class="o">.</span><span class="n">_ocr_factory</span><span class="p">()</span>
+            <span class="n">claim</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ocr</span><span class="p">)</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="nb">callable</span><span class="p">(</span><span class="nb">getattr</span><span class="p">(</span><span class="n">ocr</span><span class="p">,</span> <span class="s2">"classification"</span><span class="p">,</span> <span class="kc">None</span><span class="p">)):</span>
+                <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s2">"invalid OCR dependency"</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_ocr</span> <span class="o">=</span> <span class="n">ocr</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_ocr</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_check_resp</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">resp</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">on_http_status</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="n">status</span> <span class="o">=</span> <span class="n">resp</span><span class="o">.</span><span class="n">status_code</span>
+        <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">status</span><span class="p">)</span> <span class="ow">is</span> <span class="ow">not</span> <span class="nb">int</span><span class="p">:</span>  <span class="c1"># noqa: E721 - exclude bool and untrusted subclasses.</span>
+            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s2">"invalid HTTP status"</span><span class="p">)</span> <span class="kn">from</span><span class="w"> </span><span class="kc">None</span>
+        <span class="k">if</span> <span class="n">status</span> <span class="o">!=</span> <span class="mi">200</span><span class="p">:</span>
+            <span class="n">error</span> <span class="o">=</span> <span class="n">BrokerHTTPError</span><span class="p">(</span><span class="n">status</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">on_http_status</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">on_http_status</span><span class="p">(</span><span class="n">status</span><span class="p">)</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">"request failed, code=</span><span class="si">%s</span><span class="s2">"</span><span class="p">,</span> <span class="n">status</span><span class="p">)</span>
+            <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>  <span class="c1"># noqa: S110 - preserve the safe HTTP error; never log handler exceptions.</span>
+                <span class="k">pass</span>
+            <span class="k">raise</span> <span class="n">error</span> <span class="kn">from</span><span class="w"> </span><span class="kc">None</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_get_captcha_code</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">_protocol</span><span class="o">.</span><span class="n">captcha</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_session</span><span class="o">.</span><span class="n">get</span><span class="p">,</span>
+            <span class="k">lambda</span> <span class="n">content</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_ocr</span><span class="p">()</span><span class="o">.</span><span class="n">classification</span><span class="p">(</span><span class="n">content</span><span class="p">),</span>
+            <span class="n">SystemRandom</span><span class="p">,</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_check_resp</span><span class="p">,</span>
+            <span class="n">logger</span><span class="p">,</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_get_captcha_code</span><span class="p">,</span>
+            <span class="n">headers</span><span class="o">=</span><span class="n">_base_headers</span><span class="o">.</span><span class="n">copy</span><span class="p">(),</span>
+        <span class="p">)</span>
+
+<div class="viewcode-block" id="TradingClient.login">
+<a class="viewcode-back" href="../../reference/emtl.html#emtl.TradingClient.login">[文档]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">login</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">duration</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">30</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">"""Authenticate afresh; insufficient evidence returns None, never old state.</span>
+
+<span class="sd">        Status=0 is a conservative local gate, not a verified broker protocol.</span>
+<span class="sd">        Transport/decoding errors propagate after invalidating authentication.</span>
+<span class="sd">        """</span>
+        <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">_account</span><span class="o">.</span><span class="n">lock</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_ensure_open</span><span class="p">()</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_token</span> <span class="o">=</span> <span class="s2">""</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_state</span> <span class="o">=</span> <span class="s2">"AUTHENTICATING"</span>
+            <span class="n">success</span> <span class="o">=</span> <span class="kc">False</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_session</span><span class="o">.</span><span class="n">cookies</span><span class="o">.</span><span class="n">clear</span><span class="p">()</span>
+                <span class="n">random_num</span><span class="p">,</span> <span class="n">code</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_captcha_code</span><span class="p">()</span>
+                <span class="n">data</span> <span class="o">=</span> <span class="n">_protocol</span><span class="o">.</span><span class="n">login_form</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_username</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_password</span><span class="p">,</span> <span class="n">duration</span><span class="p">,</span> <span class="n">random_num</span><span class="p">,</span> <span class="n">code</span><span class="p">,</span> <span class="n">emt_trade_encrypt</span><span class="p">)</span>
+                <span class="n">resp</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_session</span><span class="o">.</span><span class="n">post</span><span class="p">(</span><span class="n">_urls</span><span class="p">[</span><span class="s2">"login"</span><span class="p">],</span> <span class="n">headers</span><span class="o">=</span><span class="n">_protocol</span><span class="o">.</span><span class="n">login_headers</span><span class="p">(),</span> <span class="n">data</span><span class="o">=</span><span class="n">data</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_check_resp</span><span class="p">(</span><span class="n">resp</span><span class="p">)</span>
+                <span class="n">payload</span> <span class="o">=</span> <span class="n">resp</span><span class="o">.</span><span class="n">json</span><span class="p">()</span>
+                <span class="k">if</span> <span class="p">(</span>
+                    <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">payload</span><span class="p">,</span> <span class="nb">dict</span><span class="p">)</span>
+                    <span class="ow">or</span> <span class="nb">type</span><span class="p">(</span><span class="n">payload</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"Status"</span><span class="p">))</span> <span class="ow">is</span> <span class="ow">not</span> <span class="nb">int</span>  <span class="c1"># noqa: E721 - approved gate excludes bool and float.</span>
+                    <span class="ow">or</span> <span class="n">payload</span><span class="p">[</span><span class="s2">"Status"</span><span class="p">]</span> <span class="o">!=</span> <span class="mi">0</span>
+                <span class="p">):</span>
+                    <span class="k">return</span> <span class="kc">None</span>
+                <span class="n">token</span> <span class="o">=</span> <span class="n">_protocol</span><span class="o">.</span><span class="n">fetch_token</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_session</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_check_resp</span><span class="p">,</span> <span class="n">headers</span><span class="o">=</span><span class="n">_base_headers</span><span class="o">.</span><span class="n">copy</span><span class="p">())</span>
+                <span class="k">if</span> <span class="ow">not</span> <span class="n">token</span><span class="p">:</span>
+                    <span class="k">return</span> <span class="kc">None</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_token</span> <span class="o">=</span> <span class="n">token</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_state</span> <span class="o">=</span> <span class="s2">"READY"</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">"authentication response received"</span><span class="p">)</span>
+                <span class="n">success</span> <span class="o">=</span> <span class="kc">True</span>
+                <span class="k">return</span> <span class="n">token</span>
+            <span class="k">finally</span><span class="p">:</span>
+                <span class="k">if</span> <span class="ow">not</span> <span class="n">success</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">_token</span> <span class="o">=</span> <span class="s2">""</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">_state</span> <span class="o">=</span> <span class="s2">"FAILED"</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">_clear_cookies</span><span class="p">(</span><span class="n">preserve_error</span><span class="o">=</span><span class="n">sys</span><span class="o">.</span><span class="n">exc_info</span><span class="p">()[</span><span class="mi">0</span><span class="p">]</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">)</span></div>
+
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_query_something</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">tag</span><span class="p">,</span> <span class="n">req_data</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">on_post_start</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">on_http_status</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">_account</span><span class="o">.</span><span class="n">lock</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_ensure_open</span><span class="p">()</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_state</span> <span class="o">==</span> <span class="s2">"NEW"</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">login</span><span class="p">()</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_state</span> <span class="o">!=</span> <span class="s2">"READY"</span> <span class="ow">or</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_token</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s2">"authentication required"</span><span class="p">)</span>
+            <span class="n">check</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_check_resp</span>
+            <span class="k">if</span> <span class="n">tag</span> <span class="ow">in</span> <span class="p">{</span><span class="s2">"create_order"</span><span class="p">,</span> <span class="s2">"cancel_order"</span><span class="p">}</span> <span class="ow">and</span> <span class="n">on_http_status</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+
+                <span class="k">def</span><span class="w"> </span><span class="nf">check</span><span class="p">(</span><span class="n">resp</span><span class="p">):</span>
+                    <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_check_resp</span><span class="p">(</span><span class="n">resp</span><span class="p">,</span> <span class="n">on_http_status</span><span class="o">=</span><span class="n">on_http_status</span><span class="p">)</span>
+
+            <span class="k">return</span> <span class="n">_protocol</span><span class="o">.</span><span class="n">query</span><span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_session</span><span class="p">,</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_token</span><span class="p">,</span>
+                <span class="n">tag</span><span class="p">,</span>
+                <span class="n">req_data</span><span class="p">,</span>
+                <span class="n">check</span><span class="p">,</span>
+                <span class="n">disable_order_redirects</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                <span class="n">on_post_start</span><span class="o">=</span><span class="n">on_post_start</span> <span class="k">if</span> <span class="n">tag</span> <span class="ow">in</span> <span class="p">{</span><span class="s2">"create_order"</span><span class="p">,</span> <span class="s2">"cancel_order"</span><span class="p">}</span> <span class="k">else</span> <span class="kc">None</span><span class="p">,</span>
+            <span class="p">)</span>
+
+<div class="viewcode-block" id="TradingClient.query_asset_and_position">
+<a class="viewcode-back" href="../../reference/emtl.html#emtl.TradingClient.query_asset_and_position">[文档]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">query_asset_and_position</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">_account</span><span class="o">.</span><span class="n">lock</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">_protocol</span><span class="o">.</span><span class="n">json_result</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_query_something</span><span class="p">(</span><span class="s2">"query_asset_and_pos"</span><span class="p">))</span></div>
+
+
+<div class="viewcode-block" id="TradingClient.query_orders">
+<a class="viewcode-back" href="../../reference/emtl.html#emtl.TradingClient.query_orders">[文档]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">query_orders</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">_account</span><span class="o">.</span><span class="n">lock</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">_protocol</span><span class="o">.</span><span class="n">json_result</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_query_something</span><span class="p">(</span><span class="s2">"query_orders"</span><span class="p">))</span></div>
+
+
+<div class="viewcode-block" id="TradingClient.query_trades">
+<a class="viewcode-back" href="../../reference/emtl.html#emtl.TradingClient.query_trades">[文档]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">query_trades</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">_account</span><span class="o">.</span><span class="n">lock</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">_protocol</span><span class="o">.</span><span class="n">json_result</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_query_something</span><span class="p">(</span><span class="s2">"query_trades"</span><span class="p">))</span></div>
+
+
+<div class="viewcode-block" id="TradingClient.query_history_orders">
+<a class="viewcode-back" href="../../reference/emtl.html#emtl.TradingClient.query_history_orders">[文档]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">query_history_orders</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">size</span><span class="p">,</span> <span class="n">start_time</span><span class="p">,</span> <span class="n">end_time</span><span class="p">):</span>
+        <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">_account</span><span class="o">.</span><span class="n">lock</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">_protocol</span><span class="o">.</span><span class="n">json_result</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_query_something</span><span class="p">(</span><span class="s2">"query_his_orders"</span><span class="p">,</span> <span class="n">_protocol</span><span class="o">.</span><span class="n">history_form</span><span class="p">(</span><span class="n">size</span><span class="p">,</span> <span class="n">start_time</span><span class="p">,</span> <span class="n">end_time</span><span class="p">)))</span></div>
+
+
+<div class="viewcode-block" id="TradingClient.query_history_trades">
+<a class="viewcode-back" href="../../reference/emtl.html#emtl.TradingClient.query_history_trades">[文档]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">query_history_trades</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">size</span><span class="p">,</span> <span class="n">start_time</span><span class="p">,</span> <span class="n">end_time</span><span class="p">):</span>
+        <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">_account</span><span class="o">.</span><span class="n">lock</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">_protocol</span><span class="o">.</span><span class="n">json_result</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_query_something</span><span class="p">(</span><span class="s2">"query_his_trades"</span><span class="p">,</span> <span class="n">_protocol</span><span class="o">.</span><span class="n">history_form</span><span class="p">(</span><span class="n">size</span><span class="p">,</span> <span class="n">start_time</span><span class="p">,</span> <span class="n">end_time</span><span class="p">)))</span></div>
+
+
+<div class="viewcode-block" id="TradingClient.query_funds_flow">
+<a class="viewcode-back" href="../../reference/emtl.html#emtl.TradingClient.query_funds_flow">[文档]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">query_funds_flow</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">size</span><span class="p">,</span> <span class="n">start_time</span><span class="p">,</span> <span class="n">end_time</span><span class="p">):</span>
+        <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">_account</span><span class="o">.</span><span class="n">lock</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">_protocol</span><span class="o">.</span><span class="n">json_result</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_query_something</span><span class="p">(</span><span class="s2">"query_funds_flow"</span><span class="p">,</span> <span class="n">_protocol</span><span class="o">.</span><span class="n">history_form</span><span class="p">(</span><span class="n">size</span><span class="p">,</span> <span class="n">start_time</span><span class="p">,</span> <span class="n">end_time</span><span class="p">)))</span></div>
+
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_execute_trade</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">operation</span><span class="p">,</span> <span class="n">data</span><span class="p">):</span>
+        <span class="n">attempted</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="n">http_status</span> <span class="o">=</span> <span class="kc">None</span>
+
+        <span class="k">def</span><span class="w"> </span><span class="nf">on_post_start</span><span class="p">():</span>
+            <span class="k">nonlocal</span> <span class="n">attempted</span>
+            <span class="n">attempted</span> <span class="o">=</span> <span class="kc">True</span>
+
+        <span class="k">def</span><span class="w"> </span><span class="nf">on_http_status</span><span class="p">(</span><span class="n">status</span><span class="p">):</span>
+            <span class="k">nonlocal</span> <span class="n">http_status</span>
+            <span class="n">http_status</span> <span class="o">=</span> <span class="n">status</span>
+
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">resp</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_query_something</span><span class="p">(</span><span class="n">operation</span><span class="p">,</span> <span class="n">req_data</span><span class="o">=</span><span class="n">data</span><span class="p">,</span> <span class="n">on_post_start</span><span class="o">=</span><span class="n">on_post_start</span><span class="p">,</span> <span class="n">on_http_status</span><span class="o">=</span><span class="n">on_http_status</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">attempted</span><span class="p">:</span>
+                <span class="k">raise</span>
+            <span class="k">if</span> <span class="n">http_status</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="n">TradeOutcomeUnknown</span><span class="p">(</span><span class="n">operation</span><span class="p">,</span> <span class="s2">"http_status"</span><span class="p">,</span> <span class="n">http_status</span><span class="p">)</span> <span class="kn">from</span><span class="w"> </span><span class="kc">None</span>
+            <span class="k">raise</span> <span class="n">TradeOutcomeUnknown</span><span class="p">(</span><span class="n">operation</span><span class="p">,</span> <span class="s2">"exchange_error"</span><span class="p">)</span> <span class="kn">from</span><span class="w"> </span><span class="kc">None</span>
+
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">operation</span> <span class="o">==</span> <span class="s2">"create_order"</span><span class="p">:</span>
+                <span class="k">return</span> <span class="n">_protocol</span><span class="o">.</span><span class="n">order_result</span><span class="p">(</span><span class="n">resp</span><span class="p">,</span> <span class="n">logger</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">_protocol</span><span class="o">.</span><span class="n">cancel_result</span><span class="p">(</span><span class="n">resp</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">attempted</span><span class="p">:</span>
+                <span class="k">raise</span>
+            <span class="k">raise</span> <span class="n">TradeOutcomeUnknown</span><span class="p">(</span><span class="n">operation</span><span class="p">,</span> <span class="s2">"response_error"</span><span class="p">)</span> <span class="kn">from</span><span class="w"> </span><span class="kc">None</span>
+
+<div class="viewcode-block" id="TradingClient.create_order">
+<a class="viewcode-back" href="../../reference/emtl.html#emtl.TradingClient.create_order">[文档]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">create_order</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">stock_code</span><span class="p">,</span> <span class="n">trade_type</span><span class="p">,</span> <span class="n">market</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">price</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">amount</span><span class="p">:</span> <span class="nb">int</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">"""Attempt one POST; ordinary post-boundary failures raise TradeOutcomeUnknown.</span>
+
+<span class="sd">        This is not acceptance/execution evidence or permission to resubmit.</span>
+<span class="sd">        Authentication and other pre-boundary failures are not trade unknowns.</span>
+<span class="sd">        """</span>
+        <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">_account</span><span class="o">.</span><span class="n">lock</span><span class="p">:</span>
+            <span class="n">data</span> <span class="o">=</span> <span class="n">_protocol</span><span class="o">.</span><span class="n">order_form</span><span class="p">(</span><span class="n">stock_code</span><span class="p">,</span> <span class="n">trade_type</span><span class="p">,</span> <span class="n">market</span><span class="p">,</span> <span class="n">price</span><span class="p">,</span> <span class="n">amount</span><span class="p">)</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_execute_trade</span><span class="p">(</span><span class="s2">"create_order"</span><span class="p">,</span> <span class="n">data</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="TradingClient.cancel_order">
+<a class="viewcode-back" href="../../reference/emtl.html#emtl.TradingClient.cancel_order">[文档]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">cancel_order</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">order_str</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">"""Attempt one revocation; post-boundary failures raise TradeOutcomeUnknown.</span>
+
+<span class="sd">        Never automatically retry or interpret the returned text as execution.</span>
+<span class="sd">        """</span>
+        <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">_account</span><span class="o">.</span><span class="n">lock</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_ensure_open</span><span class="p">()</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_execute_trade</span><span class="p">(</span><span class="s2">"cancel_order"</span><span class="p">,</span> <span class="n">_protocol</span><span class="o">.</span><span class="n">cancel_form</span><span class="p">(</span><span class="n">order_str</span><span class="p">))</span></div>
+
+
+<div class="viewcode-block" id="TradingClient.get_last_price">
+<a class="viewcode-back" href="../../reference/emtl.html#emtl.TradingClient.get_last_price">[文档]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_last_price</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">symbol_code</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">market</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+        <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">_account</span><span class="o">.</span><span class="n">lock</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_ensure_open</span><span class="p">()</span>
+            <span class="k">return</span> <span class="n">_protocol</span><span class="o">.</span><span class="n">last_price</span><span class="p">(</span><span class="n">_protocol</span><span class="o">.</span><span class="n">snapshot</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_session</span><span class="p">,</span> <span class="n">symbol_code</span><span class="p">,</span> <span class="n">market</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_check_resp</span><span class="p">))</span></div>
+
+
+<div class="viewcode-block" id="TradingClient.close">
+<a class="viewcode-back" href="../../reference/emtl.html#emtl.TradingClient.close">[文档]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">close</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">_account</span><span class="o">.</span><span class="n">lock</span><span class="p">:</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_state</span> <span class="o">==</span> <span class="s2">"CLOSED"</span><span class="p">:</span>
+                <span class="k">return</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_state</span> <span class="o">=</span> <span class="s2">"CLOSED"</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_token</span> <span class="o">=</span> <span class="s2">""</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_password</span> <span class="o">=</span> <span class="s2">""</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_session</span><span class="o">.</span><span class="n">cookies</span><span class="o">.</span><span class="n">clear</span><span class="p">()</span>
+            <span class="k">finally</span><span class="p">:</span>
+                <span class="k">try</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">_close_session</span><span class="p">(</span><span class="n">preserve_error</span><span class="o">=</span><span class="n">sys</span><span class="o">.</span><span class="n">exc_info</span><span class="p">()[</span><span class="mi">0</span><span class="p">]</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">)</span>
+                <span class="k">finally</span><span class="p">:</span>
+                    <span class="n">release</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">_session</span> <span class="o">=</span> <span class="kc">None</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">_ocr</span> <span class="o">=</span> <span class="kc">None</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">_ocr_factory</span> <span class="o">=</span> <span class="kc">None</span></div>
+</div>
+
+</pre></div>
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../../index.html">emtl</a></h1>
+
+
+
+
+
+
+<p>
+<iframe src="https://ghbtns.com/github-btn.html?user=riiy&repo=emtl&type=watch&count=true&size=large&v=2"
+  allowtransparency="true" frameborder="0" scrolling="0" width="200px" height="35px"></iframe>
+</p>
+
+
+
+
+
+<h3>导航</h3>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../readme.html">项目简介</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../installation.html">安装说明</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../usage.html">使用指南</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../reference/index.html">API 参考</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../contributing.html">参与贡献</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../authors.html">项目作者</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../changelog.html">变更记录（Changelog）</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../releasing.html">发布与维护</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../index.html">Documentation overview</a><ul>
+  <li><a href="../index.html">模块代码</a><ul>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">快速搜索</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="提交" />
+    </form>
+    </div>
+</div>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &#169;2024-2025, Eastmoney Trade Library.
+      
+      |
+      Powered by <a href="https://www.sphinx-doc.org/">Sphinx 7.2.6</a>
+      &amp; <a href="https://alabaster.readthedocs.io">Alabaster 0.7.16</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>

@@ -1,20 +1,22 @@
 <!DOCTYPE html>
 
-<html lang="en" data-content_root="../">
+<html lang="zh-CN" data-content_root="../">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>Reference &#8212; emtl 0.2.6 documentation</title>
+    <title>API 参考 &#8212; emtl 0.3.0 文档</title>
     <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=34bb78ad" />
     <link rel="stylesheet" type="text/css" href="../_static/alabaster.css?v=12dfc556" />
-    <script src="../_static/documentation_options.js?v=fc7d8818"></script>
+    <script src="../_static/documentation_options.js?v=32729429"></script>
     <script src="../_static/doctools.js?v=888ff710"></script>
     <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
-    <link rel="index" title="Index" href="../genindex.html" />
-    <link rel="search" title="Search" href="../search.html" />
+    <script src="../_static/translations.js?v=beaddf03"></script>
+    <link rel="canonical" href="https://emtl.readthedocs.io/zh-cn/latest/reference/index.html" />
+    <link rel="index" title="索引" href="../genindex.html" />
+    <link rel="search" title="搜索" href="../search.html" />
     <link rel="next" title="emtl" href="emtl.html" />
-    <link rel="prev" title="Usage" href="../usage.html" />
+    <link rel="prev" title="使用指南" href="../usage.html" />
    
   <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
   
@@ -32,20 +34,38 @@
 
           <div class="body" role="main">
             
-  <section id="reference">
-<h1>Reference<a class="headerlink" href="#reference" title="Link to this heading">¶</a></h1>
+  <section id="api">
+<h1>API 参考<a class="headerlink" href="#api" title="Link to this heading">¶</a></h1>
 <div class="toctree-wrapper compound">
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="emtl.html">emtl</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="emtl.html#emtl.cancel_order"><code class="docutils literal notranslate"><span class="pre">cancel_order()</span></code></a></li>
-<li class="toctree-l2"><a class="reference internal" href="emtl.html#emtl.create_order"><code class="docutils literal notranslate"><span class="pre">create_order()</span></code></a></li>
-<li class="toctree-l2"><a class="reference internal" href="emtl.html#emtl.login"><code class="docutils literal notranslate"><span class="pre">login()</span></code></a></li>
-<li class="toctree-l2"><a class="reference internal" href="emtl.html#emtl.query_asset_and_position"><code class="docutils literal notranslate"><span class="pre">query_asset_and_position()</span></code></a></li>
-<li class="toctree-l2"><a class="reference internal" href="emtl.html#emtl.query_funds_flow"><code class="docutils literal notranslate"><span class="pre">query_funds_flow()</span></code></a></li>
-<li class="toctree-l2"><a class="reference internal" href="emtl.html#emtl.query_history_orders"><code class="docutils literal notranslate"><span class="pre">query_history_orders()</span></code></a></li>
-<li class="toctree-l2"><a class="reference internal" href="emtl.html#emtl.query_history_trades"><code class="docutils literal notranslate"><span class="pre">query_history_trades()</span></code></a></li>
-<li class="toctree-l2"><a class="reference internal" href="emtl.html#emtl.query_orders"><code class="docutils literal notranslate"><span class="pre">query_orders()</span></code></a></li>
-<li class="toctree-l2"><a class="reference internal" href="emtl.html#emtl.query_trades"><code class="docutils literal notranslate"><span class="pre">query_trades()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="emtl.html#id1">当前导出的接口</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="emtl.html#emtl.TradingClient"><code class="docutils literal notranslate"><span class="pre">TradingClient</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="emtl.html#emtl.TradingClient.__init__"><code class="docutils literal notranslate"><span class="pre">TradingClient.__init__()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="emtl.html#emtl.TradingClient.cancel_order"><code class="docutils literal notranslate"><span class="pre">TradingClient.cancel_order()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="emtl.html#emtl.TradingClient.close"><code class="docutils literal notranslate"><span class="pre">TradingClient.close()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="emtl.html#emtl.TradingClient.create_order"><code class="docutils literal notranslate"><span class="pre">TradingClient.create_order()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="emtl.html#emtl.TradingClient.get_last_price"><code class="docutils literal notranslate"><span class="pre">TradingClient.get_last_price()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="emtl.html#emtl.TradingClient.login"><code class="docutils literal notranslate"><span class="pre">TradingClient.login()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="emtl.html#emtl.TradingClient.query_asset_and_position"><code class="docutils literal notranslate"><span class="pre">TradingClient.query_asset_and_position()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="emtl.html#emtl.TradingClient.query_funds_flow"><code class="docutils literal notranslate"><span class="pre">TradingClient.query_funds_flow()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="emtl.html#emtl.TradingClient.query_history_orders"><code class="docutils literal notranslate"><span class="pre">TradingClient.query_history_orders()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="emtl.html#emtl.TradingClient.query_history_trades"><code class="docutils literal notranslate"><span class="pre">TradingClient.query_history_trades()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="emtl.html#emtl.TradingClient.query_orders"><code class="docutils literal notranslate"><span class="pre">TradingClient.query_orders()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="emtl.html#emtl.TradingClient.query_trades"><code class="docutils literal notranslate"><span class="pre">TradingClient.query_trades()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="emtl.html#emtl.cancel_order"><code class="docutils literal notranslate"><span class="pre">cancel_order()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="emtl.html#emtl.create_order"><code class="docutils literal notranslate"><span class="pre">create_order()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="emtl.html#emtl.login"><code class="docutils literal notranslate"><span class="pre">login()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="emtl.html#emtl.query_asset_and_position"><code class="docutils literal notranslate"><span class="pre">query_asset_and_position()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="emtl.html#emtl.query_funds_flow"><code class="docutils literal notranslate"><span class="pre">query_funds_flow()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="emtl.html#emtl.query_history_orders"><code class="docutils literal notranslate"><span class="pre">query_history_orders()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="emtl.html#emtl.query_history_trades"><code class="docutils literal notranslate"><span class="pre">query_history_trades()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="emtl.html#emtl.query_orders"><code class="docutils literal notranslate"><span class="pre">query_orders()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="emtl.html#emtl.query_trades"><code class="docutils literal notranslate"><span class="pre">query_trades()</span></code></a></li>
+</ul>
+</li>
 </ul>
 </li>
 </ul>
@@ -66,37 +86,45 @@
 
 
 
+<p>
+<iframe src="https://ghbtns.com/github-btn.html?user=riiy&repo=emtl&type=watch&count=true&size=large&v=2"
+  allowtransparency="true" frameborder="0" scrolling="0" width="200px" height="35px"></iframe>
+</p>
 
 
-<h3>Navigation</h3>
+
+
+
+<h3>导航</h3>
 <ul class="current">
-<li class="toctree-l1"><a class="reference internal" href="../readme.html">Overview</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../installation.html">Installation</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../usage.html">Usage</a></li>
-<li class="toctree-l1 current"><a class="current reference internal" href="#">Reference</a><ul>
+<li class="toctree-l1"><a class="reference internal" href="../readme.html">项目简介</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../installation.html">安装说明</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../usage.html">使用指南</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">API 参考</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="emtl.html">emtl</a></li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="../contributing.html">Contributing</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../authors.html">Authors</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../changelog.html">Changelog</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../contributing.html">参与贡献</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../authors.html">项目作者</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../changelog.html">变更记录（Changelog）</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../releasing.html">发布与维护</a></li>
 </ul>
 
 <div class="relations">
 <h3>Related Topics</h3>
 <ul>
   <li><a href="../index.html">Documentation overview</a><ul>
-      <li>Previous: <a href="../usage.html" title="previous chapter">Usage</a></li>
-      <li>Next: <a href="emtl.html" title="next chapter">emtl</a></li>
+      <li>Previous: <a href="../usage.html" title="上一章">使用指南</a></li>
+      <li>Next: <a href="emtl.html" title="下一章">emtl</a></li>
   </ul></li>
 </ul>
 </div>
 <div id="searchbox" style="display: none" role="search">
-  <h3 id="searchlabel">Quick search</h3>
+  <h3 id="searchlabel">快速搜索</h3>
     <div class="searchformwrapper">
     <form class="search" action="../search.html" method="get">
       <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
-      <input type="submit" value="Go" />
+      <input type="submit" value="提交" />
     </form>
     </div>
 </div>

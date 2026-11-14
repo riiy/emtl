@@ -1,20 +1,22 @@
 <!DOCTYPE html>
 
-<html lang="en" data-content_root="./">
+<html lang="zh-CN" data-content_root="./">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>Usage &#8212; emtl 0.2.6 documentation</title>
+    <title>使用指南 &#8212; emtl 0.3.0 文档</title>
     <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=34bb78ad" />
     <link rel="stylesheet" type="text/css" href="_static/alabaster.css?v=12dfc556" />
-    <script src="_static/documentation_options.js?v=fc7d8818"></script>
+    <script src="_static/documentation_options.js?v=32729429"></script>
     <script src="_static/doctools.js?v=888ff710"></script>
     <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
-    <link rel="index" title="Index" href="genindex.html" />
-    <link rel="search" title="Search" href="search.html" />
-    <link rel="next" title="Reference" href="reference/index.html" />
-    <link rel="prev" title="Installation" href="installation.html" />
+    <script src="_static/translations.js?v=beaddf03"></script>
+    <link rel="canonical" href="https://emtl.readthedocs.io/zh-cn/latest/usage.html" />
+    <link rel="index" title="索引" href="genindex.html" />
+    <link rel="search" title="搜索" href="search.html" />
+    <link rel="next" title="API 参考" href="reference/index.html" />
+    <link rel="prev" title="安装说明" href="installation.html" />
    
   <link rel="stylesheet" href="_static/custom.css" type="text/css" />
   
@@ -32,18 +34,77 @@
 
           <div class="body" role="main">
             
-  <section id="usage">
-<h1>Usage<a class="headerlink" href="#usage" title="Link to this heading">¶</a></h1>
-<p>To use the project:
-下面是登录、查询资产、下单、撤单的使用方法，具体使用请查看Reference</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">emtl</span>
-<span class="n">emtl</span><span class="o">.</span><span class="n">login</span><span class="p">(</span><span class="s2">&quot;2020123456789&quot;</span><span class="p">,</span> <span class="s2">&quot;123456&quot;</span><span class="p">)</span>
-<span class="n">asset</span> <span class="o">=</span> <span class="n">emtl</span><span class="o">.</span><span class="n">query_asset_and_position</span><span class="p">()</span>
-<span class="nb">print</span><span class="p">(</span><span class="n">asset</span><span class="p">)</span>
-<span class="n">resp</span> <span class="o">=</span> <span class="n">create_order</span><span class="p">(</span><span class="s2">&quot;000002&quot;</span><span class="p">,</span> <span class="s2">&quot;B&quot;</span><span class="p">,</span> <span class="s2">&quot;SA&quot;</span><span class="p">,</span> <span class="mf">5.01</span><span class="p">,</span> <span class="mi">100</span><span class="p">)</span>
-<span class="n">resp</span> <span class="o">=</span> <span class="n">cancel_order</span><span class="p">(</span><span class="s2">&quot;20240520_130662&quot;</span><span class="p">)</span>
+  <section id="id1">
+<h1>使用指南<a class="headerlink" href="#id1" title="Link to this heading">¶</a></h1>
+<p>默认 HTTP Session 下的 Python API 可能连接真实券商。
+本页示例仅供获得授权后的人工操作，不可直接放入 CI。
+自动测试必须使用虚构账户和隔离的 HTTP/OCR 替身，禁止真实下单。</p>
+<section id="tradingclient">
+<h2>独立账户 TradingClient<a class="headerlink" href="#tradingclient" title="Link to this heading">¶</a></h2>
+<p>多账户场景优先使用 <code class="docutils literal notranslate"><span class="pre">emtl.TradingClient</span></code>。创建客户端时必须显式传入
+<code class="docutils literal notranslate"><span class="pre">username</span></code>，不自动读取 <code class="docutils literal notranslate"><span class="pre">EM_USERNAME</span></code>；省略 <code class="docutils literal notranslate"><span class="pre">password</span></code>
+时，会在构造期间读取一次环境变量 <code class="docutils literal notranslate"><span class="pre">EM_PASSWORD</span></code>。
+每个实例独立持有 Session、Cookie 和认证令牌。</p>
+<p>同一规范化用户名的客户端操作在单进程内串行，不同账户可以并行；
+这不保证跨进程或跨设备的账户串行。
+用完请在 <code class="docutils literal notranslate"><span class="pre">finally</span></code> 中调用 <code class="docutils literal notranslate"><span class="pre">close()</span></code>；当前不提供上下文管理器或异步接口。</p>
+<p>以下为 <strong>仅限人工运行</strong> 的登录和只读订单查询示例。
+使用默认 Session 时仍会发起真实网络请求，不应出现在自动化测试中。</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">emtl</span><span class="w"> </span><span class="kn">import</span> <span class="n">TradingClient</span>
+
+<span class="n">client</span> <span class="o">=</span> <span class="n">TradingClient</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">[</span><span class="s2">"EM_USERNAME"</span><span class="p">])</span>
+<span class="k">try</span><span class="p">:</span>
+    <span class="k">if</span> <span class="n">client</span><span class="o">.</span><span class="n">login</span><span class="p">()</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s2">"authentication required"</span><span class="p">)</span>
+    <span class="n">orders</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">query_orders</span><span class="p">()</span>
+<span class="k">finally</span><span class="p">:</span>
+    <span class="n">client</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
 </pre></div>
 </div>
+<p><code class="docutils literal notranslate"><span class="pre">login(duration=30)</span></code> 在认证证据满足条件时返回非空 token；
+证据不足则返回 <code class="docutils literal notranslate"><span class="pre">None</span></code>，传输或解析等异常可能原样传播。
+新建客户端首次执行受保护的操作时可尝试自动登录一次。
+登录失败后，如需恢复，必须显式再次调用 <code class="docutils literal notranslate"><span class="pre">login()</span></code>。
+<code class="docutils literal notranslate"><span class="pre">get_last_price(symbol_code,</span> <span class="pre">market)</span></code> 不会自动登录。</p>
+</section>
+<section id="id2">
+<h2>下单、撤单与不确定结果<a class="headerlink" href="#id2" title="Link to this heading">¶</a></h2>
+<p><code class="docutils literal notranslate"><span class="pre">TradingClient.create_order(stock_code,</span> <span class="pre">trade_type,</span> <span class="pre">market,</span> <span class="pre">price,</span> <span class="pre">amount)</span></code>
+和 <code class="docutils literal notranslate"><span class="pre">TradingClient.cancel_order(order_str)</span></code> 可能提交真实交易或撤单。
+客户端对每次业务调用最多尝试一次交易 POST；不会自动重发、
+补单、对账或补偿。请不要根据超时等异常推定交易一定失败。</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">emtl.errors.TradeOutcomeUnknown</span></code>：已进入交易 POST 尝试边界，
+但结果无法确认。<code class="docutils literal notranslate"><span class="pre">operation</span></code>、<code class="docutils literal notranslate"><span class="pre">reason</span></code>、<code class="docutils literal notranslate"><span class="pre">status_code</span></code>
+只描述本地失败阶段，不能证明请求已送达、券商受理、成交或拒绝。
+<strong>不得因该异常自动重发订单。</strong></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">emtl.errors.BrokerHTTPError</span></code>：显式客户端的非交易请求收到
+有效整数状态码且不为 200；认证、查询等其他异常可能继续原样传播。</p></li>
+</ul>
+<p>正常返回也不构成成交证明：订单 JSON 和撤单文本不会按真实券商业务状态
+进行验证。具体边界见 <a class="reference internal" href="reference/emtl.html"><span class="doc">emtl</span></a> 和其中链接的 P2/P3 契约。</p>
+</section>
+<section id="id3">
+<h2>旧版模块级接口<a class="headerlink" href="#id3" title="Link to this heading">¶</a></h2>
+<p><code class="docutils literal notranslate"><span class="pre">emtl.login()</span></code>、<code class="docutils literal notranslate"><span class="pre">emtl.query_asset_and_position()</span></code>、
+<code class="docutils literal notranslate"><span class="pre">emtl.query_orders()</span></code>、<code class="docutils literal notranslate"><span class="pre">emtl.create_order()</span></code>、
+<code class="docutils literal notranslate"><span class="pre">emtl.cancel_order()</span></code> 等函数仍可调用，以维持兼容。
+它们共用旧模块级 Session/认证令牌，不具备 <code class="docutils literal notranslate"><span class="pre">TradingClient</span></code>
+的账户隔离和新增交易异常保证，不能据此做并发多账户切换。
+既有签名、返回值及其他兼容行为以 P0 公共 API 契约为准。</p>
+</section>
+<section id="id4">
+<h2>命令行接口<a class="headerlink" href="#id4" title="Link to this heading">¶</a></h2>
+<p><code class="docutils literal notranslate"><span class="pre">emt</span></code> 和 <code class="docutils literal notranslate"><span class="pre">python</span> <span class="pre">-m</span> <span class="pre">emtl</span></code> 目前只解析命令行参数并退出。
+虽然接受 <code class="docutils literal notranslate"><span class="pre">--buy</span></code>、<code class="docutils literal notranslate"><span class="pre">--sell</span></code>、<code class="docutils literal notranslate"><span class="pre">--query</span></code> 等参数，
+<code class="docutils literal notranslate"><span class="pre">emtl.cli.run()</span></code> <strong>不会</strong> 实际登录、查询券商或提交订单。</p>
+<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="go">emt --help</span>
+<span class="go">python -m emtl --help</span>
+</pre></div>
+</div>
+</section>
 </section>
 
 
@@ -60,34 +121,48 @@
 
 
 
+<p>
+<iframe src="https://ghbtns.com/github-btn.html?user=riiy&repo=emtl&type=watch&count=true&size=large&v=2"
+  allowtransparency="true" frameborder="0" scrolling="0" width="200px" height="35px"></iframe>
+</p>
 
 
-<h3>Navigation</h3>
+
+
+
+<h3>导航</h3>
 <ul class="current">
-<li class="toctree-l1"><a class="reference internal" href="readme.html">Overview</a></li>
-<li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a></li>
-<li class="toctree-l1 current"><a class="current reference internal" href="#">Usage</a></li>
-<li class="toctree-l1"><a class="reference internal" href="reference/index.html">Reference</a></li>
-<li class="toctree-l1"><a class="reference internal" href="contributing.html">Contributing</a></li>
-<li class="toctree-l1"><a class="reference internal" href="authors.html">Authors</a></li>
-<li class="toctree-l1"><a class="reference internal" href="changelog.html">Changelog</a></li>
+<li class="toctree-l1"><a class="reference internal" href="readme.html">项目简介</a></li>
+<li class="toctree-l1"><a class="reference internal" href="installation.html">安装说明</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">使用指南</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#tradingclient">独立账户 TradingClient</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#id2">下单、撤单与不确定结果</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#id3">旧版模块级接口</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#id4">命令行接口</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="reference/index.html">API 参考</a></li>
+<li class="toctree-l1"><a class="reference internal" href="contributing.html">参与贡献</a></li>
+<li class="toctree-l1"><a class="reference internal" href="authors.html">项目作者</a></li>
+<li class="toctree-l1"><a class="reference internal" href="changelog.html">变更记录（Changelog）</a></li>
+<li class="toctree-l1"><a class="reference internal" href="releasing.html">发布与维护</a></li>
 </ul>
 
 <div class="relations">
 <h3>Related Topics</h3>
 <ul>
   <li><a href="index.html">Documentation overview</a><ul>
-      <li>Previous: <a href="installation.html" title="previous chapter">Installation</a></li>
-      <li>Next: <a href="reference/index.html" title="next chapter">Reference</a></li>
+      <li>Previous: <a href="installation.html" title="上一章">安装说明</a></li>
+      <li>Next: <a href="reference/index.html" title="下一章">API 参考</a></li>
   </ul></li>
 </ul>
 </div>
 <div id="searchbox" style="display: none" role="search">
-  <h3 id="searchlabel">Quick search</h3>
+  <h3 id="searchlabel">快速搜索</h3>
     <div class="searchformwrapper">
     <form class="search" action="search.html" method="get">
       <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
-      <input type="submit" value="Go" />
+      <input type="submit" value="提交" />
     </form>
     </div>
 </div>
