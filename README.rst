@@ -41,9 +41,9 @@
     :alt: Supported implementations
     :target: https://pypi.org/project/emtl
 
-.. |commits-since| image:: https://img.shields.io/github/commits-since/riiy/emtl/v0.3.0b1.svg
+.. |commits-since| image:: https://img.shields.io/github/commits-since/riiy/emtl/v0.3.0b2.svg
     :alt: Commits since latest release
-    :target: https://github.com/riiy/emtl/compare/v0.3.0b1...master
+    :target: https://github.com/riiy/emtl/compare/v0.3.0b2...master
 
 
 
@@ -54,26 +54,63 @@
 **文档语言：简体中文。** API 名称、Python 代码及命令保留原始英文标识。
 Read the Docs 是规范文档站点，GitHub Pages 仅为镜像。
 
+免责声明与风险提示
+==================
+
+本项目是社区维护的 **非官方** 东方财富交易接口实现，并非东方财富或相关券商
+发布、授权或背书的官方产品。项目主要面向软件技术学习、研究与交流，
+不构成投资建议、收益承诺、证券经纪、投资咨询或任何形式的金融服务。
+此用途说明不改变项目 ``LICENSE`` 中 MIT 许可证授予的使用权利。
+
+- **投资和自动化交易风险**：证券价格波动可能造成本金损失。请求超时、
+  网络中断、接口或认证机制变化、验证码误识别、响应解析错误、委托重复提交、
+  撤单失败、订单状态未知以及第三方服务故障，都可能造成意外交易或资金损失。
+  自动化测试及少量真实登录成功不代表已验证真实下单、撤单或成交。
+- **非官方接口与合规**：非公开或非官方接口可能未经通知即改变、限制或停止服务。
+  使用者须自行核实相关券商服务协议、账户授权、数据处理要求及适用法律法规；
+  不得绕过访问控制或用于违法违规活动。
+- **生产环境与责任**：本项目未获得生产实盘交易可靠性保证，不建议直接用于
+  生产环境。若使用者仍选择在生产或实盘环境部署，应自行充分测试、
+  设置权限和资金限制、监控及人工应急停止措施，并自行承担由使用、
+  误用、策略决策或第三方服务变化引起的投资风险、运营责任和相应损失。
+  在适用法律允许的最大范围内，项目作者和维护者不对因此产生的直接、
+  间接或连带损失承担责任；依法不得排除或限制的责任不受本声明影响。
+- **凭证及隐私安全**：使用者负责妥善保管密码、验证码、Cookie、Token
+  和账户数据。不得在 Issue、日志、CI 或公开讨论中披露敏感信息；
+  安全问题应按 ``SECURITY.md`` 私下报告。
+- **不提供担保**：软件按 ``LICENSE`` 所载 MIT 许可证以“现状”（AS IS）
+  提供，不保证正确性、持续可用性、特定用途适用性、交易执行结果或收益。
+  使用前应自行评估全部风险，且本声明不取代适用法律及券商协议。
+
 安装与支持范围
 ==============
 
-当前 ``master`` 的 OCR v1 实现支持 **Linux / CPython 3.11、3.12、3.13**
-（``Requires-Python >=3.11,<3.14``）；其他平台及 PyPy 尚未验证。
+已发布的 Beta ``emtl==0.3.0b2`` 面向 CPython 3.11、3.12、3.13
+（``Requires-Python >=3.11,<3.14``）。维护者已在 Ubuntu x86_64、
+macOS Intel x86_64 的六组 Python 环境中，分别从 PyPI 安装并完成
+10 次真实账户登录，共 60/60 次成功。此为 Beta 特定环境实测，
+不等于全部 Linux/macOS 平台或真实交易功能获得生产支持；
+Apple Silicon、Windows、PyPy 尚未验证。
+
 默认使用冻结的微型 CNN（Pillow + Python 标准库），不会安装 ddddOCR、
 NumPy、ONNX Runtime 或 OpenCV。需要旧 OCR 时仅在 Python 3.11 上
 安装 ``emtl[ddddocr]`` 并设置环境变量
 ``EMTL_OCR_ENGINE=ddddocr``；显式选择失败不会静默回退。
-OCR v1 已随 PR #32 合并，但尚未作为 ``0.3.0b2`` 发布；已发行的
-``0.3.0b1`` 仍采用旧 OCR，仅支持 Python 3.11。
-具体体积与性能门槛及证据参见
-``docs/refactor/reports/OCR-v1-acceptance.md``。
+OCR v1 已随 ``0.3.0b2`` 在 PyPI 发布；较早的 ``0.3.0b1``
+仍采用旧 OCR，仅支持 Python 3.11。原模型验收与真实登录实测分别参见
+``docs/refactor/reports/OCR-v1-acceptance.md`` 和
+``docs/refactor/reports/v0.3.0b2-beta-field-acceptance.md``。
 
-内部 Alpha ``0.3.0a1`` 未对外发布；``0.3.0b1`` 已于
-2026-11-10 发布为 Beta。下一候选 ``0.3.0b2`` 仍处于发布准备阶段，
-Tag、Release 与 PyPI 上传均须单独授权。正式版 ``0.3.0`` 需 Beta
-观察后的独立批准。以下命令安装已公开的稳定版本，**不会** 自动安装 Beta::
+内部 Alpha ``0.3.0a1`` 未对外发布；``0.3.0b1`` 于 2026-11-10
+发布为 Beta，``0.3.0b2`` 已于 2026-11-14 发布为 PyPI Beta，
+目前进入观察阶段。正式版 ``0.3.0`` 仍需独立批准。
+以下命令安装已公开的稳定版本，**不会** 自动安装 Beta::
 
     python -m pip install emtl
+
+显式安装已公开的 OCR Beta 版本::
+
+    python -m pip install --pre emtl==0.3.0b2
 
 如需获取开发中的源码，可从仓库安装，但源码不等于已验证的正式发布版本::
 
