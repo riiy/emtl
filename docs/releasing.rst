@@ -6,13 +6,18 @@
 ==================
 
 内部 Alpha ``0.3.0a1`` 未对外发布；``0.3.0b1`` 已于 2026-11-10
-发布为 Beta。OCR v1 已合并至 ``master``，下一候选为 PyPI Beta
-``0.3.0b2``，**尚未获得 Tag、Release 或上传授权**。完成新 Beta 观察后
-再单独评估正式版 ``0.3.0``；不同发布操作须分别获得明确批准。
+发布为 Beta；OCR v1 随 ``0.3.0b2`` 于 2026-11-14
+完成 Tag、GitHub Pre-release 和 PyPI Trusted Publishing，现处于
+Beta 观察阶段。正式版 ``0.3.0`` 仍须单独评审及维护者批准。
 
-已发行的 ``0.3.0b1`` 仅支持 Linux / CPython 3.11；新候选 ``0.3.0b2``
-计划支持 Linux / CPython 3.11、3.12、3.13。其他平台和 PyPy 尚未验证。
-自动测试采用合成数据与禁网环境，不能证明券商协议正确或真实成交。
+``0.3.0b1`` 的原支持边界为 Linux / CPython 3.11；
+``0.3.0b2`` 面向 CPython 3.11、3.12、3.13，维护者已在 Ubuntu
+x86_64 与 macOS Intel x86_64 六组环境中，通过 PyPI 安装和
+每组 10 次真实东方财富账户登录（60/60）。这仅是 Beta 指定环境的
+安装、OCR 与登录实测，**不证明真实下单、撤单或成交安全**；
+Apple Silicon、Windows、PyPy 尚未验证。详见
+:download:`Beta 实测验收报告 <refactor/reports/v0.3.0b2-beta-field-acceptance.md>`。
+自动测试另采用合成数据与禁网环境，不能证明真实券商交易结果。
 Read the Docs 是规范文档站点，GitHub Pages 只是手动维护的镜像；
 仅交付 RST + Sphinx 生成的 HTML，不生成 PDF、EPUB。
 
@@ -42,7 +47,7 @@ API/CLI help 及构造烟测，并在系统级禁网下完成。
 不能使用真实账户凭证或调用券商。
 
 Beta 必须在 Alpha 和独立 Review 后，由维护者**另行批准上传**。
-只有该版本真实上传后，以下显式预发布安装命令才可使用::
+``0.3.0b2`` 已通过这些发布门禁并上传至 PyPI，可显式安装::
 
     python -m pip install --pre emtl==0.3.0b2
 
@@ -159,7 +164,8 @@ Dependabot 只负责创建 PR，**不得自动合并**。
 OCR 升级需获批准的脱敏图像样本。
 所有变更都需离线测试、包安装及 HTML 构建。
 应在 ``2027-04-01`` 前复核 CPython 3.11–3.13 支持与 OCR 依赖；
-不将已验证的 Linux 环境结果直接推广到 Windows、macOS 或 PyPy。
+不将已验证的 Ubuntu x86_64、macOS Intel x86_64 结果直接推广到
+其他操作系统、Apple Silicon、其他架构或 PyPy。
 
 依赖来源分别是 ``setup.py`` （运行时直接依赖）、
 ``pip freeze`` 和 ``pip inspect`` （已安装的传递依赖）、
@@ -168,11 +174,10 @@ OCR 升级需获批准的脱敏图像样本。
 每个候选应记录工具及解析后的依赖版本。
 固定版本或测试成功不等于没有漏洞。
 
-OCR v1 已合并至 ``master``；``0.3.0b2`` 候选的运行时依赖为
+OCR v1 已合并至 ``master``；已发布的 ``0.3.0b2`` 运行时依赖为
 ``rsa==4.9``、``requests==2.33.1``、``Pillow==13.0.0``、
 ``cryptography==50.0.2``。旧引擎通过仅支持 Python 3.11 的
-``emtl[ddddocr]`` 可选安装。该候选尚未获得发布授权，
-已发行的 ``0.3.0b1`` 仍使用 ddddOCR。
+``emtl[ddddocr]`` 可选安装。已发行的 ``0.3.0b1`` 仍使用 ddddOCR。
 此前识别的 Requests 与 cryptography 公告已有定向更新和最终 master
 兼容测试证据，但不代表已完成全量 SBOM 或未来零漏洞保证。
 Dependabot 中 ``rsa 4.9 → 4.9.1`` 待单独审查，不得自动合并。
