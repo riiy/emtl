@@ -10,8 +10,8 @@
 及 macOS Intel x86_64 的三个 Python 版本中分别完成 10 次 PyPI
 安装后的真实账户登录测试，六组共 60/60 成功。此为 Beta 实测兼容范围，
 不代表全部 Linux/macOS 架构或生产交易获得保证；Apple Silicon、
-Windows 和 PyPy 未验证。详见 :download:`Beta 实测验收报告
-<refactor/reports/v0.3.0b2-beta-field-acceptance.md>`。
+Windows 和 PyPy 未验证。
+详见 :download:`Beta 实测验收报告 <refactor/reports/v0.3.0b2-beta-field-acceptance.md>`。
 
 当前 Beta 默认安装 Pillow 13.0.0 与冻结的微型 CNN 模型，
 不再强制安装 ddddOCR、NumPy、ONNX Runtime 或 OpenCV。
