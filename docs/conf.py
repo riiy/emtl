@@ -25,7 +25,7 @@ copyright = f"{year}, {author}"
 try:
     version = release = distribution_version("emtl")
 except PackageNotFoundError:
-    version = release = "0.3.0b2"
+    version = release = "0.3.0"
 
 pygments_style = "trac"
 templates_path = ["."]
