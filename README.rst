@@ -89,7 +89,7 @@ Read the Docs 是规范文档站点，GitHub Pages 仅为镜像。
 不增加交易或 OCR 功能，支持 CPython 3.11、3.12、3.13
 （``Requires-Python >=3.11,<3.14``）。
 维护者曾在 Ubuntu x86_64、macOS Intel x86_64 六组 Python 环境中，
-从 PyPI 安装 **Beta ``0.3.0b2``** 并分别完成 10 次真实账户登录，
+从 PyPI 安装 Beta ``0.3.0b2`` 并分别完成 10 次真实账户登录，
 共 60/60 次成功。该结果不是 ``0.3.0`` Stable 的独立实盘验证，
 更不证明所有 Linux/macOS 平台或真实交易获得生产保障；
 Apple Silicon、Windows、PyPy 尚未验证。
@@ -104,8 +104,7 @@ ddddOCR、NumPy、ONNX Runtime 或 OpenCV。仅在 Python 3.11
 
 已发布的 Beta：``0.3.0b1``（2026-11-10）、
 ``0.3.0b2``（2026-11-14）。维护者于 2026-11-14 批准
-不等待建议观察期而准备 Stable 候选。**源码标记为 Stable 不等于
-PyPI 已上架 ``0.3.0``**；应以 PyPI 上的实际发行记录为准。
+不等待建议观察期而准备 Stable 候选。源码标记为 Stable 不等于 PyPI 已上架 ``0.3.0``；应以 PyPI 上的实际发行记录为准。
 
 在 ``0.3.0`` 正式上传 PyPI 后，可安装固定版本::
 

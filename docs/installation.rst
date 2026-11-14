@@ -9,7 +9,7 @@
 CPython 支持范围仍为 3.11、3.12、3.13
 （``Requires-Python >=3.11,<3.14``）。维护者在 Ubuntu x86_64
 和 macOS Intel x86_64 的三个 Python 版本上，分别从 PyPI 安装
-**Beta ``0.3.0b2``** 并完成 10 次真实账户登录，六组合计 60/60。
+Beta ``0.3.0b2`` 并完成 10 次真实账户登录，六组合计 60/60。
 这些实测不能证明 ``0.3.0`` Stable 的交易功能、长期稳定性或
 未经验证的其他 Linux/macOS 架构；Apple Silicon、Windows、PyPy
 未验证。详见
