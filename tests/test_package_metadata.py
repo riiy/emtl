@@ -22,6 +22,8 @@ def package_metadata(monkeypatch):
 def test_python_and_platform_claims_match_approved_scope(package_metadata):
     assert package_metadata["python_requires"] == ">=3.11,<3.14"
     classifiers = package_metadata["classifiers"]
+    assert "Development Status :: 5 - Production/Stable" in classifiers
+    assert "Development Status :: 4 - Beta" not in classifiers
     assert [item for item in classifiers if item.startswith("Operating System ::")] == ["Operating System :: POSIX :: Linux"]
     assert [item for item in classifiers if item.startswith("Programming Language :: Python :: 3.")] == [
         "Programming Language :: Python :: 3.11",
@@ -39,7 +41,7 @@ def test_runtime_dependencies_are_not_silently_upgraded(package_metadata):
 
 
 def test_candidate_fallbacks_and_manual_git_boundary(package_metadata, monkeypatch, capsys):
-    candidate = "0.3.0b2"
+    candidate = "0.3.0"
     assert package_metadata["use_scm_version"]["fallback_version"] == candidate
     config = configparser.ConfigParser()
     config.read(ROOT / ".bumpversion.cfg")

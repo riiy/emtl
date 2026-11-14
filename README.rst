@@ -85,36 +85,46 @@ Read the Docs 是规范文档站点，GitHub Pages 仅为镜像。
 安装与支持范围
 ==============
 
-已发布的 Beta ``emtl==0.3.0b2`` 面向 CPython 3.11、3.12、3.13
-（``Requires-Python >=3.11,<3.14``）。维护者已在 Ubuntu x86_64、
-macOS Intel x86_64 的六组 Python 环境中，分别从 PyPI 安装并完成
-10 次真实账户登录，共 60/60 次成功。此为 Beta 特定环境实测，
-不等于全部 Linux/macOS 平台或真实交易功能获得生产支持；
+``0.3.0`` Stable 沿用已发布的 ``0.3.0b2`` 的功能基线，
+不增加交易或 OCR 功能，支持 CPython 3.11、3.12、3.13
+（``Requires-Python >=3.11,<3.14``）。
+维护者曾在 Ubuntu x86_64、macOS Intel x86_64 六组 Python 环境中，
+从 PyPI 安装 **Beta ``0.3.0b2``** 并分别完成 10 次真实账户登录，
+共 60/60 次成功。该结果不是 ``0.3.0`` Stable 的独立实盘验证，
+更不证明所有 Linux/macOS 平台或真实交易获得生产保障；
 Apple Silicon、Windows、PyPy 尚未验证。
 
-默认使用冻结的微型 CNN（Pillow + Python 标准库），不会安装 ddddOCR、
-NumPy、ONNX Runtime 或 OpenCV。需要旧 OCR 时仅在 Python 3.11 上
-安装 ``emtl[ddddocr]`` 并设置环境变量
-``EMTL_OCR_ENGINE=ddddocr``；显式选择失败不会静默回退。
-OCR v1 已随 ``0.3.0b2`` 在 PyPI 发布；较早的 ``0.3.0b1``
-仍采用旧 OCR，仅支持 Python 3.11。原模型验收与真实登录实测分别参见
+默认 OCR 为冻结微型 CNN（Pillow + Python 标准库），不会默认安装
+ddddOCR、NumPy、ONNX Runtime 或 OpenCV。仅在 Python 3.11
+可选安装 ``emtl[ddddocr]`` 并设置 ``EMTL_OCR_ENGINE=ddddocr``；
+显式选择失败不会静默回退。OCR v1 从 ``0.3.0b2`` 开始提供；
+旧版 ``0.3.0b1`` 使用原 OCR。证据见
 ``docs/refactor/reports/OCR-v1-acceptance.md`` 和
 ``docs/refactor/reports/v0.3.0b2-beta-field-acceptance.md``。
 
-内部 Alpha ``0.3.0a1`` 未对外发布；``0.3.0b1`` 于 2026-11-10
-发布为 Beta，``0.3.0b2`` 已于 2026-11-14 发布为 PyPI Beta，
-目前进入观察阶段。正式版 ``0.3.0`` 仍需独立批准。
-以下命令安装已公开的稳定版本，**不会** 自动安装 Beta::
+已发布的 Beta：``0.3.0b1``（2026-11-10）、
+``0.3.0b2``（2026-11-14）。维护者于 2026-11-14 批准
+不等待建议观察期而准备 Stable 候选。**源码标记为 Stable 不等于
+PyPI 已上架 ``0.3.0``**；应以 PyPI 上的实际发行记录为准。
+
+在 ``0.3.0`` 正式上传 PyPI 后，可安装固定版本::
+
+    python -m pip install emtl==0.3.0
+
+不指定版本时，pip 从 PyPI 选择符合环境约束的可用稳定版本::
 
     python -m pip install emtl
 
-显式安装已公开的 OCR Beta 版本::
+仍可显式安装此前的 OCR Beta 进行比较::
 
     python -m pip install --pre emtl==0.3.0b2
 
 如需获取开发中的源码，可从仓库安装，但源码不等于已验证的正式发布版本::
 
     python -m pip install https://github.com/riiy/emtl/archive/master.zip
+
+Stable 是正式发行渠道，**不意味着真实下单、撤单、成交或长期运行安全性已得到验证**。
+本项目仍是非官方接口，生产与投资风险免责声明继续适用。
 
 Python 接口
 ===========

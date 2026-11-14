@@ -33,10 +33,10 @@ def test_package_driver_failure_evidence_and_cleanup(monkeypatch, tmp_path, fail
 
     monkeypatch.setattr(subprocess, "run", fake)
     if failure is None:
-        run(artifacts, "0.3.0b2", tmp_path / "evidence")
+        run(artifacts, "0.3.0", tmp_path / "evidence")
     else:
         with pytest.raises(RuntimeError, match="package smoke"):
-            run(artifacts, "0.3.0b2", tmp_path / "evidence")
+            run(artifacts, "0.3.0", tmp_path / "evidence")
     if failure != "build":
         assert any(args[1] == "logs" for args in calls)
         assert any(args[1] == "rm" for args in calls)
@@ -61,4 +61,4 @@ def test_package_driver_preserves_start_failure_over_cleanup_failure(monkeypatch
 
     monkeypatch.setattr(subprocess, "run", fake)
     with pytest.raises(RuntimeError, match="start failed"):
-        run(artifacts, "0.3.0b2", tmp_path / "evidence")
+        run(artifacts, "0.3.0", tmp_path / "evidence")

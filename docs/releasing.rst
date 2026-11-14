@@ -5,20 +5,24 @@
 当前状态与支持范围
 ==================
 
-内部 Alpha ``0.3.0a1`` 未对外发布；``0.3.0b1`` 已于 2026-11-10
-发布为 Beta；OCR v1 随 ``0.3.0b2`` 于 2026-11-14
-完成 Tag、GitHub Pre-release 和 PyPI Trusted Publishing，现处于
-Beta 观察阶段。正式版 ``0.3.0`` 仍须单独评审及维护者批准。
+内部 Alpha ``0.3.0a1`` 未对外发布；``0.3.0b1`` 已于
+2026-11-10 发布为 Beta；OCR v1 随 ``0.3.0b2`` 于
+2026-11-14 完成 Tag、GitHub Pre-release 和 PyPI 发布。
+维护者于 2026-11-14 授权以 ``0.3.0b2`` 为功能基线准备
+``0.3.0`` Stable 候选，不新增功能且不等待原建议的 Beta 观察期。
+该决定 **只授权候选 PR**，不授权合并、Tag、Release 或 PyPI 上传；
+是否正式发布以可核实的 GitHub Release / PyPI 记录为准。
+:download:`Stable 发布决策与门禁 <refactor/reports/v0.3.0-stable-release-decision.md>`。
 
-``0.3.0b1`` 的原支持边界为 Linux / CPython 3.11；
-``0.3.0b2`` 面向 CPython 3.11、3.12、3.13，维护者已在 Ubuntu
-x86_64 与 macOS Intel x86_64 六组环境中，通过 PyPI 安装和
-每组 10 次真实东方财富账户登录（60/60）。这仅是 Beta 指定环境的
-安装、OCR 与登录实测，**不证明真实下单、撤单或成交安全**；
-Apple Silicon、Windows、PyPy 尚未验证。详见
+Stable 候选继续使用 CPython 3.11–3.13 及
+``Requires-Python >=3.11,<3.14``。``0.3.0b2`` 已经在 Ubuntu
+x86_64 与 macOS Intel x86_64 六组环境中，从 PyPI 安装并分别
+完成 10 次真实东方财富账户登录（60/60）；这是维护者报告的 Beta
+实测，**不证明 Stable 真实下单、撤单或成交安全**。
+Apple Silicon、Windows、PyPy 仍未验证。参见
 :download:`Beta 实测验收报告 <refactor/reports/v0.3.0b2-beta-field-acceptance.md>`。
-自动测试另采用合成数据与禁网环境，不能证明真实券商交易结果。
-Read the Docs 是规范文档站点，GitHub Pages 只是手动维护的镜像；
+自动测试使用合成数据与禁网环境，不能证明真实券商交易结果。
+Read the Docs 是规范文档站点，GitHub Pages 只是手动维护镜像；
 仅交付 RST + Sphinx 生成的 HTML，不生成 PDF、EPUB。
 
 版本号与不可变 Tag
@@ -52,8 +56,10 @@ Beta 必须在 Alpha 和独立 Review 后，由维护者**另行批准上传**�
     python -m pip install --pre emtl==0.3.0b2
 
 Beta 说明至少包含版本、日期、Commit、产物哈希、环境、变更、
-兼容范围、升级/降级风险和已知限制。建议观察十个工作日并按
-安装/环境、文档、API 兼容、缺陷、安全/交易风险分类反馈。
+兼容范围、升级/降级风险和已知限制。原计划建议观察约十个工作日并按
+安装/环境、文档、API 兼容、缺陷、安全/交易风险分类反馈；
+维护者已明确决定此次不等待该观察期。跳过观察不是无缺陷证明，
+也不免除独立 Review、发布门禁及单独的正式上传审批。
 
 没有有价值的反馈时，维护者应显式选择延长观察、暂停或评估正式版；
 **沉默不能证明真实交易安全**。反馈模板仅包含 emtl/Python/OS 版本、
@@ -188,7 +194,8 @@ CI 失败应阻断发布，保留原始失败证据，用合成数据复现，
 并在最终 SHA 重新运行。
 维护重点为当前 stable；旧版尽力支持，不承诺缺乏资源保障的 SLA。
 每次发布或事故后记录耗时、失败、回退/Hotfix、用户反馈及维护成本。
-Beta 只供自愿试用，不提供生产环境交易保障。
+Beta 与 Stable 均不提供真实资金交易可靠性保证；
+Stable 仅代表正式发行渠道，不等于券商实盘认证。
 
 - :download:`安全与交易风险报告原文（英文） <../SECURITY.md>`
 - :download:`P4 依赖审查记录 <refactor/reports/P4-dependency-review.md>`
