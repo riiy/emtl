@@ -41,9 +41,9 @@
     :alt: Supported implementations
     :target: https://pypi.org/project/emtl
 
-.. |commits-since| image:: https://img.shields.io/github/commits-since/riiy/emtl/v0.3.0b2.svg
+.. |commits-since| image:: https://img.shields.io/github/commits-since/riiy/emtl/v0.3.0.svg
     :alt: Commits since latest release
-    :target: https://github.com/riiy/emtl/compare/v0.3.0b2...master
+    :target: https://github.com/riiy/emtl/compare/v0.3.0...master
 
 
 
@@ -124,6 +124,8 @@ ddddOCR、NumPy、ONNX Runtime 或 OpenCV。仅在 Python 3.11
 
 Stable 是正式发行渠道，**不意味着真实下单、撤单、成交或长期运行安全性已得到验证**。
 本项目仍是非官方接口，生产与投资风险免责声明继续适用。
+正式版发布与安装验收归档：
+``docs/refactor/reports/v0.3.0-stable-release-acceptance.md``。
 
 Python 接口
 ===========
