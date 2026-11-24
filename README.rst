@@ -85,6 +85,11 @@ Read the Docs 是规范文档站点，GitHub Pages 仅为镜像。
 安装与支持范围
 ==============
 
+``0.3.1`` 为稳定性补丁候选（PR #37），为显式 ``TradingClient`` 增加
+有限 HTTP 超时与有限验证码识别重试，不改变依赖及 Python 支持范围。
+正式发行状态以 PyPI 实际记录为准。发布后可固定安装
+``python -m pip install emtl==0.3.1``。
+
 ``0.3.0`` Stable 沿用已发布的 ``0.3.0b2`` 的功能基线，
 不增加交易或 OCR 功能，支持 CPython 3.11、3.12、3.13
 （``Requires-Python >=3.11,<3.14``）。
