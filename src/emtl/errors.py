@@ -39,3 +39,7 @@ class TradeOutcomeUnknown(RuntimeError):
         self.status_code = status_code
         status = "" if status_code is None else f", status_code={status_code}"
         super().__init__(f"trade outcome unknown: operation={operation}, reason={reason}{status}; do not automatically resubmit")
+
+
+class CaptchaAttemptsExceeded(RuntimeError):
+    """The configured number of invalid OCR results was exhausted before login POST."""

@@ -213,7 +213,7 @@ def _assert_non_trade_http_attempt(client, reply, stage, secrets):
         assert [entry[0] for entry in session.mock_calls] == ["get"]
         if stage == "captcha":
             assert session.get.call_args.args[0].startswith(_urls["yzm"])
-            assert session.get.call_args.kwargs["timeout"] == 60
+            assert session.get.call_args.kwargs["timeout"] == (5, 60)
         else:
             assert session.get.call_args.args == ("https://emhsmarketwg.eastmoneysec.com/api/SHSZQuoteSnapshot",)
     if stage == "captcha":

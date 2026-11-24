@@ -39,6 +39,7 @@ def test_six_queries_preserve_complete_request_and_json_identity(client_factory,
         _urls[TAGS.get(name, name)] + "P2_FAKE_TOKEN",
         headers=dict(before, **{"X-Requested-With": "XMLHttpRequest"}),
         data={"qqhs": 10, "dwc": "", "st": "start", "et": "end"} if args else {"qqhs": 100, "dwc": ""},
+        timeout=(5, 30),
     )
     assert _base_headers == before
     reply.json.assert_called_once()
@@ -94,6 +95,7 @@ def test_order_form_rejection_and_two_json_evaluations(client_factory, trade_typ
         headers=dict(_base_headers, **{"X-Requested-With": "XMLHttpRequest"}),
         data={"stockCode": " P2_FAKE ", "tradeType": trade_type, "zqmc": "", "market": "SA", "price": 1.25, "amount": 100},
         allow_redirects=False,
+        timeout=(5, 30),
     )
 
 
@@ -163,6 +165,7 @@ def test_cancel_request_and_text_result_remain_uninterpreted(client_factory, ord
         headers=dict(_base_headers, **{"X-Requested-With": "XMLHttpRequest"}),
         data={"revokes": order.strip()},
         allow_redirects=False,
+        timeout=(5, 30),
     )
 
 
@@ -244,7 +247,10 @@ def test_market_price_uses_own_session_without_login(client_factory, payload, ex
     actual = client.get_last_price(" FAKE ", "SA")
     assert math.isnan(actual) if expected is None else actual == expected
     client._session.get.assert_called_once_with(
-        "https://emhsmarketwg.eastmoneysec.com/api/SHSZQuoteSnapshot", params={"id": "FAKE", "market": "SA"}, headers=_base_headers
+        "https://emhsmarketwg.eastmoneysec.com/api/SHSZQuoteSnapshot",
+        params={"id": "FAKE", "market": "SA"},
+        headers=_base_headers,
+        timeout=(5, 30),
     )
     client._session.post.assert_not_called()
     assert client._state == "NEW"
@@ -298,7 +304,7 @@ def test_legacy_and_client_protocol_parity(client_factory, monkeypatch, name, ar
         session.post.return_value = response(text=" rejected \n") if name == "cancel_order" else response({"Status": -1, "Data": []})
     assert getattr(core, name)(*args) == getattr(client, name)(*args)
     old, new = legacy.post.call_args, client._session.post.call_args
-    expected_kwargs = dict(old.kwargs)
+    expected_kwargs = dict(old.kwargs, timeout=(5, 30))
     if name in {"create_order", "cancel_order"}:
         expected_kwargs["allow_redirects"] = False
     assert new.args == old.args
@@ -358,3 +364,19 @@ def test_default_session_has_no_retry_or_resend_hooks(client_factory):
         assert adapter.max_retries.total == 0
         assert adapter.max_retries.read is False
         assert adapter.max_retries.connect in {None, 0}
+
+
+@pytest.mark.parametrize(("name", "args"), OPERATIONS)
+def test_custom_timeout_reaches_all_business_posts(client_factory, name, args):
+    client = ready(client_factory(connect_timeout=1.5, read_timeout=9))
+    client._session.post.return_value = response(text="cancelled") if name == "cancel_order" else response({})
+    getattr(client, name)(*args)
+    client._session.post.assert_called_once()
+    assert client._session.post.call_args.kwargs["timeout"] == (1.5, 9)
+
+
+def test_custom_timeout_reaches_snapshot(client_factory):
+    client = client_factory(connect_timeout=1.5, read_timeout=9)
+    client._session.get.return_value = response({"status": -1})
+    assert math.isnan(client.get_last_price("FAKE", "SA"))
+    assert client._session.get.call_args.kwargs["timeout"] == (1.5, 9)

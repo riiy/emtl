@@ -1,5 +1,6 @@
 """Synchronous, explicitly account-bound trading client."""
 
+import math
 import os
 import sys
 from random import SystemRandom
@@ -15,6 +16,7 @@ from ._ocr import make_ocr
 from .const import _base_headers
 from .const import _urls
 from .errors import BrokerHTTPError
+from .errors import CaptchaAttemptsExceeded
 from .errors import TradeOutcomeUnknown
 from .utils import emt_trade_encrypt
 from .utils import get_logger
@@ -22,10 +24,38 @@ from .utils import get_logger
 logger = get_logger(__name__)
 
 
+def _positive_timeout(value):
+    if type(value) not in (int, float) or value <= 0:
+        raise ValueError("timeouts must be positive finite numbers")
+    try:
+        finite = math.isfinite(value)
+    except OverflowError:
+        finite = False
+    if not finite:
+        raise ValueError("timeouts must be positive finite numbers")
+    return float(value)
+
+
 class TradingClient:
     """Own one account identity and one independent HTTP session."""
 
-    def __init__(self, username: str, password: Optional[str] = None, *, session_factory=None, ocr_factory=None):
+    def __init__(
+        self,
+        username: str,
+        password: Optional[str] = None,
+        *,
+        session_factory=None,
+        ocr_factory=None,
+        connect_timeout=5,
+        read_timeout=30,
+        captcha_read_timeout=60,
+        captcha_max_attempts=5,
+    ):
+        self._timeout = (_positive_timeout(connect_timeout), _positive_timeout(read_timeout))
+        self._captcha_timeout = (self._timeout[0], _positive_timeout(captcha_read_timeout))
+        if type(captcha_max_attempts) is not int or captcha_max_attempts <= 0:  # noqa: E721 - exclude bool.
+            raise ValueError("captcha_max_attempts must be a positive integer")
+        self._captcha_max_attempts = captcha_max_attempts
         if not isinstance(username, str):
             raise TypeError("username must be a string")
         username = username.strip()
@@ -109,15 +139,19 @@ class TradingClient:
             raise error from None
 
     def _get_captcha_code(self):
-        return _protocol.captcha(
-            self._session.get,
-            lambda content: self._get_ocr().classification(content),
-            SystemRandom,
-            self._check_resp,
-            logger,
-            self._get_captcha_code,
-            headers=_base_headers.copy(),
-        )
+        for _ in range(self._captcha_max_attempts):
+            result = _protocol.captcha_attempt(
+                self._session.get,
+                lambda content: self._get_ocr().classification(content),
+                SystemRandom,
+                self._check_resp,
+                logger,
+                headers=_base_headers.copy(),
+                timeout=self._captcha_timeout,
+            )
+            if result is not None:
+                return result
+        raise CaptchaAttemptsExceeded("captcha recognition attempts exhausted")
 
     def login(self, duration: int = 30) -> Optional[str]:
         """Authenticate afresh; insufficient evidence returns None, never old state.
@@ -134,7 +168,7 @@ class TradingClient:
                 self._session.cookies.clear()
                 random_num, code = self._get_captcha_code()
                 data = _protocol.login_form(self._username, self._password, duration, random_num, code, emt_trade_encrypt)
-                resp = self._session.post(_urls["login"], headers=_protocol.login_headers(), data=data)
+                resp = self._session.post(_urls["login"], headers=_protocol.login_headers(), data=data, timeout=self._timeout)
                 self._check_resp(resp)
                 payload = resp.json()
                 if (
@@ -143,7 +177,7 @@ class TradingClient:
                     or payload["Status"] != 0
                 ):
                     return None
-                token = _protocol.fetch_token(self._session, self._check_resp, headers=_base_headers.copy())
+                token = _protocol.fetch_token(self._session, self._check_resp, headers=_base_headers.copy(), timeout=self._timeout)
                 if not token:
                     return None
                 self._token = token
@@ -177,6 +211,7 @@ class TradingClient:
                 req_data,
                 check,
                 disable_order_redirects=True,
+                timeout=self._timeout,
                 on_post_start=on_post_start if tag in {"create_order", "cancel_order"} else None,
             )
 
@@ -256,7 +291,7 @@ class TradingClient:
     def get_last_price(self, symbol_code: str, market: str) -> float:
         with self._account.lock:
             self._ensure_open()
-            return _protocol.last_price(_protocol.snapshot(self._session, symbol_code, market, self._check_resp))
+            return _protocol.last_price(_protocol.snapshot(self._session, symbol_code, market, self._check_resp, timeout=self._timeout))
 
     def close(self) -> None:
         with self._account.lock:

@@ -13,7 +13,7 @@ def check_response(resp, logger):
         raise
 
 
-def query(session, token, tag, req_data, check, *, disable_order_redirects=False, on_post_start=None):
+def query(session, token, tag, req_data, check, *, disable_order_redirects=False, on_post_start=None, timeout=None):
     assert tag in _urls, f"{tag} not in url list"
     url = _urls[tag] + token
     if req_data is None:
@@ -21,6 +21,8 @@ def query(session, token, tag, req_data, check, *, disable_order_redirects=False
     headers = _base_headers.copy()
     headers["X-Requested-With"] = "XMLHttpRequest"
     options = {"allow_redirects": False} if disable_order_redirects and tag in {"create_order", "cancel_order"} else {}
+    if timeout is not None:
+        options["timeout"] = timeout
     post = session.post
     if on_post_start is not None:
         on_post_start()
@@ -30,13 +32,20 @@ def query(session, token, tag, req_data, check, *, disable_order_redirects=False
 
 
 def captcha(get_image, classify, random_factory, check, logger, retry, *, headers=None):
+    result = captcha_attempt(get_image, classify, random_factory, check, logger, headers=headers)
+    if result is None:
+        return retry()
+    return result
+
+
+def captcha_attempt(get_image, classify, random_factory, check, logger, *, headers=None, timeout=60):
     random_num = random_factory().random()
-    resp = get_image(f"{_urls['yzm']}{random_num}", headers=_base_headers if headers is None else headers, timeout=60)
+    resp = get_image(f"{_urls['yzm']}{random_num}", headers=_base_headers if headers is None else headers, timeout=timeout)
     check(resp)
     code = classify(resp.content)
     if not isinstance(code, str) or re.fullmatch(r"[0-9]{4}", code) is None:
         logger.error("captcha recognition failed")
-        return retry()
+        return None
     return random_num, code
 
 
@@ -61,8 +70,9 @@ def login_form(username, password, duration, random_num, code, encrypt):
     }
 
 
-def fetch_token(session, check, *, headers=None):
-    resp = session.get("https://jywg.18.cn/Trade/Buy", headers=_base_headers if headers is None else headers)
+def fetch_token(session, check, *, headers=None, timeout=None):
+    options = {} if timeout is None else {"timeout": timeout}
+    resp = session.get("https://jywg.18.cn/Trade/Buy", headers=_base_headers if headers is None else headers, **options)
     check(resp)
     matches = re.findall(r'id="em_validatekey" type="hidden" value="(.*?)"', resp.text)
     if matches:
@@ -98,11 +108,13 @@ def cancel_result(resp):
         return resp.text.strip()
 
 
-def snapshot(session, symbol_code, market, check):
+def snapshot(session, symbol_code, market, check, *, timeout=None):
+    options = {} if timeout is None else {"timeout": timeout}
     resp = session.get(
         "https://emhsmarketwg.eastmoneysec.com/api/SHSZQuoteSnapshot",
         params={"id": symbol_code.strip(), "market": market},
         headers=_base_headers.copy(),
+        **options,
     )
     check(resp)
     return resp.json()
