@@ -5,8 +5,9 @@
 版本与支持范围
 ==============
 
-``0.3.1`` 是基于 ``0.3.0`` 的稳定性补丁候选，为 ``TradingClient``
-增加 HTTP 超时和有限验证码识别重试，支持范围与运行时依赖不变。
+``0.3.1`` Stable 已于 2026-11-24 发布，是基于 ``0.3.0`` 的稳定性补丁，
+为 ``TradingClient`` 增加 HTTP 超时和有限验证码识别重试，支持范围与运行时依赖不变。
+参见 :download:`v0.3.1 正式发布验收 <refactor/reports/v0.3.1-stable-release-acceptance.md>`。
 
 ``0.3.0`` Stable 使用已发布 ``0.3.0b2`` 的功能基线，
 CPython 支持范围仍为 3.11、3.12、3.13
@@ -20,7 +21,7 @@ Beta ``0.3.0b2`` 并完成 10 次真实账户登录，六组合计 60/60。
 Stable 的发布决策及例外见
 :download:`Stable 发布决策 <refactor/reports/v0.3.0-stable-release-decision.md>`。
 
-Stable ``0.3.0`` 与 Beta ``0.3.0b2`` 默认安装 Pillow 13.0.0 与冻结的微型 CNN 模型，
+Stable ``0.3.1``、``0.3.0`` 与 Beta ``0.3.0b2`` 默认安装 Pillow 13.0.0 与冻结的微型 CNN 模型，
 不再强制安装 ddddOCR、NumPy、ONNX Runtime 或 OpenCV。
 
 在 Python 3.11 上需要旧 OCR 时，可以安装额外依赖::
@@ -45,7 +46,7 @@ OCR v1 已随 ``0.3.0b2`` 发布；此前的 ``0.3.0b1``
 安装 Stable 版本
 ===============
 
-``0.3.1`` 正式完成 PyPI 上传后，使用固定版本安装::
+当前 Stable ``0.3.1`` 已完成 PyPI 上传，使用固定版本安装::
 
     python -m pip install emtl==0.3.1
 
@@ -58,8 +59,9 @@ OCR v1 已随 ``0.3.0b2`` 发布；此前的 ``0.3.0b1``
 
     python -m pip install emtl
 
-**仅仅合并 Stable 候选或创建 Tag，不等于 ``0.3.1`` 已在 PyPI 发布。**
-应先查看 https://pypi.org/project/emtl/ 的实际发行记录。
+正式发行记录见 https://pypi.org/project/emtl/0.3.1/ 与
+https://github.com/riiy/emtl/releases/tag/v0.3.1 。
+后续候选仅合并或创建 Tag 不等于已经上传 PyPI。
 开发中的源码可以从 GitHub 获取，但不代表已完成正式发布验收::
 
     python -m pip install https://github.com/riiy/emtl/archive/master.zip

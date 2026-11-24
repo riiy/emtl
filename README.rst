@@ -41,9 +41,9 @@
     :alt: Supported implementations
     :target: https://pypi.org/project/emtl
 
-.. |commits-since| image:: https://img.shields.io/github/commits-since/riiy/emtl/v0.3.0.svg
+.. |commits-since| image:: https://img.shields.io/github/commits-since/riiy/emtl/v0.3.1.svg
     :alt: Commits since latest release
-    :target: https://github.com/riiy/emtl/compare/v0.3.0...master
+    :target: https://github.com/riiy/emtl/compare/v0.3.1...master
 
 
 
@@ -85,10 +85,11 @@ Read the Docs 是规范文档站点，GitHub Pages 仅为镜像。
 安装与支持范围
 ==============
 
-``0.3.1`` 为稳定性补丁候选（PR #37），为显式 ``TradingClient`` 增加
-有限 HTTP 超时与有限验证码识别重试，不改变依赖及 Python 支持范围。
-正式发行状态以 PyPI 实际记录为准。发布后可固定安装
-``python -m pip install emtl==0.3.1``。
+``0.3.1`` Stable 已于 2026-11-24 发布（PR #37、#38），为显式
+``TradingClient`` 增加有限 HTTP 超时与有限验证码识别重试，
+不改变依赖及 Python 支持范围。维护者已确认真实账户只读验收完成。
+`GitHub Release <https://github.com/riiy/emtl/releases/tag/v0.3.1>`__ 与
+`PyPI 0.3.1 <https://pypi.org/project/emtl/0.3.1/>`__ 提供正式发行包。
 
 ``0.3.0`` Stable 沿用已发布的 ``0.3.0b2`` 的功能基线，
 不增加交易或 OCR 功能，支持 CPython 3.11、3.12、3.13
@@ -109,9 +110,13 @@ ddddOCR、NumPy、ONNX Runtime 或 OpenCV。仅在 Python 3.11
 
 已发布的 Beta：``0.3.0b1``（2026-11-10）、
 ``0.3.0b2``（2026-11-14）。维护者于 2026-11-14 批准
-不等待建议观察期而准备 Stable 候选。源码标记为 Stable 不等于 PyPI 已上架 ``0.3.0``；应以 PyPI 上的实际发行记录为准。
+不等待建议观察期而准备 Stable 候选；``0.3.0`` 已于 2026-11-14 正式发布。
 
-在 ``0.3.0`` 正式上传 PyPI 后，可安装固定版本::
+安装当前 Stable 固定版本::
+
+    python -m pip install emtl==0.3.1
+
+如需安装此前的 Stable 版本，可显式指定::
 
     python -m pip install emtl==0.3.0
 
@@ -129,7 +134,9 @@ ddddOCR、NumPy、ONNX Runtime 或 OpenCV。仅在 Python 3.11
 
 Stable 是正式发行渠道，**不意味着真实下单、撤单、成交或长期运行安全性已得到验证**。
 本项目仍是非官方接口，生产与投资风险免责声明继续适用。
-正式版发布与安装验收归档：
+正式版发布验收归档：
+``docs/refactor/reports/v0.3.1-stable-release-acceptance.md``；
+此前 ``0.3.0`` 的独立历史记录保留于
 ``docs/refactor/reports/v0.3.0-stable-release-acceptance.md``。
 
 Python 接口
@@ -141,7 +148,10 @@ emtl 提供两套兼容边界不同的接口：
   这些函数复用进程级 Session 和认证令牌，保留历史行为，**不保证多账户隔离**。
 - **``emtl.TradingClient``**：同步、显式绑定账户的客户端，独立管理
   Session、Cookie 和 token。使用完毕须在 ``finally`` 中调用 ``close()``；
-  当前不支持 ``with`` 或异步接口。
+  当前不支持 ``with`` 或异步接口。``0.3.1`` 起支持
+  ``connect_timeout``、``read_timeout``、``captcha_read_timeout`` 和
+  ``captcha_max_attempts`` 四个可选关键字参数；默认值分别为 5、30、60 秒和 5 次。
+  验证码识别耗尽时抛出 ``emtl.errors.CaptchaAttemptsExceeded``。
 
 对于 ``TradingClient``，交易 POST 开始尝试后若结果无法确定，
 将抛出 ``emtl.errors.TradeOutcomeUnknown``。 **不得据此自动重发订单**。

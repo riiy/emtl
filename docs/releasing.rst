@@ -5,22 +5,25 @@
 当前状态与支持范围
 ==================
 
-``0.3.1`` 为基于已发行 ``0.3.0`` 的稳定性补丁候选，包含 PR #37
-的显式客户端超时和验证码尝试上限，未变更运行时依赖。
-候选门禁及实测证据见
+``0.3.1`` Stable 已于 2026-11-24 正式发行，包含 PR #37 的显式客户端超时和
+验证码尝试上限以及 PR #38 的版本准备，未变更运行时依赖。
+发布门禁及发行证据见
+:download:`v0.3.1 正式发布验收 <refactor/reports/v0.3.1-stable-release-acceptance.md>`；
+真实账户只读验收见
 :download:`TradingClient 稳定性验收 <refactor/reports/trading-client-stability-acceptance.md>`。
-候选 PR、合并、Tag、PyPI 与 GitHub Release 的审批和精确 SHA 门禁继续适用。
+后续候选 PR、合并、Tag、PyPI 与 GitHub Release 的审批和精确 SHA 门禁继续适用。
 
 内部 Alpha ``0.3.0a1`` 未对外发布；``0.3.0b1`` 已于
 2026-11-10 发布为 Beta；OCR v1 随 ``0.3.0b2`` 于
 2026-11-14 完成 Tag、GitHub Pre-release 和 PyPI 发布。
 维护者于 2026-11-14 授权以 ``0.3.0b2`` 为功能基线准备
 ``0.3.0`` Stable 候选，不新增功能且不等待原建议的 Beta 观察期。
-该决定 **只授权候选 PR**，不授权合并、Tag、Release 或 PyPI 上传；
-是否正式发布以可核实的 GitHub Release / PyPI 记录为准。
-:download:`Stable 发布决策与门禁 <refactor/reports/v0.3.0-stable-release-decision.md>`。
+该决定当时仅授权候选 PR；维护者随后单独批准合并和发行，
+``0.3.0`` 已于 2026-11-14 正式发布。历史记录见
+:download:`Stable 发布决策与门禁 <refactor/reports/v0.3.0-stable-release-decision.md>` 和
+:download:`v0.3.0 正式发布验收 <refactor/reports/v0.3.0-stable-release-acceptance.md>`。
 
-Stable 候选继续使用 CPython 3.11–3.13 及
+当前 Stable 使用 CPython 3.11–3.13 及
 ``Requires-Python >=3.11,<3.14``。``0.3.0b2`` 已经在 Ubuntu
 x86_64 与 macOS Intel x86_64 六组环境中，从 PyPI 安装并分别
 完成 10 次真实东方财富账户登录（60/60）；这是维护者报告的 Beta
@@ -74,7 +77,8 @@ Beta 说明至少包含版本、日期、Commit、产物哈希、环境、变更
 也不要求真实登录、下单或撤单的结果。
 
 凭证泄漏、重复提交风险、账户混用、未经授权的 API 不兼容改动等阻断项
-必须解决；延期须明确批准并披露。Stable 需 Beta 后再次批准，
+必须解决；延期须明确批准并披露。正式发行须单独批准；对于已明确批准直接
+发布的最小稳定性补丁（如 0.3.1），不额外安排 Beta/RC，但不豁免其他门禁。
 选择发布通道本身不等于获得上传权限。
 
 正式发布检查单

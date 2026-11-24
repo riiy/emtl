@@ -1,8 +1,8 @@
 变更记录（Changelog）
 ============================
 
-0.3.1 (Stable 候选)
--------------------
+0.3.1 (2026-11-24 Stable)
+-------------------------
 
 * ``TradingClient`` 的 HTTP 请求使用可配置的连接及读取超时，默认 5/30 秒，
   验证码读取超时默认 60 秒。
@@ -12,7 +12,8 @@
   交易 POST 尝试后的不确定结果仍抛出 ``TradeOutcomeUnknown``，不自动重发。
 * 维护者确认真实账户只读验收已完成；具体轮数、成功率及运行环境尚未提供。
   不声明真实下单、撤单、成交或长期运行已验收。
-* 正式发布状态以 GitHub Release 与 PyPI 实际记录为准。
+* 2026-11-24 已完成不可变 Tag、受保护的 PyPI Trusted Publishing 及 GitHub
+  Stable Release；正式发行证据见 ``docs/refactor/reports/v0.3.1-stable-release-acceptance.md``。
 
 0.3.0 (Stable)
 --------------
