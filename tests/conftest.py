@@ -44,10 +44,10 @@ def client_factory():
     clients = []
     synthetic = "P2_FAKE_PASSWORD"
 
-    def create(username="P2_FAKE_A", password=synthetic, *, session=None, ocr=None):
+    def create(username="P2_FAKE_A", password=synthetic, *, session=None, ocr=None, **kwargs):
         session = fake_session() if session is None else session
         ocr = Mock(classification=Mock(return_value="1234")) if ocr is None else ocr
-        client = TradingClient(username, password, session_factory=lambda: session, ocr_factory=lambda: ocr)
+        client = TradingClient(username, password, session_factory=lambda: session, ocr_factory=lambda: ocr, **kwargs)
         clients.append(client)
         return client
 

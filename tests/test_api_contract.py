@@ -47,7 +47,8 @@ def test_client_public_interface():
     assert emtl.TradingClient is TradingClient
     assert (
         str(inspect.signature(TradingClient))
-        == "(username: str, password: Optional[str] = None, *, session_factory=None, ocr_factory=None)"
+        == "(username: str, password: Optional[str] = None, *, session_factory=None, ocr_factory=None, "
+        "connect_timeout=5, read_timeout=30, captcha_read_timeout=60, captcha_max_attempts=5)"
     )
     assert str(inspect.signature(TradingClient.login)) == "(self, duration: int = 30) -> Optional[str]"
     assert str(inspect.signature(TradingClient.close)) == "(self) -> None"

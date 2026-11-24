@@ -9,6 +9,7 @@ from emtl import client as client_module
 from emtl.const import _base_headers
 from emtl.const import _urls
 from emtl.errors import BrokerHTTPError
+from emtl.errors import CaptchaAttemptsExceeded
 from tests.client_helpers import SYNTHETIC
 from tests.client_helpers import ready
 from tests.client_helpers import token_reply
@@ -38,7 +39,7 @@ def test_login_uses_bound_credentials_and_exact_request_chain(client_factory, mo
     assert client._state == "READY"
     assert client._token == new_value.strip()
     assert client._session.mock_calls == [
-        call.get(_urls["yzm"] + "0.5", headers=before, timeout=60),
+        call.get(_urls["yzm"] + "0.5", headers=before, timeout=(5, 60)),
         call.post(
             _urls["login"],
             headers=dict(
@@ -59,8 +60,9 @@ def test_login_uses_bound_credentials_and_exact_request_chain(client_factory, mo
                 "type": "Z",
                 "secInfo": "",
             },
+            timeout=(5, 30),
         ),
-        call.get("https://jywg.18.cn/Trade/Buy", headers=before),
+        call.get("https://jywg.18.cn/Trade/Buy", headers=before, timeout=(5, 30)),
     ]
     assert _base_headers == before
     for request in client._session.mock_calls:
@@ -320,3 +322,39 @@ def test_failed_login_clears_cookies_created_during_http(client_factory, previou
     with pytest.raises(RuntimeError, match="^authentication required$"):
         client.query_orders()
     assert session.mock_calls == calls_after_failure
+
+
+@pytest.mark.parametrize("attempts", [1, 5])
+def test_captcha_exhaustion_clears_auth_and_never_posts(client_factory, attempts):
+    ocr = Mock(classification=Mock(return_value="bad"))
+    client = ready(client_factory(ocr=ocr, captcha_max_attempts=attempts))
+    client._session.cookies.set("old", "P2_FAKE_COOKIE")
+    client._session.get.return_value = response(text="invalid")
+    with pytest.raises(CaptchaAttemptsExceeded, match="attempts exhausted"):
+        client.login()
+    assert client._session.get.call_count == attempts
+    assert ocr.classification.call_count == attempts
+    client._session.post.assert_not_called()
+    assert client._state == "FAILED"
+    assert client._token == ""
+    assert not client._session.cookies
+    with pytest.raises(RuntimeError, match="authentication required"):
+        client.query_orders()
+    client._session.post.assert_not_called()
+    assert client._session.get.call_count == attempts
+
+
+def test_default_captcha_limit_is_five(client_factory):
+    client = client_factory(ocr=Mock(classification=Mock(return_value=None)))
+    client._session.get.return_value = response(text="invalid")
+    with pytest.raises(CaptchaAttemptsExceeded):
+        client.login()
+    assert client._session.get.call_count == 5
+    client._session.post.assert_not_called()
+
+
+def test_custom_timeouts_reach_each_auth_request(client_factory):
+    client = client_factory(connect_timeout=2.5, read_timeout=11, captcha_read_timeout=13)
+    configure_auth(client)
+    assert client.login() == SYNTHETIC
+    assert [request.kwargs["timeout"] for request in client._session.mock_calls] == [(2.5, 13), (2.5, 11), (2.5, 11)]
