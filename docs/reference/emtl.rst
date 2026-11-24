@@ -2,7 +2,8 @@
 emtl
 ====
 
-版本 ``0.3.0`` 的计划支持范围为 Linux / CPython 3.11。
+当前 Stable ``0.3.1`` 的发行元数据支持 Linux / CPython 3.11–3.13
+（``Requires-Python >=3.11,<3.14``）。其他平台的实测范围和限制参见 :doc:`../installation`。
 公开函数签名、成功返回值及 CLI 参数与退出码遵循以下契约；
 新增功能需补充契约测试，废弃接口需提供变更记录和迁移说明。
 删除或不兼容修改必须另行批准并确定版本策略，P4 未授权删除既有接口。
@@ -18,7 +19,12 @@ emtl
 旧接口直接引用 ``emtl.core`` 的对应函数，保留共享会话与令牌的
 历史行为；参见上述 P0 契约。
 
-同步独立账户客户端 ``TradingClient`` 提供：
+同步独立账户客户端 ``TradingClient`` 自 ``0.3.1`` 起新增四个可选关键字参数：
+``connect_timeout=5``、``read_timeout=30``、``captcha_read_timeout=60``
+（单位为秒）和 ``captcha_max_attempts=5``（尝试次数）。
+超时参数为正有限数，尝试次数为正整数；不提供端到端截止时间或自动交易重试。
+
+客户端提供：
 
 - ``login(duration=30)``、``close()``
 - ``query_asset_and_position()``、``query_orders()``、``query_trades()``

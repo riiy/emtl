@@ -14,9 +14,29 @@
 时，会在构造期间读取一次环境变量 ``EM_PASSWORD``。
 每个实例独立持有 Session、Cookie 和认证令牌。
 
-显式客户端新增仅限关键字的可选配置（单位为秒）：
-``connect_timeout=5``、``read_timeout=30``、``captcha_read_timeout=60``、
-``captcha_max_attempts=5``。超时必须为正有限数，尝试次数必须为正整数。
+自 ``0.3.1`` 起，显式客户端支持以下可选关键字参数：
+
+.. list-table::
+   :header-rows: 1
+   :widths: 40 15 45
+
+   * - 参数
+     - 默认值
+     - 用途
+   * - ``connect_timeout``
+     - 5 秒
+     - HTTP 连接超时
+   * - ``read_timeout``
+     - 30 秒
+     - 常规 HTTP 读取超时
+   * - ``captcha_read_timeout``
+     - 60 秒
+     - 验证码 HTTP 读取超时
+   * - ``captcha_max_attempts``
+     - 5 次
+     - 无效验证码识别的最大尝试次数
+
+超时必须为正有限数，尝试次数必须为正整数。
 连接和读取超时不是整个任务的绝对截止时间；请求不会因本配置自动重试。
 验证码仅在识别结果无效时重新获取，传输及 OCR 异常仍直接传播。
 识别次数耗尽时抛出 ``emtl.errors.CaptchaAttemptsExceeded``，不提交登录 POST，
@@ -35,7 +55,13 @@
 
     from emtl import TradingClient
 
-    client = TradingClient(os.environ["EM_USERNAME"])
+    client = TradingClient(
+        os.environ["EM_USERNAME"],
+        connect_timeout=5,
+        read_timeout=30,
+        captcha_read_timeout=60,
+        captcha_max_attempts=5,
+    )
     try:
         if client.login() is None:
             raise RuntimeError("authentication required")
@@ -63,6 +89,8 @@
   **不得因该异常自动重发订单。**
 - ``emtl.errors.BrokerHTTPError``：显式客户端的非交易请求收到
   有效整数状态码且不为 200；认证、查询等其他异常可能继续原样传播。
+- ``emtl.errors.CaptchaAttemptsExceeded``：验证码识别次数耗尽，尚未提交登录 POST。
+  不表示交易失败；需显式重新登录后才可继续受保护的操作。
 
 正常返回也不构成成交证明：订单 JSON 和撤单文本不会按真实券商业务状态
 进行验证。具体边界见 :doc:`reference/emtl` 和其中链接的 P2/P3 契约。
