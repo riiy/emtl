@@ -29,9 +29,10 @@ emtl
 - ``create_order(stock_code, trade_type, market, price, amount)``
 - ``cancel_order(order_str)``
 
-``TradeOutcomeUnknown`` 与 ``BrokerHTTPError`` 位于
+``TradeOutcomeUnknown``、``BrokerHTTPError`` 与 ``CaptchaAttemptsExceeded`` 位于
 ``emtl.errors``，并未从包根目录通过 ``__all__`` 导出。
-它们适用于 P3 约定的显式客户端，不适用于旧模块级交易接口。
+前两者适用于 P3 约定的显式客户端；新增 ``CaptchaAttemptsExceeded`` 表示
+验证码识别次数耗尽。三者均不适用于旧模块级交易接口。
 实际使用方式与交易风险说明参见 :doc:`../usage`。
 
 .. testsetup::

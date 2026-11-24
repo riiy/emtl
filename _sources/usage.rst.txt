@@ -14,6 +14,14 @@
 时，会在构造期间读取一次环境变量 ``EM_PASSWORD``。
 每个实例独立持有 Session、Cookie 和认证令牌。
 
+显式客户端新增仅限关键字的可选配置（单位为秒）：
+``connect_timeout=5``、``read_timeout=30``、``captcha_read_timeout=60``、
+``captcha_max_attempts=5``。超时必须为正有限数，尝试次数必须为正整数。
+连接和读取超时不是整个任务的绝对截止时间；请求不会因本配置自动重试。
+验证码仅在识别结果无效时重新获取，传输及 OCR 异常仍直接传播。
+识别次数耗尽时抛出 ``emtl.errors.CaptchaAttemptsExceeded``，不提交登录 POST，
+旧 token 和认证 Cookie 被清除，必须显式重新登录。旧模块级接口不受这些配置影响。
+
 同一规范化用户名的客户端操作在单进程内串行，不同账户可以并行；
 这不保证跨进程或跨设备的账户串行。
 用完请在 ``finally`` 中调用 ``close()``；当前不提供上下文管理器或异步接口。

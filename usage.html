@@ -5,10 +5,10 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>使用指南 &#8212; emtl 0.3.0 文档</title>
+    <title>使用指南 &#8212; emtl 0.3.1 文档</title>
     <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=34bb78ad" />
     <link rel="stylesheet" type="text/css" href="_static/alabaster.css?v=12dfc556" />
-    <script src="_static/documentation_options.js?v=32729429"></script>
+    <script src="_static/documentation_options.js?v=20b4a833"></script>
     <script src="_static/doctools.js?v=888ff710"></script>
     <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="_static/translations.js?v=beaddf03"></script>
@@ -45,6 +45,13 @@
 <code class="docutils literal notranslate"><span class="pre">username</span></code>，不自动读取 <code class="docutils literal notranslate"><span class="pre">EM_USERNAME</span></code>；省略 <code class="docutils literal notranslate"><span class="pre">password</span></code>
 时，会在构造期间读取一次环境变量 <code class="docutils literal notranslate"><span class="pre">EM_PASSWORD</span></code>。
 每个实例独立持有 Session、Cookie 和认证令牌。</p>
+<p>显式客户端新增仅限关键字的可选配置（单位为秒）：
+<code class="docutils literal notranslate"><span class="pre">connect_timeout=5</span></code>、<code class="docutils literal notranslate"><span class="pre">read_timeout=30</span></code>、<code class="docutils literal notranslate"><span class="pre">captcha_read_timeout=60</span></code>、
+<code class="docutils literal notranslate"><span class="pre">captcha_max_attempts=5</span></code>。超时必须为正有限数，尝试次数必须为正整数。
+连接和读取超时不是整个任务的绝对截止时间；请求不会因本配置自动重试。
+验证码仅在识别结果无效时重新获取，传输及 OCR 异常仍直接传播。
+识别次数耗尽时抛出 <code class="docutils literal notranslate"><span class="pre">emtl.errors.CaptchaAttemptsExceeded</span></code>，不提交登录 POST，
+旧 token 和认证 Cookie 被清除，必须显式重新登录。旧模块级接口不受这些配置影响。</p>
 <p>同一规范化用户名的客户端操作在单进程内串行，不同账户可以并行；
 这不保证跨进程或跨设备的账户串行。
 用完请在 <code class="docutils literal notranslate"><span class="pre">finally</span></code> 中调用 <code class="docutils literal notranslate"><span class="pre">close()</span></code>；当前不提供上下文管理器或异步接口。</p>

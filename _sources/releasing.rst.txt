@@ -5,6 +5,12 @@
 当前状态与支持范围
 ==================
 
+``0.3.1`` 为基于已发行 ``0.3.0`` 的稳定性补丁候选，包含 PR #37
+的显式客户端超时和验证码尝试上限，未变更运行时依赖。
+候选门禁及实测证据见
+:download:`TradingClient 稳定性验收 <refactor/reports/trading-client-stability-acceptance.md>`。
+候选 PR、合并、Tag、PyPI 与 GitHub Release 的审批和精确 SHA 门禁继续适用。
+
 内部 Alpha ``0.3.0a1`` 未对外发布；``0.3.0b1`` 已于
 2026-11-10 发布为 Beta；OCR v1 随 ``0.3.0b2`` 于
 2026-11-14 完成 Tag、GitHub Pre-release 和 PyPI 发布。

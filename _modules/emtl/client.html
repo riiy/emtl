@@ -4,10 +4,10 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>emtl.client &#8212; emtl 0.3.0 文档</title>
+    <title>emtl.client &#8212; emtl 0.3.1 文档</title>
     <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=34bb78ad" />
     <link rel="stylesheet" type="text/css" href="../../_static/alabaster.css?v=12dfc556" />
-    <script src="../../_static/documentation_options.js?v=32729429"></script>
+    <script src="../../_static/documentation_options.js?v=20b4a833"></script>
     <script src="../../_static/doctools.js?v=888ff710"></script>
     <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../_static/translations.js?v=beaddf03"></script>
@@ -34,6 +34,7 @@
   <h1>emtl.client 源代码</h1><div class="highlight"><pre>
 <span></span><span class="sd">"""Synchronous, explicitly account-bound trading client."""</span>
 
+<span class="kn">import</span><span class="w"> </span><span class="nn">math</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">sys</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">random</span><span class="w"> </span><span class="kn">import</span> <span class="n">SystemRandom</span>
@@ -49,11 +50,24 @@
 <span class="kn">from</span><span class="w"> </span><span class="nn">.const</span><span class="w"> </span><span class="kn">import</span> <span class="n">_base_headers</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">.const</span><span class="w"> </span><span class="kn">import</span> <span class="n">_urls</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">.errors</span><span class="w"> </span><span class="kn">import</span> <span class="n">BrokerHTTPError</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.errors</span><span class="w"> </span><span class="kn">import</span> <span class="n">CaptchaAttemptsExceeded</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">.errors</span><span class="w"> </span><span class="kn">import</span> <span class="n">TradeOutcomeUnknown</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">.utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">emt_trade_encrypt</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">.utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">get_logger</span>
 
 <span class="n">logger</span> <span class="o">=</span> <span class="n">get_logger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_positive_timeout</span><span class="p">(</span><span class="n">value</span><span class="p">):</span>
+    <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">value</span><span class="p">)</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">(</span><span class="nb">int</span><span class="p">,</span> <span class="nb">float</span><span class="p">)</span> <span class="ow">or</span> <span class="n">value</span> <span class="o">&lt;=</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">"timeouts must be positive finite numbers"</span><span class="p">)</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">finite</span> <span class="o">=</span> <span class="n">math</span><span class="o">.</span><span class="n">isfinite</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
+    <span class="k">except</span> <span class="ne">OverflowError</span><span class="p">:</span>
+        <span class="n">finite</span> <span class="o">=</span> <span class="kc">False</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">finite</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">"timeouts must be positive finite numbers"</span><span class="p">)</span>
+    <span class="k">return</span> <span class="nb">float</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
 
 
 <div class="viewcode-block" id="TradingClient">
@@ -63,7 +77,23 @@
 
 <div class="viewcode-block" id="TradingClient.__init__">
 <a class="viewcode-back" href="../../reference/emtl.html#emtl.TradingClient.__init__">[文档]</a>
-    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">username</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">password</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">session_factory</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">ocr_factory</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">username</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">password</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="o">*</span><span class="p">,</span>
+        <span class="n">session_factory</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">ocr_factory</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">connect_timeout</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span>
+        <span class="n">read_timeout</span><span class="o">=</span><span class="mi">30</span><span class="p">,</span>
+        <span class="n">captcha_read_timeout</span><span class="o">=</span><span class="mi">60</span><span class="p">,</span>
+        <span class="n">captcha_max_attempts</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span>
+    <span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_timeout</span> <span class="o">=</span> <span class="p">(</span><span class="n">_positive_timeout</span><span class="p">(</span><span class="n">connect_timeout</span><span class="p">),</span> <span class="n">_positive_timeout</span><span class="p">(</span><span class="n">read_timeout</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_captcha_timeout</span> <span class="o">=</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_timeout</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">_positive_timeout</span><span class="p">(</span><span class="n">captcha_read_timeout</span><span class="p">))</span>
+        <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">captcha_max_attempts</span><span class="p">)</span> <span class="ow">is</span> <span class="ow">not</span> <span class="nb">int</span> <span class="ow">or</span> <span class="n">captcha_max_attempts</span> <span class="o">&lt;=</span> <span class="mi">0</span><span class="p">:</span>  <span class="c1"># noqa: E721 - exclude bool.</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">"captcha_max_attempts must be a positive integer"</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_captcha_max_attempts</span> <span class="o">=</span> <span class="n">captcha_max_attempts</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">username</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
             <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s2">"username must be a string"</span><span class="p">)</span>
         <span class="n">username</span> <span class="o">=</span> <span class="n">username</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
@@ -148,15 +178,19 @@
             <span class="k">raise</span> <span class="n">error</span> <span class="kn">from</span><span class="w"> </span><span class="kc">None</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">_get_captcha_code</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="k">return</span> <span class="n">_protocol</span><span class="o">.</span><span class="n">captcha</span><span class="p">(</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_session</span><span class="o">.</span><span class="n">get</span><span class="p">,</span>
-            <span class="k">lambda</span> <span class="n">content</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_ocr</span><span class="p">()</span><span class="o">.</span><span class="n">classification</span><span class="p">(</span><span class="n">content</span><span class="p">),</span>
-            <span class="n">SystemRandom</span><span class="p">,</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_check_resp</span><span class="p">,</span>
-            <span class="n">logger</span><span class="p">,</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_get_captcha_code</span><span class="p">,</span>
-            <span class="n">headers</span><span class="o">=</span><span class="n">_base_headers</span><span class="o">.</span><span class="n">copy</span><span class="p">(),</span>
-        <span class="p">)</span>
+        <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_captcha_max_attempts</span><span class="p">):</span>
+            <span class="n">result</span> <span class="o">=</span> <span class="n">_protocol</span><span class="o">.</span><span class="n">captcha_attempt</span><span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_session</span><span class="o">.</span><span class="n">get</span><span class="p">,</span>
+                <span class="k">lambda</span> <span class="n">content</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_ocr</span><span class="p">()</span><span class="o">.</span><span class="n">classification</span><span class="p">(</span><span class="n">content</span><span class="p">),</span>
+                <span class="n">SystemRandom</span><span class="p">,</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_check_resp</span><span class="p">,</span>
+                <span class="n">logger</span><span class="p">,</span>
+                <span class="n">headers</span><span class="o">=</span><span class="n">_base_headers</span><span class="o">.</span><span class="n">copy</span><span class="p">(),</span>
+                <span class="n">timeout</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_captcha_timeout</span><span class="p">,</span>
+            <span class="p">)</span>
+            <span class="k">if</span> <span class="n">result</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="k">return</span> <span class="n">result</span>
+        <span class="k">raise</span> <span class="n">CaptchaAttemptsExceeded</span><span class="p">(</span><span class="s2">"captcha recognition attempts exhausted"</span><span class="p">)</span>
 
 <div class="viewcode-block" id="TradingClient.login">
 <a class="viewcode-back" href="../../reference/emtl.html#emtl.TradingClient.login">[文档]</a>
@@ -175,7 +209,7 @@
                 <span class="bp">self</span><span class="o">.</span><span class="n">_session</span><span class="o">.</span><span class="n">cookies</span><span class="o">.</span><span class="n">clear</span><span class="p">()</span>
                 <span class="n">random_num</span><span class="p">,</span> <span class="n">code</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_captcha_code</span><span class="p">()</span>
                 <span class="n">data</span> <span class="o">=</span> <span class="n">_protocol</span><span class="o">.</span><span class="n">login_form</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_username</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_password</span><span class="p">,</span> <span class="n">duration</span><span class="p">,</span> <span class="n">random_num</span><span class="p">,</span> <span class="n">code</span><span class="p">,</span> <span class="n">emt_trade_encrypt</span><span class="p">)</span>
-                <span class="n">resp</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_session</span><span class="o">.</span><span class="n">post</span><span class="p">(</span><span class="n">_urls</span><span class="p">[</span><span class="s2">"login"</span><span class="p">],</span> <span class="n">headers</span><span class="o">=</span><span class="n">_protocol</span><span class="o">.</span><span class="n">login_headers</span><span class="p">(),</span> <span class="n">data</span><span class="o">=</span><span class="n">data</span><span class="p">)</span>
+                <span class="n">resp</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_session</span><span class="o">.</span><span class="n">post</span><span class="p">(</span><span class="n">_urls</span><span class="p">[</span><span class="s2">"login"</span><span class="p">],</span> <span class="n">headers</span><span class="o">=</span><span class="n">_protocol</span><span class="o">.</span><span class="n">login_headers</span><span class="p">(),</span> <span class="n">data</span><span class="o">=</span><span class="n">data</span><span class="p">,</span> <span class="n">timeout</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_timeout</span><span class="p">)</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">_check_resp</span><span class="p">(</span><span class="n">resp</span><span class="p">)</span>
                 <span class="n">payload</span> <span class="o">=</span> <span class="n">resp</span><span class="o">.</span><span class="n">json</span><span class="p">()</span>
                 <span class="k">if</span> <span class="p">(</span>
@@ -184,7 +218,7 @@
                     <span class="ow">or</span> <span class="n">payload</span><span class="p">[</span><span class="s2">"Status"</span><span class="p">]</span> <span class="o">!=</span> <span class="mi">0</span>
                 <span class="p">):</span>
                     <span class="k">return</span> <span class="kc">None</span>
-                <span class="n">token</span> <span class="o">=</span> <span class="n">_protocol</span><span class="o">.</span><span class="n">fetch_token</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_session</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_check_resp</span><span class="p">,</span> <span class="n">headers</span><span class="o">=</span><span class="n">_base_headers</span><span class="o">.</span><span class="n">copy</span><span class="p">())</span>
+                <span class="n">token</span> <span class="o">=</span> <span class="n">_protocol</span><span class="o">.</span><span class="n">fetch_token</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_session</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_check_resp</span><span class="p">,</span> <span class="n">headers</span><span class="o">=</span><span class="n">_base_headers</span><span class="o">.</span><span class="n">copy</span><span class="p">(),</span> <span class="n">timeout</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_timeout</span><span class="p">)</span>
                 <span class="k">if</span> <span class="ow">not</span> <span class="n">token</span><span class="p">:</span>
                     <span class="k">return</span> <span class="kc">None</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">_token</span> <span class="o">=</span> <span class="n">token</span>
@@ -219,6 +253,7 @@
                 <span class="n">req_data</span><span class="p">,</span>
                 <span class="n">check</span><span class="p">,</span>
                 <span class="n">disable_order_redirects</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                <span class="n">timeout</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_timeout</span><span class="p">,</span>
                 <span class="n">on_post_start</span><span class="o">=</span><span class="n">on_post_start</span> <span class="k">if</span> <span class="n">tag</span> <span class="ow">in</span> <span class="p">{</span><span class="s2">"create_order"</span><span class="p">,</span> <span class="s2">"cancel_order"</span><span class="p">}</span> <span class="k">else</span> <span class="kc">None</span><span class="p">,</span>
             <span class="p">)</span>
 
@@ -324,7 +359,7 @@
     <span class="k">def</span><span class="w"> </span><span class="nf">get_last_price</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">symbol_code</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">market</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
         <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">_account</span><span class="o">.</span><span class="n">lock</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_ensure_open</span><span class="p">()</span>
-            <span class="k">return</span> <span class="n">_protocol</span><span class="o">.</span><span class="n">last_price</span><span class="p">(</span><span class="n">_protocol</span><span class="o">.</span><span class="n">snapshot</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_session</span><span class="p">,</span> <span class="n">symbol_code</span><span class="p">,</span> <span class="n">market</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_check_resp</span><span class="p">))</span></div>
+            <span class="k">return</span> <span class="n">_protocol</span><span class="o">.</span><span class="n">last_price</span><span class="p">(</span><span class="n">_protocol</span><span class="o">.</span><span class="n">snapshot</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_session</span><span class="p">,</span> <span class="n">symbol_code</span><span class="p">,</span> <span class="n">market</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_check_resp</span><span class="p">,</span> <span class="n">timeout</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_timeout</span><span class="p">))</span></div>
 
 
 <div class="viewcode-block" id="TradingClient.close">
